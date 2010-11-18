@@ -1,0 +1,212 @@
+\nonstopmode
+\documentclass[a4paper]{article}
+\usepackage{times}
+
+\usepackage{xspace}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{amsthm}
+\usepackage{stmaryrd}
+%\usepackage[all]{xy}
+
+% More space for floats
+\renewcommand{\topfraction}{0.99}
+\renewcommand{\bottomfraction}{0.99}
+\renewcommand{\floatpagefraction}{0.90}
+\renewcommand{\textfraction}{0.1}
+
+\ifdefined\LONGVERSION
+  \relax
+\else
+% short version:
+\newcommand{\LONGVERSION}[1]{}
+\newcommand{\SHORTVERSION}[1]{#1}
+% % long version:
+% \newcommand{\LONGVERSION}[1]{#1}
+% \newcommand{\SHORTVERSION}[1]{}
+% \newcommand{\SHORTVERSION}[1]{BEGIN~SHORT\ #1 \ END~SHORT}
+\fi
+\newcommand{\LONGSHORT}[2]{\LONGVERSION{#1}\SHORTVERSION{#2}}
+
+\newtheorem{theorem}{Theorem}
+%\newtheorem*{theorem*}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+%\newcommand{\qed}{\hfill\ensuremath{\Box}}
+% from llncs.cls
+%\def\squareforqed{\hbox{\rlap{$\sqcap$}$\sqcup$}}
+\def\squareforqed{\ensuremath{\Box}}
+\def\qed{\ifmmode\squareforqed\else{\unskip\nobreak\hfil
+\penalty50\hskip1em\null\nobreak\hfil\squareforqed
+\parfillskip=0pt\finalhyphendemerits=0\endgraf}\fi}
+
+\newenvironment{proof}[1][]{\noindent\ifthenelse{\equal{#1}{}}{{\it
+      Proof.}}{{\it Proof #1.}}\hspace{2ex}}{\qed\bigskip}
+\newenvironment{proof*}[1][]{\noindent\ifthenelse{\equal{#1}{}}{{\it
+      Proof.}}{{\it Proof #1.}}\hspace{2ex}}{\bigskip}
+
+%\input{prooftree}
+\newcommand{\inst}{}
+\newcommand{\institute}[1]{}
+\input{macros}
+
+\newcommand{\OTm}{\mathsf{OTm}}
+\newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
+\newcommand{\ovar}{\mathord{\bullet}}
+\newcommand{\oapp}[1]{\,\oann{#1}}
+\newcommand{\olam}[1]{\lambda^{#1}.\,}
+%\newcommand{\oprint}[1]{\langle#1\rangle}
+%\newcommand{\oparse}[3]{#1 \leadsto \oprint{#2} #3}
+\newcommand{\oprint}[2]{{}^{\lhd}\esubst{#1}{#2}}
+\newcommand{\oprintp}[2]{\oprint{(#1)}{#2}}
+\newcommand{\oparse}[1]{#1^{\rhd}}
+\newcommand{\lrhd}{\mathrel{\mathord{\lhd}\mathord{\rhd}}}
+\newcommand{\osyn}[3]{#1 \lrhd \esubst{#2}{#3}}
+\newcommand{\osynp}[3]{\osyn{#1}{(#2)}{#3}}
+\renewcommand{\esubst}[2]{#1[#2]}
+\newcommand{\esubstp}[2]{\esubst{(#1)}{#2}}
+\renewcommand{\cempty}{\varepsilon}
+\renewcommand{\sempty}{\varepsilon}
+
+
+\title{A Nameless Term Representation Based on Ordered Logic}
+\author{Andreas Abel, Nicolai Kraus}
+\institute{
+  Department of Computer Science \\
+  Ludwig-Maximilians-University Munich \\ 
+  \email{andreas.abel@ifi.lmu.de}
+}
+\date{October 2010}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  We introduce a new nameless representation of lambda terms based on
+  ordered logic.  Sharing of variables is explicit and happens at
+  lambda-abstraction.  Our term representation enables access to the
+  set of free variables in constant time.  To maintain the free
+  variable set we have a logarithmic overhead in the decomposition of
+  applications and abstractions. 
+  We get evaluation using
+  explicit substitutions without memory leaks.  
+\end{abstract}
+
+\section{Syntax}
+
+\paradot{Ordered syntax}
+\[
+\begin{array}{lllrl@{\qquad}l}
+\OTm & \ni & t,u & ::= & \ovar & \mbox{variable (nameless)} \\
+&&& \mid & t \oapp k u & \mbox{application} \\
+&&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
+\end{array}
+\]
+Contexts $\Gamma,\Delta$ are lists of types.  We write $L^n$ to
+indicate that list $L$ has length $n$.
+
+\paradot{Simple typing}  Simple types follow the grammar $A, B ::= X
+\mid A \to B$. The typing judgement $\Gamma \der t : A$ is inductively
+defined by the following rules.
+\begin{gather*}
+  \ru{}{A \der \ovar : A}
+\qquad
+  \ru{\Gamma \der t : A \to B \qquad
+      \Delta \der u : A
+    }{\Gamma,\Delta^k \der t \oapp k u : B}
+\qquad
+  \ru{\Gamma_0,A,\Gamma_1,\dots,A,\Gamma_n \der t : B
+    }{\Gamma_0^{k_0},\Gamma_1^{k_1},\dots,\Gamma_n^{k_n} \der 
+        \olam {\vec k} t : A \to B} 
+\end{gather*}
+The typing rules for variable and application are linear, but the
+abstraction rule has explicit sharing built in.  Explicit sharing is,
+on a global scale, as powerful as structural rules for weakening,
+contraction, and exchange.
+
+\paradot{Printing}  We define a conversion $\oprint t {\vec x}$ 
+from ordered syntax $t$ to named syntax $M$.
+\[
+\begin{array}{lll}
+  \oprint \ovar x 
+    & = & x \\
+  \oprintp {t \oapp k u} {\vec x,\vec y^k} 
+    & = & \oprint t {\vec x} \, \oprint u {\vec y} \\
+  \oprintp {\olam {\vec k} t} 
+    {\vec x_0^{k_0},\vec x_1^{k_1},\dots,\vec x_n^{k_n}}
+    & = & \lambda x.\, \oprint t {\vec x_0,x,\vec x_1,\dots,x,\vec x_n} \\
+\end{array}
+\]
+
+\para{Parsing} of named syntax into ordered syntax is defined via the
+judgement $\osyn M t {\vec x}$, given inductively by the following rules.
+\begin{gather*}
+  \ru{}{\osyn x \ovar x}
+\qquad
+  \ru{\osyn M t {\vec x} \qquad 
+      \osyn N u {\vec y^k}
+    }{\osynp {M\,N} {t \oapp k u} {\vec x, \vec y}}
+\\[2ex]
+  \rux{\osyn M t {\vec x_o^{k_0},x,\vec x_1^{k_1},\dots,x,\vec x_n^{k_n}}
+     }{\osynp {\lambda x.M} {\olam {\vec k} t}
+         {\vec x_0,\vec x_1,\dots,\vec x_n}
+    }{x \not\in \vec x_0,\dots,\vec x_n}
+\end{gather*}
+Parsing and printing are inverses of each other.
+
+
+\section{Explicit Substitutions}
+
+\para{Substitutions} $\sigma$ are list of pairs $t^k$ of a term $t$ together
+with a natural number $k$.  Substitutions are (linearily) typed by the judgement
+$\Gamma \der \sigma : \Delta$ which is given inductively by the
+following rules:
+% \[
+% \begin{array}{lllrl@{\qquad}l}
+%   \Subst & \ni & \sigma,\tau & ::= & 
+% \end{array}
+% \]
+\begin{gather*}
+  \ru{
+    }{\cempty \der \sempty : \cempty}
+\qquad
+  \ru{\Gamma_0 \der \sigma : \Delta \qquad
+      \Gamma^k \der t : A
+    }{\Gamma_0,\Gamma \der \sigma, \oann k t : \Delta,A}
+\end{gather*}
+We extend the term grammar by $\esubst t \sigma$, an explicit substitution of
+$\sigma$ in term $t$, with the usual typing rule:
+\begin{gather*}
+  \ru{\Gamma \der \sigma : \Delta \qquad
+      \Delta \der t : A
+    }{\Gamma \der \esubst t \sigma : A}
+\end{gather*}
+The identity substitution $\sid^n$ for context $\Gamma^n$ is a list of
+$\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
+
+\paradot{Reduction}
+\[
+\begin{array}{lll}
+  \esubstp {\olam {\vec k} t} {\sigma_0^{k_0},\dots,\sigma_n^{k_n}} \oapp k u
+  & \red & \esubst t {\sigma_0,\oann k u,\sigma_1, \dots, \oann k u,\sigma_n}
+\\[1ex]
+  \esubst \ovar {\oann k u} 
+  & \red & u 
+\\
+  \esubstp {t \oapp k u} {\sigma,\oann l {\tau^k}} 
+  & \red & \esubst t \sigma \oapp l \esubst u \tau 
+\\ 
+  \esubstp {\olam {\vec k} t} {\oann{l_0}{\sigma_0^{k_0}},\dots,\oann{l_n}{\sigma_n^{k_n}}}
+  & \red & \olam {\vec l} \esubst t {\sigma_0,\oann 1
+    \ovar,\sigma_1,\dots,\oann 1 \ovar,\sigma_n}
+\end{array}
+\]
+
+\end{document}
