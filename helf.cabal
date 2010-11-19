@@ -25,6 +25,7 @@ executable helf
   build-tools:      happy >= 1.15 && < 2,
                     alex >= 2.0.1 && < 3
   extensions:       MultiParamTypeClasses
+                    FunctionalDependencies
                     TypeSynonymInstances
                     FlexibleInstances
                     FlexibleContexts
