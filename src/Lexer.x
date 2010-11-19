@@ -14,10 +14,15 @@ $idchar = $printable # [ $white $reserved ] -- may appear in characters
 tokens :-
 
 $white+             ;
+"%%"             .* ;
+"%" [ $white # \n ] .* ;
+"%" \n ;
+"%{" ([$u # \}] | \} [$u # \%])* (\})* "}%" ; 
+
 "%abbrev"           { tok (\p s -> Abbrev p) }
-"%infix"         .* ;
-"%prefix"        .* ;
-"%postfix"       .* ;
+"%infix"            { tok (\p s -> Infix p) }
+"%prefix"           { tok (\p s -> Infix p) }
+"%postfix"          { tok (\p s -> Prefix p) }
 "%name"          .* ;
 "%query"         .* ;
 "%clause"        .* ;
@@ -36,26 +41,21 @@ $white+             ;
 "%establish"     .* ;
 "%assert"        .* ;
 "%use"           .* ;
-"%%"             .* ;
-"%" [ $white # \n ] .* ;
-"%" \n ;
-"%{" ([$u # \}] | \} [$u # \%])* (\})* "}%" ; 
+\{		    { tok (\p s -> BrOpen p) }
+\}		    { tok (\p s -> BrClose p) }
+\[		    { tok (\p s -> BracketOpen p) }
+\]		    { tok (\p s -> BracketClose p) }
+\(		    { tok (\p s -> PrOpen p) }
+\)		    { tok (\p s -> PrClose p) }
+\:		    { tok (\p s -> Col p) }
+\.		    { tok (\p s -> Dot p) }
 
-\{				{ tok (\p s -> BrOpen p) }
-\}				{ tok (\p s -> BrClose p) }
-\[				{ tok (\p s -> BracketOpen p) }
-\]				{ tok (\p s -> BracketClose p) }
-\(				{ tok (\p s -> PrOpen p) }
-\)				{ tok (\p s -> PrClose p) }
-\:				{ tok (\p s -> Col p) }
-\.				{ tok (\p s -> Dot p) }
+"->"		    { tok (\p s -> Arrow p)  }
+"<-"		    { tok (\p s -> RevArrow p)  }
+=		    { tok (\p s -> Eq p) }
+type		    { tok (\p s -> Type p) }
 
-"->"				{ tok (\p s -> Arrow p)  }
-"<-"				{ tok (\p s -> RevArrow p)  }
-=				{ tok (\p s -> Eq p) }
-type				{ tok (\p s -> Type p) }
-
-$idchar +                       { tok (\p s -> (Id s p )) }
+$idchar +           { tok (\p s -> (Id s p )) }
 	
 
 {
@@ -63,6 +63,9 @@ $idchar +                       { tok (\p s -> (Id s p )) }
 
 data Token = Id String AlexPosn
            | Abbrev AlexPosn
+           | Infix AlexPosn
+           | Prefix AlexPosn
+           | Postfix AlexPosn
            | BrOpen AlexPosn
            | BrClose AlexPosn
            | BracketOpen AlexPosn
@@ -87,6 +90,9 @@ showTok c =
   case c of 
     (Id s p) -> (show s,p)
     Abbrev p -> ("%abbrev",p)
+    Infix p -> ("%infix",p)
+    Prefix p -> ("%prefix",p)
+    Postfix p -> ("%postfix",p)
     Type p -> ("type",p)
     BrOpen p -> ("{",p)
     BrClose p -> ("}",p)

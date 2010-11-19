@@ -12,45 +12,56 @@ import qualified Concrete as C
 
 %token
 
-id        { T.Id $$ _ }
-'%abbrev' { T.Abbrev _}
-'{'       { T.BrOpen _ }
-'}'       { T.BrClose _ }
-'['       { T.BracketOpen _ }
-']'       { T.BracketClose _ }
-'('       { T.PrOpen _ }
-')'       { T.PrClose _ }
-':'       { T.Col _ }
-'.'       { T.Dot _ }
-'->'      { T.Arrow _ }
-'<-'      { T.RevArrow _ }
-'='       { T.Eq _ }
-'_'       { T.Hole _ }
-type      { T.Type _ }
+id         { T.Id $$ _ }
+'%abbrev'  { T.Abbrev _}
+'%infix'   { T.Infix _}
+'%prefix'  { T.Prefix _}
+'%postfix' { T.Postfix _}
+'{'        { T.BrOpen _ }
+'}'        { T.BrClose _ }
+'['        { T.BracketOpen _ }
+']'        { T.BracketClose _ }
+'('        { T.PrOpen _ }
+')'        { T.PrClose _ }
+':'        { T.Col _ }
+'.'        { T.Dot _ }
+'->'       { T.Arrow _ }
+'<-'       { T.RevArrow _ }
+'='        { T.Eq _ }
+'_'        { T.Hole _ }
+type       { T.Type _ }
 
 %%
 
 TopLevel :: { C.Declarations }
 TopLevel : Declarations { C.Declarations $1}
 
-
 Declarations :: { [C.Declaration] }
 Declarations 
-  : {- empty -}                   { [] }
-  | Declaration Declarations      { $1 : $2 }
+  : {- empty -}                    { [] }
+  | Declaration '.' Declarations   { $1 : $3 }
 
 Declaration :: { C.Declaration }
 Declaration 
-  : TypeSig '.'                   { $1 }
+  : TypeSig                       { $1 }
   | Defn                          { $1 }
   | '%abbrev' Defn                { $2 }
-     
+  | '%infix' Assoc Prec id        { C.Fixity $4 (C.Infix $3 $2) }
+  | '%prefix' Prec id             { C.Fixity $3 (C.Prefix $2) }
+  | '%postfix' Prec id            { C.Fixity $3 (C.Postfix $2) }
+
+Assoc :: { C.Associativity }    
+Assoc : id                        { read $1 }
+
+Prec :: { Int }
+Prec : id                         { read $1 }
+
 TypeSig :: { C.Declaration }
 TypeSig : id ':' Expr             { C.TypeSig $1 $3 }
 
 Defn :: { C.Declaration }
-Defn : id ':' Expr '=' Expr '.'   { C.Defn $1 (Just $3) $5 } 
-     | id '=' Expr '.'            { C.Defn $1 Nothing $3 } 
+Defn : id ':' Expr '=' Expr       { C.Defn $1 (Just $3) $5 } 
+     | id '=' Expr                { C.Defn $1 Nothing $3 } 
 
 -- general form of expression
 Expr :: { C.Expr }
