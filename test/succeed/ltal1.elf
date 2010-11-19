@@ -1,0 +1,196 @@
+% Copyright (c) 2004 Princeton University
+%	$Id: logic.elf,v 1.17 2005/02/10 15:21:23 richards Exp $
+
+tp     : type.
+tm     : tp -> type.
+form   : tp.
+tform  : type = tm form. 
+arrow  : tp -> tp -> tp.  %infix right 14 arrow.
+pf     : tform -> type.
+
+_lam    : {T1 : tp} {T2 : tp} (tm T1 -> tm T2) -> tm (T1 arrow T2).
+_@      : {T1 : tp} {T2 : tp} tm (T1 arrow T2) -> tm T1 -> tm T2.
+_forall : {T : tp} (tm T -> tform) -> tform.
+imp     : tform -> tform -> tform.   %infix right 10 imp.
+
+_beta_e  : {T1 : tp} {T2 : tp} {F : tm T1 -> tm T2} {X : tm T1}
+  {P : tm T2 -> tform} pf (P (_@ T1 T2 (_lam T1 T2 F) X)) ->  pf (P (F X)).
+
+_imp_i   : {A : tform} {B : tform} (pf A -> pf B) -> pf (A imp B).
+_imp_e   : {A : tform} {B : tform} pf (A imp B) -> pf A -> pf B.
+
+_forall_i:{T: tp} {A : tm T -> tform}({X : tm T} pf (A X)) -> pf (_forall T A).
+_forall_e:{T: tp} {A : tm T -> tform} pf (_forall T A) -> {X : tm T} pf (A X).
+
+pair     : tp -> tp -> tp.
+_mkpair  : {T1 : tp} {T2 : tp} tm (T1 arrow T2 arrow pair T1 T2).
+_fst     : {T1 : tp} {T2 : tp} tm (pair T1 T2 arrow T1).
+_snd     : {T1 : tp} {T2 : tp} tm (pair T1 T2 arrow T2).
+
+_fstpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
+ pf (_forall (T1 arrow form) [f : tm (T1 arrow form)]
+    (_@ T1 form f X) imp (_@ T1 form f (_@ (pair T1 T2) T1 (_fst T1 T2)
+     (_@ T2 (pair T1 T2) (_@ T1 (T2 arrow pair T1 T2) (_mkpair T1 T2) X) Y)))).
+
+_sndpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
+ pf (_forall (T2 arrow form) [f : tm (T2 arrow form)]
+    (_@ T2 form f Y) imp (_@ T2 form f (_@ (pair T1 T2) T2 (_snd T1 T2)
+     (_@ T2 (pair T1 T2) (_@ T1 (T2 arrow pair T1 T2) (_mkpair T1 T2) X) Y)))).
+% Copyright (c) 2004 Princeton University
+%	$Id: coredefs.elf,v 1.49 2004/07/29 00:30:38 rsimmons Exp $
+
+_frl_frm : (tform -> tform) -> tform = _forall form.
+
+_@_f : {T : tp} tm (T arrow form) -> tm T -> tform = [T : tp] _@ T form.
+
+_eq : {T : tp} tm T -> tm T -> tform =
+ [T : tp][A : tm T][B : tm T]
+  _forall (T arrow form) [P : tm (T arrow form)] _@_f T P B imp _@_f T P A.
+
+and : tform -> tform -> tform =
+ [A : tform][B : tform] _frl_frm [C : tform] (A imp B imp C) imp C.
+%infix right 12 and.
+
+or : tform -> tform -> tform =
+ [A : tform][B : tform] _frl_frm [C : tform] (A imp C) imp (B imp C) imp C.
+%infix right 11 or.
+
+false : tform = _frl_frm [A : tform] A.
+
+not : tform -> tform = [A : tform] A imp false.
+
+equiv : tform -> tform -> tform =
+ [A : tform][B : tform] (A imp B) and (B imp A).    %infix right 10 equiv.
+
+_lam2  = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
+  _lam T1 (T2 arrow T3) [x : tm T1] _lam T2 T3 (f x).
+
+_lam3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+        [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
+  _lam T1 (T2 arrow T3 arrow T4) [x : tm T1] _lam2 T2 T3 T4 (f x).
+
+_lam4 = [T1 : tp] [T2 : tp] [T3 : tp] [T4 : tp] [T5 : tp]
+        [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
+  _lam T1 (T2 arrow T3 arrow T4 arrow T5) [x : tm T1] _lam3 T2 T3 T4 T5 (f x).
+
+_@2 = [T1 : tp][T2 : tp][T3 : tp][f : tm (T1 arrow T2 arrow T3)]
+ [x1 : tm T1] _@ T2 T3 (_@ T1 (T2 arrow T3) f x1).
+
+_@3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+ [f : tm (T1 arrow T2 arrow T3 arrow T4)][x1 : tm T1]
+  _@2 T2 T3 T4 (_@ T1 (T2 arrow T3 arrow T4) f x1).
+
+_@4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+ [f : tm (T1 arrow T2 arrow T3 arrow T4 arrow T5)][x1 : tm T1]
+  _@3 T2 T3 T4 T5 (_@ T1 (T2 arrow T3 arrow T4 arrow T5) f x1).
+
+_forall2 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2 -> tform]
+  _forall T1 [x : tm T1] _forall T2 (f x).
+
+_forall3 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3 -> tform]
+  _forall T1 [x : tm T1] _forall2 T2 T3 (f x).
+
+_forall4 = [T1 : tp][T2 : tp][T3 : tp][T4: tp]
+           [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tform]
+  _forall T1 [x : tm T1] _forall3 T2 T3 T4 (f x).
+
+_forall5 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+	   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tform]
+  _forall T1 [x : tm T1] _forall4 T2 T3 T4 T5 (f x).
+
+_forall6 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp][T6 : tp]
+	   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6 -> tform]
+  _forall T1 [x : tm T1] _forall5 T2 T3 T4 T5 T6 (f x).
+
+_exists : {T : tp} (tm T -> tform) -> tform =
+ [T : tp][F : tm T -> tform]
+  _frl_frm [B : tform] (_forall T [X : tm T] F X imp B) imp B.
+
+_exists2 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2 -> tform]
+  _exists T1 [x : tm T1] _exists T2 (f x).
+
+_exists3 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3 -> tform]
+  _exists T1 [x : tm T1] _exists2 T2 T3 (f x).
+
+app1 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2][x1 : tm T1]
+ _@ T1 T2 (_lam T1 T2 f) x1.
+
+app2 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
+  _@2 T1 T2 T3 (_lam2 T1 T2 T3 f).
+
+app3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+  [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
+  _@3 T1 T2 T3 T4 (_lam3 T1 T2 T3 T4 f).
+
+app4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+  [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
+   _@4 T1 T2 T3 T4 T5 (_lam4 T1 T2 T3 T4 T5 f).
+
+app5 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5: tp][T6 : tp]
+ [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6][x1 : tm T1]
+  _@4 T2 T3 T4 T5 T6
+    ((app1 T1 (T2 arrow T3 arrow T4 arrow T5 arrow T6)
+     [x : tm T1] _lam4 T2 T3 T4 T5 T6 (f x)) x1).
+
+app6 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5: tp][T6 : tp][T7 : tp]
+ [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6 -> tm T7]
+ [x1 : tm T1][x2 : tm T2]
+  _@4 T3 T4 T5 T6 T7
+    ((app2 T1 T2 (T3 arrow T4 arrow T5 arrow T6 arrow T7)
+     [x : tm T1][y : tm T2] _lam4 T3 T4 T5 T6 T7 (f x y)) x1 x2).
+
+if : tform -> tform -> tform -> tform =
+ [E : tform][A : tform][B : tform] (E imp A) and (not E imp B).
+
+true : tform = not false.
+
+xor : tform -> tform -> tform =
+ [A : tform][B : tform] (A and (not B)) or ((not A) and B).
+%infix right 11 xor.
+
+_kleene_star : {T : tp} (tm T -> tm T -> tform) -> tm T -> tm T -> tform =
+  [T : tp][R : tm T -> tm T -> tform][V : tm T][W : tm T] 
+   _forall  (T arrow T arrow form) [S : tm (T arrow T arrow form)]
+   (_forall T [Z : tm T] _@2 T T form S Z Z) imp
+   (_forall3 T T T [X : tm T][Y : tm T][Z : tm T]
+    (app2 T T form R X Y) imp (_@2 T T form S Y Z)
+      imp (_@2 T T form S X Z)) imp
+   (_@2 T T form S V W).
+
+% Pairs out of pairs.
+% Object vs Meta logic.
+tuple2 : tp -> tp -> tp = pair.
+_mktuple2 : {T1 : tp}{T2 : tp} tm T1 -> tm T2 -> tm (tuple2 T1 T2) =
+ [T1 : tp][T2 : tp][x1 : tm T1][x2 : tm T2]
+  _@2 T1 T2 (pair T1 T2) (_mkpair T1 T2) x1 x2.
+_get1of2 = [T1 : tp][T2 : tp][p : tm (tuple2 T1 T2)]
+ _@ (pair T1 T2) T1 (_fst T1 T2) p.
+_get2of2 = [T1 : tp][T2 : tp][p : tm (tuple2 T1 T2)]
+ _@ (pair T1 T2) T2 (_snd T1 T2) p.
+
+% Quadruples out of pairs.
+tuple4 : tp -> tp -> tp -> tp -> tp =
+ [T1 : tp][T2 : tp][T3 : tp ][T4 : tp] pair (pair T1 T2) (pair T3 T4).
+_mktuple4 : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}
+           tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm (tuple4 T1 T2 T3 T4) =
+ [T1 : tp][T2 : tp][T3 : tp][T4 : tp][x1 : tm T1][x2 : tm T2][x3 : tm T3]
+ [x4 : tm T4] _@2 (pair T1 T2) (pair T3 T4) (tuple4 T1 T2 T3 T4)
+                  (_mkpair (pair T1 T2) (pair T3 T4))
+                  (_@2 T1 T2 (pair T1 T2) (_mkpair T1 T2) x1 x2)
+                  (_@2 T3 T4 (pair T3 T4) (_mkpair T3 T4) x3 x4).
+
+_get1of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T1 T2) T1 (_fst T1 T2)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T1 T2) (_fst (pair T1 T2) (pair T3 T4)) p).
+
+_get2of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T1 T2) T2 (_snd T1 T2)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T1 T2) (_fst (pair T1 T2) (pair T3 T4)) p).
+
+_get3of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T3 T4) T3 (_fst T3 T4)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T3 T4) (_snd (pair T1 T2) (pair T3 T4)) p).
+
+_get4of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T3 T4) T4 (_snd T3 T4)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T3 T4) (_snd (pair T1 T2) (pair T3 T4)) p).
