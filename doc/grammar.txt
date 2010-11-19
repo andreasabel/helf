@@ -107,4 +107,36 @@ adecl ::= id : term = term         % d : A = M
 defn ::= adecl.                    % definition
        | %abbrev adecl.            % abbreviation
 
+
+
+3.4 Operator Declaration
+
+The user may declare constants to be infix, prefix, or postfix
+operators. Operator precedence properties are associated with
+constants, which must therefore already have been declared with a type
+or kind and a possible definition. It is illegal to shadow an infix,
+prefix, or postfix operator with a bound variable. We use nat for the
+terminal natural numbers.
+
+assoc ::= none   % not associative
+        | left   % left associative
+        | right  % right associative
+
+prec ::= nat     % 0 <= prec < 10000
+
+ixdecl ::= assoc prec id
+
+pxdecl ::= prec id
+
+decl ::= ...
+       | %infix ixdecl.
+       | %prefix pxdecl.
+       | %postfix pxdecl.
+
+During parsing, ambiguous successive operators of identical precedence
+such as a <- b -> c are flagged as errors. Note that it is not
+possible to declare an operator with equal or higher precedence than
+juxtaposition or equal or lower precedence than `->' and `<-'.
+
+
 -}
