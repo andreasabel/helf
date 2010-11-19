@@ -3,6 +3,8 @@ module Concrete where
 import Text.PrettyPrint
 
 import Common
+import OperatorPrecedenceParser (Associativity(..))
+import qualified OperatorPrecedenceParser as OPP
 
 newtype Declarations = Declarations { declarations :: [Declaration] }
 
@@ -11,15 +13,7 @@ data Declaration
   | Defn Name (Maybe Expr) Expr
   | Fixity Name Fixity
 
-data Fixity 
-  = Prefix  { precedence :: Int }  -- 0 <= ... < 10000
-  | Postfix { precedence :: Int }
-  | Infix   { precedence :: Int , associativity :: Associativity }
-
-data Associativity 
-  = AssocLeft
-  | AssocRight
-  | AssocNone
+type Fixity = OPP.Fixity Int   -- precedences: 0 <= ... < 10000  
 
 data Expr
   = Ident Name
@@ -37,9 +31,9 @@ instance Pretty Declaration where
     pr (TypeSig x a)       = [ text x , colon , pretty a ] 
     pr (Defn x (Just a) e) = [ text x , colon , pretty a , equals , pretty e ] 
     pr (Defn x Nothing e)  = [ text x , equals , pretty e ] 
-    pr (Fixity x (Prefix p))  = [ text "%prefix" , int p , text x ] 
-    pr (Fixity x (Postfix p)) = [ text "%postfix", int p , text x ] 
-    pr (Fixity x (Infix p a)) = [ text "%infix",  pretty a, int p , text x ] 
+    pr (Fixity x (OPP.Prefix p))  = [ text "%prefix" , int p , text x ] 
+    pr (Fixity x (OPP.Postfix p)) = [ text "%postfix", int p , text x ] 
+    pr (Fixity x (OPP.Infix p a)) = [ text "%infix",  pretty a, int p , text x ] 
 
 instance Pretty Associativity where
   pretty = text . show
