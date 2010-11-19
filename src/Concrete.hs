@@ -9,6 +9,17 @@ newtype Declarations = Declarations { declarations :: [Declaration] }
 data Declaration
   = TypeSig Name Expr
   | Defn Name (Maybe Expr) Expr
+  | Fixity Name Fixity
+
+data Fixity 
+  = Prefix  { precedence :: Int }  -- 0 <= ... < 10000
+  | Postfix { precedence :: Int }
+  | Infix   { precedence :: Int , associativity :: Associativity }
+
+data Associativity 
+  = AssocLeft
+  | AssocRight
+  | AssocNone
 
 data Expr
   = Ident Name
@@ -22,9 +33,16 @@ instance Pretty Declarations where
   pretty (Declarations ds) = vcat $ map pretty ds
 
 instance Pretty Declaration where
-  pretty (TypeSig x a)        = hsep [ text x , colon , pretty a ] <> dot
-  pretty (Defn x (Just a) e)  = hsep [ text x , colon , pretty a , equals , pretty e ] <> dot  
-  pretty (Defn x Nothing e)   = hsep [ text x , equals , pretty e ] <> dot  
+  pretty d = hsep (pr d) <> dot where
+    pr (TypeSig x a)       = [ text x , colon , pretty a ] 
+    pr (Defn x (Just a) e) = [ text x , colon , pretty a , equals , pretty e ] 
+    pr (Defn x Nothing e)  = [ text x , equals , pretty e ] 
+    pr (Fixity x (Prefix p))  = [ text "%prefix" , int p , text x ] 
+    pr (Fixity x (Postfix p)) = [ text "%postfix", int p , text x ] 
+    pr (Fixity x (Infix p a)) = [ text "%infix",  pretty a, int p , text x ] 
+
+instance Pretty Associativity where
+  pretty = text . show
 
 instance Pretty Expr where
   prettyPrec _ (Ident x)          = text x
@@ -45,6 +63,19 @@ instance Show Declarations where
 
 instance Show Declaration where
   show = render . pretty
+
+instance Show Associativity where
+  show a = case a of
+    AssocLeft  -> "left"
+    AssocRight -> "right"
+    AssocNone  -> "none"
+
+instance Read Associativity where
+  readsPrec _ s = [(a,"")] where 
+    a = case s of
+      "left"  -> AssocLeft 
+      "right" -> AssocRight
+      "none"  -> AssocNone 
 
 instance Show Expr where
   show = render . pretty
