@@ -1,0 +1,110 @@
+2010-11-19
+
+Alex and Happy do not like Haskell comments
+
+{- A lexer for Twelf
+
+From the Twelf manual:
+
+The following table lists the reserved characters in Twelf.
+
+`:'         colon, constant declaration or ascription
+`.'         period, terminates declarations
+`(' `)'     parentheses, for grouping terms
+`[' `]'     brackets, for lambda abstraction
+`{' `}'     braces, for quantification (dependent function types)
+whitespace  separates identifiers; one of 
+              space, newline, tab, carriage return, vertical tab or formfeed
+`%'         introduces comments or special keyword declarations
+`%whitespace' `%%'     comment terminated by the end of the line, may contain any characters
+`%{' `}%'   delimited comment, nested `%{' and `}%' must match
+`%keyword'  various declarations
+`%.'        end of input stream
+`\"'        doublequote, disallowed
+other       identifier constituents
+
+Special ids
+`->'        function type
+`<-'        reverse function type
+`_'         hole, to be filled by term reconstruction
+`='         definition
+`type'      the kind type
+-}
+
+{- A parser for Twelf
+
+sig  ::=                       % Empty signature
+       | decl sig              % Constant declaration
+
+decl ::= id : term.            % a : K  or  c : A
+       | defn.                 % definition, usually d : A = M
+       | %abbrev adecl.        % abbreviation
+       | %infix ixdecl.        % operator declaration
+       | %prefix pxdecl.       % operator declaration
+       | %postfix pxdecl.      % operator declaration
+       | %name namepref.       % name preference declaration
+       | %query qdecl.         % query declaration
+       | %clause defn.         % clause definition
+       | sdecl.                % solve declaration
+       | %tabled id.           % table declaration
+       | %querytabled qtdecl   % tabled query declaration
+       | %deterministic ddecl. % deterministic declaration
+       | %mode mdecl.          % mode declaration
+       | %terminates tdecl.    % termination declaration
+       | %reduces rdecl.       % reduction declaration
+       | %block id : bdecl.    % block declaration
+       | %worlds wdecl.        % worlds declaration
+       | %total tdecl.         % totality declaration
+       | %freeze ids.          % freeze declaration
+       | %theorem thdecl.      % theorem declaration
+       | %prove pdecl.         % prove declaration
+       | %establish pdecl.     % prove declaration, do not use as lemma later
+       | %assert callpats.     % assert theorem (requires Twelf.unsafe)
+       | %use domain.          % installs constraint domain
+
+defn ::= id : term = term      % d : A = M or d : K = A
+       | id = term             % d = M or d = A
+       | _ : term = term       % anonymous definition, for type-checking
+       | _ = term              % anonymous definition, for type-checking
+
+sdecl ::= %define binding sdecl % term binding
+        | %solve id : term      % solve with proof term
+        | %solve _ : term       % solve without proof term
+
+ids   ::=                      % empty sequence
+        | id ids               % identifier follwed by more
+
+term ::= type                  % type
+       | id                    % variable x or constant a or c
+       | term -> term          % A -> B
+       | term <- term          % A <- B, same as B -> A
+       | {id : term} term    % Pi x:A. K  or  Pi x:A. B
+       | [id : term] term      % lambda x:A. B  or  lambda x:A. M
+       | term term             % A M  or  M N
+       | term : term           % explicit type ascription
+       | _                     % hole, to be filled by term reconstruction
+       | {id} term           % same as {id:_} term
+       | [id] term             % same as [id:_] term
+
+In the order of precedence, we disambiguate the syntax as follows:
+
+Juxtaposition (application) is left associative and has highest precedence.
+User declared infix, prefix, or postfix operators (see below).
+`->' is right and `<-' left associative with equal precedence.
+`:' is left associative.
+`{}' and `[]' are weak prefix operators.
+For example, the following are parsed identically:
+
+   d : a <- b <- {x} c x -> p x.
+   d : ({x} c x -> p x) -> b -> a.
+   d : ((a <- b) <- ({x:_} ((c x) -> (p x)))).
+
+3.3 Definitions
+
+adecl ::= id : term = term         % d : A = M
+        | id = term                % d = M
+
+defn ::= adecl.                    % definition
+       | %abbrev adecl.            % abbreviation
+
+-}

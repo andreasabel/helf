@@ -1,0 +1,21 @@
+%{ bla }%
+%{ bla
+   bla }%
+%{ 
+bla
+   {bla} 
+. 
+}%
+
+%{ bla } {} }}{
+}%
+
+%% bla %%
+
+%
+% The distributive law of multiplication over addition.
+%
+%{
+_distrib : {A : tnum}{B : tnum}{C : tnum}
+           pf (eqn (times A (plus B C)) (plus (times A B) (times A C))).
+}%
