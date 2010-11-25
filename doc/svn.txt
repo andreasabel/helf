@@ -1,0 +1,26 @@
+SVN mini-docu
+
+Update local working copy
+-------------------------
+
+svn update
+  answer postpone
+
+Review changes
+--------------
+
+svn status
+
+Add new files to version control
+--------------------------------
+
+svn add directory
+svn add file
+svn add file1 ... filen
+svn add directory/file
+
+Commit changes
+--------------
+
+svn commit -m "commit message"
+

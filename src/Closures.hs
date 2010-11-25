@@ -4,6 +4,8 @@
 
 module Closures where
 
+import Prelude hiding (pi)
+
 import Control.Applicative
 import Control.Monad.Error
 import Control.Monad.Reader
@@ -20,25 +22,24 @@ type Var = Int
 
 data Head 
   = HVar Var Val     -- typed variable 
-  | HType 
-  | HKind
+  | HSort Sort
 
 data Val 
   = Ne   Head [Val]  -- x vs^-1 | c vs^-1   last argument first in list!
   | Clos Expr Env    -- (\xe) rho
+  | K    Val         -- constant function
   | Fun  Val  Val    -- Pi a ((\xe)rho)
 
 instance Value Int Val where
-  typ  = Ne HType []
-  kind = Ne HKind []
+  typ  = Ne (HSort Type) []
+  kind = Ne (HSort Kind) []
   freeVar x t = Ne (HVar x t) []
 
   tyView v =
     case v of
-      Fun a b    -> VPi a b
-      Ne HType _ -> VType
-      Ne HKind _ -> VKind
-      _          -> VBase
+      Fun a b        -> VPi a b
+      Ne (HSort s) _ -> VSort s
+      _              -> VBase
  
   tmView v =
     case v of
@@ -57,6 +58,7 @@ update rho x e = Map.insert x e rho
 apply :: Val -> Val -> Val
 apply f v =
   case f of
+    K w                -> w
     Ne h vs            -> Ne h (v:vs)
     Clos (Abs x e) rho -> evaluate e (update rho x v)
 
@@ -66,9 +68,11 @@ evaluate e rho =
     Var x     -> Maybe.fromJust $ Map.lookup x rho
     App f e   -> evaluate f rho `apply` evaluate e rho
     Abs{}     -> Clos e rho
-    Pi x e e' -> Fun (evaluate e rho) $ Clos (Abs x e') rho
-    Type      -> typ
-    Kind      -> kind
+    Pi mx e e' -> Fun (evaluate e rho) $ case mx of
+                    Just x  -> Clos (Abs x e') rho
+                    Nothing -> K $ evaluate e' rho 
+    Sort Type -> typ
+    Sort Kind -> kind
 
 -- Type checking monad
 
@@ -121,11 +125,35 @@ runCheck e t = runReaderT (checkTySig e t) emptyContext
 
 -- Testing
 
+-- polymorphic identity
+
+ty = Sort Type
+pi x = Pi (Just x)
+
 eid = Abs "A" $ Abs "x" $ Var "x"
-tid = Pi "A" Type $ Pi "x" (Var "A") $ Var "A"
+tid = pi "A" ty $ pi "x" (Var "A") $ Var "A"
+
+arrow a b = Pi Nothing a b
+
+tnat = pi "A" ty $ 
+         pi "zero" (Var "A") $ 
+         pi "suc"  (Var "A" `arrow` Var "A") $
+           Var "A" 
+
+ezero  = Abs "A" $ Abs "zero" $ Abs "suc" $ Var "zero"
+-- problem: esuc is not a nf
+esuc n = Abs "A" $ Abs "zero" $ Abs "suc" $ Var "suc" `App` 
+          (n `App` Var "A" `App` Var "zero" `App` Var "suc")  
+
+enat e =  Abs "A" $ Abs "zero" $ Abs "suc" $ e
+enats = map enat $ iterate (App (Var "suc")) (Var "zero")
+e2 = enats !! 2
 
 rid = runCheck eid tid
 
-tests = [(eid,tid),(tid,tid)]
+success = [(eid,tid),(ezero,tnat),(e2,tnat),(Sort Type,Sort Kind)]
+failure = [(tid,tid)]
 
-runtests = map (uncurry runCheck) tests
+runsuccs = map (uncurry runCheck) success
+runtests = map (uncurry runCheck) (success ++ failure)
+

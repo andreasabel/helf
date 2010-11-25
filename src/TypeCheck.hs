@@ -5,19 +5,22 @@ module TypeCheck where
 type Name = String
 type Type = Expr
 
+data Sort 
+  = Type
+  | Kind -- only internally
+    deriving (Eq, Ord, Show)
+
 data Expr 
   = Var Name
   | App Expr Expr
   | Abs Name Expr
-  | Pi  Name Type Type
-  | Type
-  | Kind -- only internally
+  | Pi  (Maybe Name) Type Type
+  | Sort Sort
     deriving (Eq,Ord,Show)
 
 data TyView val
   = VPi val val
-  | VType
-  | VKind
+  | VSort Sort
   | VBase 
 
 data TmView fvar val
@@ -58,28 +61,36 @@ infer e =
           check e a
           app b =<< eval e
         _ -> fail $ "not a function type"
-    Type -> return $ kind
-    Kind -> fail $ "internal error: infer Kind"
-    Pi x e e' -> do
+    Sort Type -> return $ kind
+    Sort Kind -> fail $ "internal error: infer Kind"
+    Pi mx e e' -> do
       checkType e
       a <- eval e
-      addBind x a $ \ xv -> infer e'
+      case mx of 
+        Nothing -> infer e'
+        Just x  -> addBind x a $ \ xv -> infer e'
     _ -> fail $ "cannot infer type of " ++ show e
         
 checkType :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> m ()
 checkType e = isType =<< infer e
 
+inferType :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> m Sort
+inferType e = do
+  t <- infer e
+  case tyView t of
+    VSort s -> return s
+    _       -> fail "neither a type nor a kind"
+
 isType :: (Value fvar val, TypeCheck val m) => val -> m ()
 isType t = 
   case tyView t of
-    VType -> return ()
-    _     -> fail $ "not a type"
+    VSort Type -> return ()
+    _          -> fail $ "not a type"
  
 equalType ::  (Value fvar val, TypeCheck val m) => val -> val -> m ()
 equalType t1 t2 = 
   case (tyView t1, tyView t2) of
-    (VType, VType) -> return ()
-    (VKind, VKind) -> return ()
+    (VSort s1, VSort s2) | s1 == s2 -> return ()
     (VPi a1 b1, VPi a2 b2) -> do
       equalType a1 a2
       addBind' b1 a1 $ \ xv -> do
@@ -87,6 +98,7 @@ equalType t1 t2 =
         b2' <- app b2 xv
         equalType b1' b2' 
     (VBase, VBase) -> equalBase t1 t2 
+    _ -> fail $ "types unequal"
 
 equalBase :: (Value fvar val, TypeCheck val m) => val -> val -> m ()
 equalBase v1 v2 = 
