@@ -4,7 +4,10 @@ Update local working copy
 -------------------------
 
 svn update
-  answer postpone
+
+When conflicts, type (p) postpone, then edit, looking for <<<<< then
+
+  svn resolve exsub.tex --accept working
 
 Review changes
 --------------
@@ -24,3 +27,8 @@ Commit changes
 
 svn commit -m "commit message"
 
+File commands for files under version control
+---------------------------------------------
+
+svn move
+svn delete
