@@ -2,6 +2,8 @@
 module Parser where
 
 import qualified Lexer as T
+import qualified OperatorPrecedenceParser as C
+-- import qualified Common as C
 import qualified Concrete as C
 
 -- parser produced by Happy Version 1.18.5
