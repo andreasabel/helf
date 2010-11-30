@@ -54,6 +54,21 @@ get (Join llen left right) i
   | otherwise = get right (i - llen)
 
 -- | Splitting the array. O(log 1 + log 2 + log 3 + ... + log n) =< [or '='?] O((log n)^2), assuming join is O(log n), where n is the number of hold information
+{- How did you do this calculation?
+
+Usually, I'd calculate
+
+  O(log 1 + log 2 + ... + log n) = O(log(n!)) = O(log(n^n)) = O(n log n)
+
+In any case, log(n!) = Omega(n log n), since
+
+  sum_{i=1..n} log i >= sum_{i=n/2..n} log i >= (n/2) log (n/2) = Omega(n log n)
+
+I would expect split to perform in time O(log n), maybe the analysis
+needs more precision.  Splitting a list can already be performed in
+O(n), and we should be better!
+ -}
+
 split :: DynArray a -> Int -> (DynArray a, DynArray a)
 split arr i 
   | i <= 0 = (empty, arr)
