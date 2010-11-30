@@ -67,6 +67,11 @@ In any case, log(n!) = Omega(n log n), since
 I would expect split to perform in time O(log n), maybe the analysis
 needs more precision.  Splitting a list can already be performed in
 O(n), and we should be better!
+
+--
+I have to admit that I did not think about it carefully yet, but I am pretty sure it is worse than O(log n), as we need (log n) times the 'join' operation (which I assume to be O(log n), also without thinking carefully about it...)
+My sum above is wrong anyway, I probably meant 1+2+3+...+log(n), which is O((log n)^2).
+
  -}
 
 split :: DynArray a -> Int -> (DynArray a, DynArray a)
