@@ -84,8 +84,17 @@ update osubst (k:klist) ival =
 --update osubst (k:klist) ival = update (arrayInsert ival k osubst) klist ival
 
 
----------------
----------------
+-- Evaluation
+{-
+apply :: Val -> Int -> Val -> Val
+apply (K w) _ _ = w
+apply (Ne h vs) i v = Ne h (v:vs)
+apply (Clos (Abs klist oe) osubst) i v = evaluate oe (update osubst klist (i, v))
+
+evaluate :: OExpr -> OSubst -> Val
+evaluate e osubst = case e of
+    OVarFree x -> 
+-}
 
 ---- any possibility to hide this? (it just serves the transformation below)
 data (Ord name) => LocBoundList name = LBL {size :: Int, bList :: (Map name Int)}
