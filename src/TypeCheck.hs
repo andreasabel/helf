@@ -41,6 +41,12 @@ class Monad m => TypeCheck val m | m -> val where
   addBind'  :: val -> val -> (val -> m a) -> m a
   lookupVar :: Name -> m val
 
+{-  Type checking   Gamma |- e <=: t
+
+   Gamma, x:a |- e <=: b x    Gamma |- e :=> t' 
+   -----------------------    ----------------- Gamma |- t = t'
+   Gamma |- \xe <=: Pi a b    Gamma |- e <=: t
+-}
 check :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> tyVal -> m ()  
 check e t =
   case e of
@@ -50,6 +56,16 @@ check e t =
         _       -> fail $ "not a function type"
     e -> equalType t =<< infer e
 
+{-  Type inference   Gamma |- e :=> t 
+
+                              Gamma |- f :=> Pi a b    Gamma |- e <=: a
+   -----------------------    -----------------------------------------
+   Gamma |- x :=> Gamma(x)    Gamma |- f e :=> b [|e|]
+
+                              Gamma |- e :=> type   Gamma, x:[|e|] |- e' :=> s
+   ----------------------     ------------------------------------------------
+   Gamma |- type :=> kind     Gamma |- Pi x:e. e' :=> s  
+-}
 infer :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> m tyVal
 infer e =
   case e of

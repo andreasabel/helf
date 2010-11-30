@@ -36,6 +36,7 @@ type Var = Int
 data Head 
   = HVar Var Val     -- typed variable 
   | HSort Sort
+  | HConst Name
 
 data Val 
   = Ne   Head [Val]  -- x vs^-1 | c vs^-1   last argument first in list!
@@ -85,16 +86,22 @@ update osubst (k:klist) ival =
 
 
 -- Evaluation
-{-
+
 apply :: Val -> Int -> Val -> Val
 apply (K w) _ _ = w
 apply (Ne h vs) i v = Ne h (v:vs)
-apply (Clos (Abs klist oe) osubst) i v = evaluate oe (update osubst klist (i, v))
+apply (Clos (OAbs klist oe) osubst) i v = evaluate oe (update osubst klist (i, v))
 
 evaluate :: OExpr -> OSubst -> Val
 evaluate e osubst = case e of
-    OVarFree x -> 
+    OVarFree x -> hConst x
+{-
+    O          -> -- only value of osubst
 -}
+    OAbs l t   -> Clos e osubst
+    
+hConst x = Ne (HConst x) []
+
 
 ---- any possibility to hide this? (it just serves the transformation below)
 data (Ord name) => LocBoundList name = LBL {size :: Int, bList :: (Map name Int)}
@@ -115,6 +122,32 @@ incrKaddZero 0 (l:ll) = (0:l):ll
 incrKaddZero (k+1) ((i:l):ll) = ((i+1):l) : incrKaddZero k ll
 ----
 
+{-
+type Transform a = LocBoundList Name -> LambdaLists -> (a, LambdaLists)
+type Transform = ReaderT (LocBoundList Name) (State LambdaLists)
+
+transform :: Expr -> OExpr
+transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
+  
+  trans :: Expr -> Transform (Int, OExpr)
+  trans (Var x) = do
+    lbl <- ask
+    case Map.lookup (bList lbl) of
+      Just k -> do
+  {-
+        ll <- get
+        put $ incrKaddZero (size lbl - 1 - k) ll
+  -}
+        modify $ incrKaddZero (size lbl - 1 - k)
+        return (1, O)
+      Nothing -> (0, OVarFree x)
+  
+  trans (App e1 e2) = do
+    (i1, oexpr1) <- trans e1
+    (i2, oexpr2) <- trans e2
+    return (i1 + i2, OApp oexpr1 i2 oexpr2)
+  
+-}
 
 transform :: Expr -> OExpr
 transform e =
