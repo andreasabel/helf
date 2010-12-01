@@ -82,8 +82,8 @@ Apps : Atom                       { [$1] }
 
 -- atoms
 Atom :: { C.Expr }
-Atom : type                       { C.Type }
-     | id                         { C.Ident $1}
+Atom : type                       { C.Atom C.Typ  }
+     | id                         { C.Atom (C.Ident $1) }
      | '(' Expr ')'               { $2 }
      | '[' id ':' Expr ']' Expr   { C.Lam $2 (Just $4) $6 } 
      | '[' id ']' Expr            { C.Lam $2 Nothing $4 }
