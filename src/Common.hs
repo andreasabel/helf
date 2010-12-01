@@ -2,8 +2,6 @@ module Common where
 
 import Text.PrettyPrint
 
-type Name = String
-
 class Pretty a where
   pretty        :: a -> Doc
   prettyPrec	:: Int -> a -> Doc

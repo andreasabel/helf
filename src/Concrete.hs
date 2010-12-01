@@ -6,22 +6,28 @@ import Common
 import OperatorPrecedenceParser (Associativity(..))
 import qualified OperatorPrecedenceParser as OPP
 
+type Name = String
+
 newtype Declarations = Declarations { declarations :: [Declaration] }
 
 data Declaration
-  = TypeSig Name Expr
-  | Defn Name (Maybe Expr) Expr
+  = TypeSig Name Type
+  | Defn Name (Maybe Type) Expr
   | Fixity Name Fixity
 
 type Fixity = OPP.Fixity Int   -- precedences: 0 <= ... < 10000  
 
+type Type = Expr
 data Expr
-  = Ident Name
-  | Type                          -- ^ type
-  | Fun   Expr Expr               -- ^ A -> B
-  | Pi    Name Expr Expr          -- ^ {x:A} B
-  | Lam   Name (Maybe Expr) Expr  -- ^ [x:A] E or [x]E
+  = Atom  Atom
+  | Fun   Type Type               -- ^ A -> B
+  | Pi    Name Type Type          -- ^ {x:A} B
+  | Lam   Name (Maybe Type) Expr  -- ^ [x:A] E or [x]E
   | Apps  [Expr]                  -- ^ E1 E2 ... En     (non empty list)
+
+data Atom
+  = Ident Name
+  | Typ                           -- ^ type
 
 instance Pretty Declarations where
   pretty (Declarations ds) = vcat $ map pretty ds
@@ -39,8 +45,7 @@ instance Pretty Associativity where
   pretty = text . show
 
 instance Pretty Expr where
-  prettyPrec _ (Ident x)          = text x
-  prettyPrec _ Type               = text "type"
+  prettyPrec k (Atom a)           = prettyPrec k a
   prettyPrec k (Fun a b)          = parensIf (k > 0) $ hsep
     [ prettyPrec 1 a , text "->" , prettyPrec 0 b ]
   prettyPrec k (Pi x a b)         = parensIf (k > 0) $ 
@@ -51,6 +56,10 @@ instance Pretty Expr where
     brackets (text x) <+> pretty e
   prettyPrec k (Apps es)          = parensIf (k > 1) $ hsep $ 
     map (prettyPrec 2) es
+
+instance Pretty Atom where
+  prettyPrec _ (Ident x)          = text x
+  prettyPrec _ Typ                = text "type"
 
 instance Show Declarations where
   show = render . pretty
