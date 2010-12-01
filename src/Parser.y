@@ -73,12 +73,12 @@ Expr : '{' id ':' Expr '}' Expr   { C.Pi $2 $4 $6 }
 
 -- perform applications
 Expr1 :: { C.Expr }
-Expr1 : Apps                      { if length $1 == 1 then (head $1) else C.Apps (reverse $1) }
+Expr1 : Apps                      { if length $1 == 1 then (head $1) else C.Apps (reverse $1) } -- this should reduce the op stack
 
 -- gather applications
 Apps :: { [C.Expr] }
 Apps : Atom                       { [$1] }
-     | Apps Atom                  { $2 : $1 }  
+     | Apps Atom                  { $2 : $1 }  -- this should shift on the op stack
 
 -- atoms
 Atom :: { C.Expr }
