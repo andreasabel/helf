@@ -189,3 +189,6 @@ resolve op@(Op (Postfix prec) _) s@[Atom{}] = reduce <$> shift op s
 -- default is shift 
 resolve op s = shift op s
 
+-- | Take a reversed non-empty list $En ... E2 E1$ of items and parse it.
+parseApplication :: (Bounded prec, Ord prec, Juxtaposition a) => [Item prec a] -> Result a
+parseApplication l = reduceAll =<< foldl (\ ms i -> resolve i =<< ms) (return []) l

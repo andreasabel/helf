@@ -9,6 +9,7 @@ import Data.Traversable
 
 import qualified Concrete as C
 import qualified Abstract as A
+import qualified OperatorPrecedenceParser as O
 
 class (Applicative m, Monad m) => Scope m where
   addCon    :: C.Name -> m A.Name
@@ -16,10 +17,10 @@ class (Applicative m, Monad m) => Scope m where
   addFixity :: C.Name -> C.Fixity -> m ()
   addVar    :: C.Name -> (A.Name -> m a) -> m a
   getName   :: A.Name -> m C.Name
-{-
-  addCon :: C.Name -> A.Type -> m A.Name
-  addDef :: C.Name -> Maybe (A.Type) -> A.Expr -> m A.Name 
--}
+  getAtomAndFixity :: C.Name -> m (A.Atom, C.Fixity)
+  getAtom   :: C.Name -> m A.Atom
+  getAtom n  = fst <$> getAtomAndFixity n
+  parseError :: O.ParseError -> m a
 
 class Parse c a where 
   parse :: Scope m => c -> m a
@@ -46,6 +47,30 @@ instance Print C.Declaration A.Declaration where
       A.TypeSig n t -> C.TypeSig <$> getName n <*> print t
       A.Defn n mt e -> C.Defn <$> getName n <*> print mt <*> print e
 
+type Item = O.Item Int A.Expr
+
+instance Parse C.Atom A.Atom where
+  parse a = 
+    case a of
+      C.Typ     -> return $ A.Typ
+      C.Ident n -> getAtom n
+
+instance Parse C.Atom Item where
+  parse catom = 
+    case catom of
+      C.Typ     -> return $ O.Atom (A.Atom A.Typ)
+      C.Ident n -> do
+        (a, fx) <- getAtomAndFixity n
+        return $ case fx of
+          O.Infix{} -> O.Op fx (\ [x,y] -> A.Atom a `A.App` x `A.App` y)
+          _         -> O.Op fx (\ [x]   -> A.Atom a `A.App` x)
+
+instance Parse C.Expr Item where
+  parse cexpr =
+    case cexpr of
+      C.Atom a -> parse a
+      _        -> O.Atom <$> parse cexpr
+
 instance Parse C.Expr A.Expr where
   parse cexpr =
     case cexpr of
@@ -68,12 +93,16 @@ instance Print C.Expr A.Expr where
       A.Lam x mt e        -> C.Lam <$> getName x <*> print mt <*> print e
       A.App{}             -> C.Apps <$> mapM print (printApplication aexpr)
 
-instance Parse C.Atom A.Atom where
 instance Print C.Atom A.Atom where
 
--- monadic because it throws error
-parseApplication :: Scope m => [A.Expr] -> m A.Expr
-parseApplication = undefined
+instance O.Juxtaposition A.Expr where
+  juxtaposition = A.App
+
+parseApplication :: Scope m => [Item] -> m A.Expr
+parseApplication is =  
+  case O.parseApplication is of
+    Left err -> parseError err 
+    Right e  -> return e
 
 printApplication :: A.Expr -> [A.Expr] 
 printApplication = undefined
