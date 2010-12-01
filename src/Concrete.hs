@@ -23,7 +23,7 @@ data Expr
   | Fun   Type Type               -- ^ A -> B
   | Pi    Name Type Type          -- ^ {x:A} B
   | Lam   Name (Maybe Type) Expr  -- ^ [x:A] E or [x]E
-  | Apps  [Expr]                  -- ^ En ... E2 E1     (non empty reversed list)
+  | Apps  [Expr]                  -- ^ E1 E2 ... En     (non empty list)
 
 data Atom
   = Ident Name
@@ -55,8 +55,11 @@ instance Pretty Expr where
   prettyPrec k (Lam x Nothing e)  = parensIf (k > 0) $ 
     brackets (text x) <+> pretty e
   prettyPrec k (Apps es)          = parensIf (k > 1) $ hsep $ 
+    map (prettyPrec 2) es
+{-
     mapReverse (prettyPrec 2) es
       where mapReverse f = foldl (\ ys x -> f x : ys) []
+-}
 
 instance Pretty Atom where
   prettyPrec _ (Ident x)          = text x
