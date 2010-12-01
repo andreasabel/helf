@@ -73,7 +73,7 @@ Expr : '{' id ':' Expr '}' Expr   { C.Pi $2 $4 $6 }
 
 -- perform applications
 Expr1 :: { C.Expr }
-Expr1 : Apps                      { if length $1 == 1 then (head $1) else C.Apps (reverse $1) }
+Expr1 : Apps                      { if length $1 == 1 then (head $1) else C.Apps $1 }
 
 -- gather applications
 Apps :: { [C.Expr] }
