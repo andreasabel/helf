@@ -1,11 +1,19 @@
 {- | Translation from Concrete to Abstract and back -}
 
+{-# LANGUAGE UndecidableInstances #-}
+
 module Scoping where
 
 import Prelude hiding (mapM,print)
 
 import Control.Applicative
+import Control.Monad.Error  hiding (mapM)
+import Control.Monad.Reader hiding (mapM)
+import Control.Monad.State  hiding (mapM)
+
 import Data.Traversable
+import Data.Map (Map)
+import qualified Data.Map as Map
 
 import qualified Concrete as C
 import qualified Abstract as A
@@ -41,9 +49,37 @@ class (Applicative m, Monad m) => Scope m where
 
 -}
 data ScopeState = ScopeState
-  { 
+  { counter   :: A.Name
+  , renaming  :: Map C.Name A.Name
+  , naming    :: Map A.Name ScopeEntry
   }
 
+data ScopeEntry = ScopeEntry
+  { atom   :: A.Atom -- ^ to increase sharing, keep the whole atom here
+  , fixity :: C.Fixity
+  , name   :: C.Name -- ^ needs to be changed if shadowed 
+  }
+
+data ScopeContext = ScopeContext
+  { localRen :: Map C.Name A.Name
+  , localNam :: Map A.Name C.Name
+  }
+
+instance (Applicative m, MonadReader ScopeContext m, MonadState ScopeState m) => Scope m where
+
+  addCon n = do
+    ScopeState { counter = x, renaming = ren, naming = nam } <- get
+    let mx   = Map.lookup n ren -- TODO: shadowing!!
+        ren' = Map.insert n x ren
+        it   = ScopeEntry 
+                { atom = A.Con x 
+                , fixity = O.Nofix
+                , name = n -- TODO: shadowing!
+                }
+        nam' = Map.insert x it nam
+    put $ ScopeState (x + 1) ren' nam'
+    return x
+ 
 -- * parsing
 class Parse c a where 
   parse :: Scope m => c -> m a
@@ -89,6 +125,7 @@ instance Parse C.Atom Item where
       C.Ident n -> do
         (a, fx) <- getAtomAndFixity n
         return $ case fx of
+          O.Nofix   -> O.Atom $ A.Atom a
           O.Infix{} -> O.Op fx (\ [x,y] -> A.Atom a `A.App` x `A.App` y)
           _         -> O.Op fx (\ [x]   -> A.Atom a `A.App` x)
 

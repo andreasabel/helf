@@ -20,7 +20,7 @@ data Expr
 
 data Atom 
   = Var Name                      -- ^ locally bound identifier
-  | Con Name Fixity               -- ^ declared constant
-  | Def Name Fixity               -- ^ defined identifier
+  | Con Name                      -- ^ declared constant
+  | Def Name                      -- ^ defined identifier
   | Typ                           -- ^ type
 

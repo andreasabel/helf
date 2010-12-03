@@ -19,6 +19,7 @@ data Fixity prec
   = Infix   { precedence :: prec , associativity :: Associativity }
   | Prefix  { precedence :: prec }
   | Postfix { precedence :: prec }
+  | Nofix
 
 -- | Items of the parse stack are either atoms or operators.
 data Item prec a
