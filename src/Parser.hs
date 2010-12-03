@@ -576,7 +576,7 @@ happyReduction_20 _ _  = notHappyAtAll
 happyReduce_21 = happySpecReduce_1  14 happyReduction_21
 happyReduction_21 _
 	 =  HappyAbsSyn11
-		 (C.Type
+		 (C.Typ
 	)
 
 happyReduce_22 = happySpecReduce_1  14 happyReduction_22

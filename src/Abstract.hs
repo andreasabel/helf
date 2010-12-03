@@ -13,14 +13,14 @@ data Declaration
 
 type Type = Expr
 data Expr
-  = Atom  Atom
+  = Ident Ident
+  | Typ                           -- ^ type
   | Pi    (Maybe Name) Type Type  -- ^ A -> B or {x:A} B
   | Lam   Name (Maybe Type) Expr  -- ^ [x:A] E or [x]E
   | App   Expr Expr               -- ^ E1 E2 
 
-data Atom 
-  = Var Name                      -- ^ locally bound identifier
-  | Con Name                      -- ^ declared constant
-  | Def Name                      -- ^ defined identifier
-  | Typ                           -- ^ type
+data Ident 
+  = Var { name :: Name }          -- ^ locally bound identifier
+  | Con { name :: Name }          -- ^ declared constant
+  | Def { name :: Name }          -- ^ defined identifier
 

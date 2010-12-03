@@ -202,8 +202,8 @@ tok f p s = f p s
 
 alex_action_5 =  tok (\p s -> Abbrev p) 
 alex_action_6 =  tok (\p s -> Infix p) 
-alex_action_7 =  tok (\p s -> Infix p) 
-alex_action_8 =  tok (\p s -> Prefix p) 
+alex_action_7 =  tok (\p s -> Prefix p) 
+alex_action_8 =  tok (\p s -> Postfix p) 
 alex_action_27 =  tok (\p s -> BrOpen p) 
 alex_action_28 =  tok (\p s -> BrClose p) 
 alex_action_29 =  tok (\p s -> BracketOpen p) 

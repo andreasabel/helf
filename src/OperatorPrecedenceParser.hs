@@ -19,7 +19,7 @@ data Fixity prec
   = Infix   { precedence :: prec , associativity :: Associativity }
   | Prefix  { precedence :: prec }
   | Postfix { precedence :: prec }
-  | Nofix
+--  | Nofix
 
 -- | Items of the parse stack are either atoms or operators.
 data Item prec a
@@ -83,6 +83,7 @@ instance Show ParseError where
    show PrefixInfixSamePrec = "Ambiguous: infix following prefix of identical precedence"
    show PrefixPostfixSamePrec = "Ambiguous: postfix following prefix of identical precedence"
    show InfixPostfixSamePrec = "Ambiguous: postfix following infix of identical precedence"
+   show (GenericError s) = s
 
 instance Error ParseError where
   strMsg = GenericError
