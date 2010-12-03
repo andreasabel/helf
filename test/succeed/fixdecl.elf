@@ -1,0 +1,19 @@
+% 2010-12-02
+% Testing fixity declarations.
+
+nat : type.
+==  : nat -> nat -> type. 
+
+zero : nat.
+succ : nat -> nat.
+
+refl : {n : nat} == n n.
+
+
+%infix none 1 ==.
+
+sym  : {n : nat}{m : nat} n == m -> m == n.
+
+%prefix 2 ==.
+
+trans : {n : nat}{m : nat}{l : nat} (== n) m -> (== m) l -> (== n) l.

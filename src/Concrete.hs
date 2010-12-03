@@ -19,15 +19,12 @@ type Fixity = OPP.Fixity Int   -- precedences: 0 <= ... < 10000
 
 type Type = Expr
 data Expr
-  = Atom  Atom
+  = Ident Name
+  | Typ                           -- ^ type
   | Fun   Type Type               -- ^ A -> B
   | Pi    Name Type Type          -- ^ {x:A} B
   | Lam   Name (Maybe Type) Expr  -- ^ [x:A] E or [x]E
   | Apps  [Expr]                  -- ^ E1 E2 ... En     (non empty list)
-
-data Atom
-  = Ident Name
-  | Typ                           -- ^ type
 
 instance Pretty Declarations where
   pretty (Declarations ds) = vcat $ map pretty ds
@@ -45,7 +42,9 @@ instance Pretty Associativity where
   pretty = text . show
 
 instance Pretty Expr where
-  prettyPrec k (Atom a)           = prettyPrec k a
+  prettyPrec _ (Ident x)          = text x
+  prettyPrec _ Typ                = text "type"
+--   prettyPrec k (Atom a)           = prettyPrec k a
   prettyPrec k (Fun a b)          = parensIf (k > 0) $ hsep
     [ prettyPrec 1 a , text "->" , prettyPrec 0 b ]
   prettyPrec k (Pi x a b)         = parensIf (k > 0) $ 
@@ -61,9 +60,15 @@ instance Pretty Expr where
       where mapReverse f = foldl (\ ys x -> f x : ys) []
 -}
 
+{-
+data Atom
+  = Ident Name
+  | Typ                           -- ^ type
+
 instance Pretty Atom where
   prettyPrec _ (Ident x)          = text x
   prettyPrec _ Typ                = text "type"
+-}
 
 instance Show Declarations where
   show = render . pretty

@@ -21,6 +21,7 @@ executable helf
                     containers == 0.3.*,
                     haskell98 >= 1.0 && < 1.2,
                     mtl == 2.0.*,
+                    category-extras == 0.44.*,
                     pretty == 1.0.*
   build-tools:      happy >= 1.15 && < 2,
                     alex >= 2.0.1 && < 3

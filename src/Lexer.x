@@ -21,8 +21,8 @@ $white+             ;
 
 "%abbrev"           { tok (\p s -> Abbrev p) }
 "%infix"            { tok (\p s -> Infix p) }
-"%prefix"           { tok (\p s -> Infix p) }
-"%postfix"          { tok (\p s -> Prefix p) }
+"%prefix"           { tok (\p s -> Prefix p) }
+"%postfix"          { tok (\p s -> Postfix p) }
 "%name"          .* ;
 "%query"         .* ;
 "%clause"        .* ;
