@@ -18,11 +18,13 @@ data Expr
   | Pi    (Maybe Name) Type Type  -- ^ A -> B or {x:A} B
   | Lam   Name (Maybe Type) Expr  -- ^ [x:A] E or [x]E
   | App   Expr Expr               -- ^ E1 E2 
+  deriving (Show)
 
 data Ident 
   = Var { name :: Name }          -- ^ locally bound identifier
   | Con { name :: Name }          -- ^ declared constant
   | Def { name :: Name }          -- ^ defined identifier
+  deriving (Show)
 
 systemGeneratedName :: Name
 systemGeneratedName = -1
