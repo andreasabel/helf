@@ -1,4 +1,6 @@
-module Common where
+module Util where
+
+-- * pretty printing
 
 import Text.PrettyPrint
 
@@ -20,3 +22,8 @@ pwords = map text . words
 
 fwords :: String -> Doc
 fwords = fsep . pwords
+
+-- * categories
+
+pair :: (c -> a) -> (c -> b) -> c -> (a,b)
+pair f g x = (f x, g x)

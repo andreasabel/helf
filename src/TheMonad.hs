@@ -9,7 +9,8 @@ import Data.Traversable
 import Data.Map (Map)
 import qualified Data.Map as Map
 
-import Scoping
+import Scoping (ParseError)
+import ScopeMonad
 
 type TheState   = ScopeState
 initState = initScopeState

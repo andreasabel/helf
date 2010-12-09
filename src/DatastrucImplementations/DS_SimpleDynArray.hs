@@ -1,4 +1,4 @@
--- a simlified version of DynArray. get, insert, split, join are all O(log n).
+-- a simplified version of DynArray. get, insert, split, join are all O(log n).
 
 module DatastrucImplementations.DS_SimpleDynArray where
 
@@ -9,25 +9,27 @@ import Text.PrettyPrint (Doc,nest,vcat,text,render)
 import qualified Text.PrettyPrint as PP
 
 import Debug.Trace
+import Test.QuickCheck
 
+{-
 import DataStructure
 
 instance DataStruc DynArray a where
   -- show = render . pretty
-  empty = DatastrucImplementations.DS_SimpleDynArray.empty
-  insert = DatastrucImplementations.DS_SimpleDynArray.insert
-  multiinsert = DatastrucImplementations.DS_SimpleDynArray.multiinsert
-  get = DatastrucImplementations.DS_SimpleDynArray.get
+  empty             = DatastrucImplementations.DS_SimpleDynArray.empty
+  insert            = DatastrucImplementations.DS_SimpleDynArray.insert
+  multiinsert       = DatastrucImplementations.DS_SimpleDynArray.multiinsert
+  get               = DatastrucImplementations.DS_SimpleDynArray.get
   split i datastruc = DatastrucImplementations.DS_SimpleDynArray.split datastruc i
-  join = DatastrucImplementations.DS_SimpleDynArray.join
-  size = len
-
+  join              = DatastrucImplementations.DS_SimpleDynArray.join
+  size              = len
+-}
 
 data DynArr a 
-  = Leaf { entry :: a }       -- ^ an array filled with element @entry@ 
-  | Node { leftLen :: Int     -- ^ length of left part
-         , left  :: DynArr a  -- ^ left part
-         , right :: DynArr a  -- ^ right part
+  = Leaf { entry   :: a }      -- ^ an array filled with element @entry@ 
+  | Node { leftLen :: Int      -- ^ length of left part
+         , left    :: DynArr a -- ^ left part
+         , right   :: DynArr a -- ^ right part
          }
  -- | Empty                     -- ^ not allowed as part of a nonempty tree !
     deriving (Eq,Ord,Show)
@@ -48,6 +50,8 @@ pretty (DynArray n (Node k l r)) = vcat
 instance Show a => Show (DynArray a) where
   show = render . pretty
 
+leaf :: a -> DynArray a
+leaf = DynArray 1 . Leaf
 
 empty :: DynArray a 
 empty = DynArray 0 $ error "empty DynArray"
@@ -57,7 +61,7 @@ get :: DynArray a -> Int -> a
 get arr i | 0 <= i && i < len arr = get' (array arr) i 
         | otherwise = error $ "index " ++ Prelude.show i ++ " out of range"
 
--- | Lookup without bounds checking.
+-- | Lookup without bounds checking. O(log n).
 get' :: DynArr a -> Int -> a
 get' (Leaf a) 0 = a
 get' (Node llen left right) i 
@@ -95,7 +99,7 @@ split' (DynArray len (Node llen left right)) i =
 join :: DynArray a -> DynArray a -> DynArray a
 join     (DynArray 0  _) a_2@(DynArray n2 _) = a_2
 join a_1@(DynArray n1 _)     (DynArray 0  _) = a_1
-join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = trace ("join " ++ Prelude.show n1 ++ " " ++ Prelude.show n2) $
+join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = -- trace ("join " ++ Prelude.show n1 ++ " " ++ Prelude.show n2) $
   let n = n1 + n2 
       join4 n11 a11 n12 a12 n21 a21 a22 = DynArray n $ Node (n11 + n12) 
         (Node n1 a11 a12) (Node n21 a21 a22) in
@@ -189,3 +193,53 @@ multiinsert x (k:klist) dyn =
 toList :: DynArray a -> [a]
 toList (DynArray n arr) = map (get' arr) [0..n-1]
 
+naiveFromList :: [a] -> DynArray a
+naiveFromList l = foldl cons empty l 
+  where cons :: DynArray a -> a -> DynArray a
+        cons arr a = arr `join` leaf a
+
+fromList :: [a] -> DynArray a
+fromList l = let n = length l in 
+  if n <= 0 then empty else fromList' n l
+
+fromList' :: Int -> [a] -> DynArray a
+fromList' 1 [a] = leaf a
+fromList' n l = 
+  let nl    = n `div` 2
+      nr    = n - nl
+      (ll,lr) = splitAt nl l
+      DynArray llen left  = fromList'  nl ll
+      DynArray rlen right = fromList'  nr lr
+  in  DynArray (llen + rlen) $ Node llen left right     
+
+prop_equal :: Eq a => DynArray a -> DynArray a -> Bool
+prop_equal a1 a2 = toList a1 == toList a2
+
+type A = Char
+
+prop_joinSplit' :: Int -> [A] -> Property
+prop_joinSplit' i l = 0 <= i && i <= length l ==> prop_equal a $ uncurry join (split a i) where a = fromList l
+{-
+prop_joinSplit :: Eq a => Int -> DynArray a -> Bool
+prop_joinSplit i a = prop_equal a $ uncurry join (split a i) 
+-}
+
+prop_joinSplit :: [A] -> Property
+prop_joinSplit l = forAll (choose (0,length l)) $ \ i -> prop_equal a $ uncurry join (split a i) 
+    where a = fromList l
+
+prop_joinSplitNaive :: String -> Property
+prop_joinSplitNaive l = forAll (choose (0,length l)) $ \ i -> prop_equal a $ uncurry join (split a i) 
+    where a = naiveFromList l
+
+prop_joinSplitNaivePretty :: Property
+prop_joinSplitNaivePretty = forAll (listOf (elements ['a'..'z'])) $ \ l ->
+  let a = naiveFromList l in
+  forAll (choose (0,length l)) $ \ i -> prop_equal a $ uncurry join (split a i) 
+
+
+test = quickCheck prop_joinSplit
+testv = verboseCheck prop_joinSplit
+testn = quickCheck prop_joinSplitNaive
+testnv = verboseCheck prop_joinSplitNaive
+testnvp = verboseCheck prop_joinSplitNaivePretty

@@ -1,14 +1,18 @@
 -- A generic bidirectional type-checker for LF
 
 module TypeCheck where
-  
+
+import Abstract
+import Context
+import PrettyM
+import Scoping (prettyM)
+import qualified Scoping
+import Signature 
+import Value
+
+{-  
 type Name = String
 type Type = Expr
-
-data Sort 
-  = Type
-  | Kind -- only internally
-    deriving (Eq, Ord, Show)
 
 data Expr 
   = Var Name
@@ -17,29 +21,35 @@ data Expr
   | Pi  (Maybe Name) Type Type
   | Sort Sort
     deriving (Eq,Ord,Show)
+-}
 
-data TyView val
-  = VPi val val
-  | VSort Sort
-  | VBase 
+-- * Typechecking expressions.
 
-data TmView fvar val
-  = VNe  fvar val [val]  -- x^A vs
-  | VVal                 -- Abs, Pi, Type, ...
+class (Monad m, Scoping.Scope m, MonadCxt val env m, MonadEval val env me) =>
+  MonadCheckExpr val env me m | m -> me where
 
-class Eq fvar => Value fvar val | val -> fvar where
-  typ     :: val
-  kind    :: val
-  freeVar :: fvar -> val -> val      -- typed free variable
-  tyView  :: val -> TyView val
-  tmView  :: val -> TmView fvar val
+  addLocal'    :: val -> val -> (val -> m a) -> m a
+  addLocal' b   = addLocal systemGeneratedName
+  lookupGlobal :: Name -> m val -- ^ lookup in signature
+  lookupIdent  :: Ident -> m val 
+  lookupIdent (Var x) = lookupLocal x
+  lookupIdent id      = lookupGlobal $ name id
+  doEval       :: me a -> m a      -- ^ run evaluation
+  app          :: val -> val -> m val
+  app f v       = doEval $ apply f v
+  eval         :: Expr -> m val
+  eval e         = getEnv >>= \ rho -> doEval $ evaluate e rho
 
-class Monad m => TypeCheck val m | m -> val where
+
+{-
+class (Monad m, Scoping.Scope m) => TypeCheck val m | m -> val where
   app       :: val -> val -> m val
   eval      :: Expr -> m val  
-  addBind   :: Name -> val -> (val -> m a) -> m a
-  addBind'  :: val -> val -> (val -> m a) -> m a
-  lookupVar :: Name -> m val
+  addLocal   :: Name -> val -> (val -> m a) -> m a
+  addLocal'  :: val -> val -> (val -> m a) -> m a
+  lookupIdent :: Ident -> m val
+--  lookupVar :: Name -> m val
+-}
 
 {-  Type checking   Gamma |- e <=: t
 
@@ -47,12 +57,13 @@ class Monad m => TypeCheck val m | m -> val where
    -----------------------    ----------------- Gamma |- t = t'
    Gamma |- \xe <=: Pi a b    Gamma |- e <=: t
 -}
-check :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> tyVal -> m ()  
+check :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> tyVal -> m ()  
 check e t =
   case e of
-    Abs x e -> 
+--    Abs x e -> 
+    Lam x mt e ->
       case tyView t of
-        VPi a b -> addBind x a $ \ xv -> check e =<< (b `app` xv) 
+        VPi a b -> addLocal x a $ \ xv -> check e =<< (b `app` xv) 
         _       -> fail $ "not a function type"
     e -> equalType t =<< infer e
 
@@ -66,10 +77,11 @@ check e t =
    ----------------------     ------------------------------------------------
    Gamma |- type :=> kind     Gamma |- Pi x:e. e' :=> s  
 -}
-infer :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> m tyVal
+infer :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m tyVal
 infer e =
   case e of
-    Var x -> lookupVar x
+--    Var x -> lookupVar x
+    Ident x -> lookupIdent x
     App f e -> do
       t <- infer f
       case tyView t of
@@ -77,53 +89,56 @@ infer e =
           check e a
           app b =<< eval e
         _ -> fail $ "not a function type"
+    Typ -> return $ kind
+{-
     Sort Type -> return $ kind
     Sort Kind -> fail $ "internal error: infer Kind"
+-}
     Pi mx e e' -> do
       checkType e
       a <- eval e
       case mx of 
         Nothing -> infer e'
-        Just x  -> addBind x a $ \ xv -> infer e'
-    _ -> fail $ "cannot infer type of " ++ show e
+        Just x  -> addLocal x a $ \ xv -> infer e'
+    _ -> failDoc $ text "cannot infer type of" <+> prettyM e
         
-checkType :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> m ()
+checkType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m ()
 checkType e = isType =<< infer e
 
-inferType :: (Value fvar tyVal, TypeCheck tyVal m) => Expr -> m Sort
+inferType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m Sort
 inferType e = do
   t <- infer e
   case tyView t of
     VSort s -> return s
     _       -> fail "neither a type nor a kind"
 
-isType :: (Value fvar val, TypeCheck val m) => val -> m ()
+isType :: (Value fvar val, MonadCheckExpr val env me m) => val -> m ()
 isType t = 
   case tyView t of
     VSort Type -> return ()
     _          -> fail $ "not a type"
  
-equalType ::  (Value fvar val, TypeCheck val m) => val -> val -> m ()
+equalType ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
 equalType t1 t2 = 
   case (tyView t1, tyView t2) of
     (VSort s1, VSort s2) | s1 == s2 -> return ()
     (VPi a1 b1, VPi a2 b2) -> do
       equalType a1 a2
-      addBind' b1 a1 $ \ xv -> do
+      addLocal' b1 a1 $ \ xv -> do
         b1' <- app b1 xv
         b2' <- app b2 xv
         equalType b1' b2' 
     (VBase, VBase) -> equalBase t1 t2 
     _ -> fail $ "types unequal"
 
-equalBase :: (Value fvar val, TypeCheck val m) => val -> val -> m ()
+equalBase :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
 equalBase v1 v2 = 
   case (tmView v1, tmView v2) of
     (VNe x1 t1 vs1, VNe x2 t2 vs2) -> 
       if x1 == x2 then equalApp t1 vs1 vs2 >> return ()
        else fail $ "head mismatch"
 
-equalApp :: (Value fvar val, TypeCheck val m) => val -> [val] -> [val] -> m val
+equalApp :: (Value fvar val, MonadCheckExpr val env me m) => val -> [val] -> [val] -> m val
 equalApp t vs1 vs2 =
   case (vs1, vs2) of
     ([], []) -> return t
@@ -134,13 +149,36 @@ equalApp t vs1 vs2 =
         equalApp b' vs1 vs2
     _ -> fail $ "unequal length of argument vector"
 
-equalTm :: (Value fvar val, TypeCheck val m) => val -> val -> val -> m ()
+equalTm :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> val -> m ()
 equalTm t v1 v2 =
   case tyView t of
-    VPi a b -> addBind' b a $ \ xv -> do
+    VPi a b -> addLocal' b a $ \ xv -> do
       v1' <- app v1 xv
       v2' <- app v2 xv
       b'  <- app b  xv
       equalTm b' v1' v2'
     _ -> equalBase v1 v2 >> return ()
 
+-- * Typechecking declarations.
+
+class (Monad m, Scoping.Scope m, MonadSig val m, MonadEval val env me, MonadCheckExpr val env me mc) => MonadCheckDecl val env me mc m | m -> mc, m -> me, m -> env where
+
+  doCheckExpr :: mc a -> m a
+  checkExpr   :: Value fvar val => Expr -> val -> m ()
+  checkExpr e t = doCheckExpr $ check e t
+--  checkType   :: Expr -> m ()         -- ^ is it a well-formed type or kind?
+--  checkType t  = doCheckExpr $ infer t >> return ()
+  evalExpr    :: Expr -> m val
+  evalExpr     = doCheckExpr . doEval . evaluate' 
+
+checkDecl :: (Value fvar val, MonadCheckDecl val env me mc m) => Declaration -> m ()
+checkDecl d = 
+  case d of
+    TypeSig n t -> do
+      doCheckExpr $ inferType t
+      t <- evalExpr t
+      addCon n t
+    Defn n Nothing e -> do
+      t <- doCheckExpr $ infer e
+      e <- evalExpr e
+      addDef n t e

@@ -24,3 +24,5 @@ data Ident
   | Con { name :: Name }          -- ^ declared constant
   | Def { name :: Name }          -- ^ defined identifier
 
+systemGeneratedName :: Name
+systemGeneratedName = -1

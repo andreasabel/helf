@@ -4,8 +4,18 @@ import Data.List
 
 import DataStructure 
 
+instance DataStruc [] a where
+  empty = []
+  insert x n l = left ++ x : right where (left,right) = splitAt n l
+  split = splitAt
+  join = (++)
+  size = length
+  get = (!!)
+  multiinsert x ks l = val (multiinsert x ks (L l))
 
-data List a = L {val :: [a]}
+
+
+newtype List a = L {val :: [a]}
 
 
 instance DataStruc List a where

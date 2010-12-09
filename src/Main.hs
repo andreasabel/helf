@@ -7,7 +7,6 @@ import Control.Bifunctor
 import Lexer (alexScanTokens)
 import qualified Parser as HappyParser
 
-import Common
 import qualified Concrete as C
 import qualified Abstract as A
 
@@ -15,6 +14,7 @@ import qualified Stream
 
 import TheMonad
 import qualified Scoping 
+import qualified ScopeMonad as Scoping
 
 {-
 import TypeCheck
