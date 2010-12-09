@@ -12,6 +12,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
+import Abstract
 import TypeCheck
 
 import DataStructure
@@ -20,17 +21,19 @@ import DatastrucImplementations.DS_List (List)
 
 -- "ordered" Expressions
 
-type OName = String
+-- type OName = String
 type OType = OExpr
 
 data OExpr
-  = OVarFree OName
+--  = OVarFree OName
+  = OCon Name
+  | ODef Name
   | O
   | OApp OExpr Int OExpr
   | OAbs [Int] OExpr
   | OPi  OType OType
   | OType
-  | OKind -- only internally
+--  | OKind -- only internally
     deriving (Eq,Ord,Show)
 
 -- Values

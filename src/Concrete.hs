@@ -2,7 +2,7 @@ module Concrete where
 
 import Text.PrettyPrint
 
-import Common
+import Util
 import OperatorPrecedenceParser (Associativity(..))
 import qualified OperatorPrecedenceParser as OPP
 
@@ -40,6 +40,9 @@ instance Pretty Declaration where
 
 instance Pretty Associativity where
   pretty = text . show
+
+instance Pretty Name where
+  pretty = text
 
 instance Pretty Expr where
   prettyPrec _ (Ident x)          = text x
