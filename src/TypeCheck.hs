@@ -182,3 +182,9 @@ checkDecl d =
       t <- doCheckExpr $ infer e
       e <- evalExpr e
       addDef n t e
+    Defn n (Just t) e -> do
+      doCheckExpr $ inferType t
+      t <- evalExpr t
+      doCheckExpr $ check e t
+      e <- evalExpr e
+      addDef n t e
