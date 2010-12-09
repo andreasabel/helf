@@ -41,6 +41,8 @@ newtype Signature val = Signature
   { signature :: Map A.Name (SigEntry val)
   }
 
+emptySignature = Signature Map.empty
+
 instance (Monad m, MonadState (Signature val) m, Scoping.Scope m) => MonadSig val m where
 
   addGlobal n it = modify $ Signature . Map.insert n it . signature

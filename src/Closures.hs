@@ -4,7 +4,7 @@
 
 module Closures where
 
-import Prelude hiding (pi)
+import Prelude hiding (pi,abs)
 
 import Control.Applicative
 import Control.Monad.Error
@@ -12,69 +12,85 @@ import Control.Monad.Reader
 
 import Data.Map (Map)
 import qualified Data.Map as Map
-import qualified Data.Maybe as Maybe
+-- import qualified Data.Maybe as Maybe
 
-import TypeCheck
+import qualified Abstract as A
+import Context
+import Signature
+import TypeCheck hiding (app)
+import Util
+import Value
+
+import Data.Char -- testing
+-- import Text.PrettyPrint
 
 -- Values
 
 type Var = Int
 
 data Head 
-  = HVar Var Val     -- typed variable 
-  | HSort Sort
+  = HVar Var      -- (typed) variable 
+  | HCon A.Name   -- (typed) constructor
+  deriving (Eq,Ord,Show)
 
 data Val 
-  = Ne   Head [Val]  -- x vs^-1 | c vs^-1   last argument first in list!
-  | Clos Expr Env    -- (\xe) rho
-  | K    Val         -- constant function
-  | Fun  Val  Val    -- Pi a ((\xe)rho)
+  = Ne   Head Val [Val]     -- x^a vs^-1 | c^a vs^-1   last argument first in list!
+  | Sort Sort               -- s
+  | CLam A.Name A.Expr Env  -- (\xe) rho
+  | K    Val                -- constant function
+  | Fun  Val  Val           -- Pi a ((\xe)rho)
 
-instance Value Int Val where
-  typ  = Ne (HSort Type) []
-  kind = Ne (HSort Kind) []
-  freeVar x t = Ne (HVar x t) []
+instance Value Head Val where
+  typ  = Sort Type 
+  kind = Sort Kind
+  freeVar h t = Ne h t []
 
   tyView v =
     case v of
-      Fun a b        -> VPi a b
-      Ne (HSort s) _ -> VSort s
-      _              -> VBase
+      Fun a b -> VPi a b
+      Sort s  -> VSort s
+      _       -> VBase
  
   tmView v =
     case v of
-      Ne (HVar x t) vs -> VNe x t (reverse vs)
-      _                -> VVal
+      Ne h t vs -> VNe h t (reverse vs)
+      _         -> VVal
+
+con :: A.Name -> Val -> Val
+con x t = Ne (HCon x) t []
 
 -- Environments
 
-type Env = Map Name Val
+type Env = Map A.Name Val
 
-update :: Env -> Name -> Val -> Env
+update :: Env -> A.Name -> Val -> Env
 update rho x e = Map.insert x e rho 
 
 -- Evaluation
 
-apply :: Val -> Val -> Val
-apply f v =
-  case f of
-    K w                -> w
-    Ne h vs            -> Ne h (v:vs)
-    Clos (Abs x e) rho -> evaluate e (update rho x v)
+type EvalM = Reader (Signature Val)
 
-evaluate :: Expr -> Env -> Val
-evaluate e rho =
-  case e of
-    Var x     -> Maybe.fromJust $ Map.lookup x rho
-    App f e   -> evaluate f rho `apply` evaluate e rho
-    Abs{}     -> Clos e rho
-    Pi mx e e' -> Fun (evaluate e rho) $ case mx of
-                    Just x  -> Clos (Abs x e') rho
-                    Nothing -> K $ evaluate e' rho 
-    Sort Type -> typ
-    Sort Kind -> kind
+instance MonadEval Val Env EvalM where
 
--- Type checking monad
+  apply f v =
+    case f of
+      K w          -> return $ w
+      Ne h t vs    -> return $ Ne h t (v:vs)
+      CLam x e rho -> evaluate e (update rho x v)
+  
+  evaluate e rho =
+    case e of
+      A.Ident (A.Con x) -> con x . symbType . lookupSafe x . signature <$> ask
+      A.Ident (A.Def x) -> symbDef . lookupSafe x . signature <$> ask
+      A.Ident (A.Var x) -> return $ lookupSafe x rho
+      A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)
+      A.Lam x mt e -> return $ CLam x e rho
+      A.Pi mx e e' -> Fun <$> (evaluate e rho) <*> case mx of
+                        Just x  -> return $ CLam x e' rho
+                        Nothing -> K <$> evaluate e' rho 
+      A.Typ        -> return typ
+
+-- * Context monad
 
 data Context = Context
   { level  :: Int
@@ -85,15 +101,56 @@ data Context = Context
 emptyContext :: Context
 emptyContext = Context 0 Map.empty Map.empty
 
+type ContextM = Reader Context
+
+instance MonadCxt Val Env ContextM where
+
+  addLocal x t cont = do
+    l <- asks level
+    let xv = Ne (HVar l) t []
+    local (\ (Context l gamma rho) -> 
+             Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho)) 
+          (cont xv)
+
+  lookupLocal x = do 
+    gamma <- asks tyEnv
+    return $ lookupSafe x gamma
+
+  getEnv = asks valEnv
+
+-- * Type checking monad
+
+data SigCxt = SigCxt { globals :: Signature Val, locals :: Context }
+
 type Err = Either String
-type TCM = ReaderT Context Err
+type CheckExprM = ReaderT SigCxt Err
 
-instance TypeCheck Val TCM where  
+instance MonadCxt Val Env CheckExprM where
 
-  app f v = return $ apply f v
-  
-  eval e = evaluate e <$> asks valEnv 
+  addLocal x t cont = do
+    Context l gamma rho <- asks locals
+    let xv  = Ne (HVar l) t []
+    let cxt = Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho) 
+    local (\ sc -> sc { locals = cxt }) $ cont xv
+
+  lookupLocal x = do 
+    gamma <- asks $ tyEnv . locals
+    return $ lookupSafe x gamma
+
+  getEnv = asks $ valEnv . locals
+
+instance MonadCheckExpr Val Env EvalM CheckExprM where  
+
+  doEval comp = do
+    sig <- asks globals
+    return $ runReader comp sig
+
+  lookupGlobal x = symbType . lookupSafe x <$> do
+    asks $ signature . globals
+
+--  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
     
+{-
   addBind x a cont = do
     Context level tyEnv valEnv <- ask
     let xv   = freeVar level a
@@ -113,45 +170,51 @@ instance TypeCheck Val TCM where
     case Map.lookup x gamma of
       Just t  -> return t
       Nothing -> fail $ "unbound variable " ++ x 
+-}
 
-checkTySig :: Expr -> Expr -> TCM ()
+checkTySig :: A.Expr -> A.Expr -> CheckExprM ()
 checkTySig e t = do
   -- checkType t
   t <- eval t
   check e t
 
-runCheck :: Expr -> Expr -> Err ()
-runCheck e t = runReaderT (checkTySig e t) emptyContext
+runCheck :: A.Expr -> A.Expr -> Err ()
+runCheck e t = runReaderT (checkTySig e t) $ SigCxt emptySignature emptyContext
 
 -- Testing
 
 -- polymorphic identity
+hashString = fromIntegral . foldr f 0
+      where f c m = ord c + (m * 128) `rem` 1500007
 
-ty = Sort Type
-pi x = Pi (Just x)
+var x   = A.Ident $ A.Var $ hashString x
+abs x e = A.Lam (hashString x) Nothing e
+app     = A.App
+ty = A.Typ
+pi x = A.Pi (Just $ hashString x)
 
-eid = Abs "A" $ Abs "x" $ Var "x"
-tid = pi "A" ty $ pi "x" (Var "A") $ Var "A"
+eid = abs "A" $ abs "x" $ var "x"
+tid = pi "A" ty $ pi "x" (var "A") $ var "A"
 
-arrow a b = Pi Nothing a b
+arrow a b = A.Pi Nothing a b
 
 tnat = pi "A" ty $ 
-         pi "zero" (Var "A") $ 
-         pi "suc"  (Var "A" `arrow` Var "A") $
-           Var "A" 
+         pi "zero" (var "A") $ 
+         pi "suc"  (var "A" `arrow` var "A") $
+           var "A" 
 
-ezero  = Abs "A" $ Abs "zero" $ Abs "suc" $ Var "zero"
+ezero  = abs "A" $ abs "zero" $ abs "suc" $ var "zero"
 -- problem: esuc is not a nf
-esuc n = Abs "A" $ Abs "zero" $ Abs "suc" $ Var "suc" `App` 
-          (n `App` Var "A" `App` Var "zero" `App` Var "suc")  
+esuc n = abs "A" $ abs "zero" $ abs "suc" $ var "suc" `app` 
+          (n `app` var "A" `app` var "zero" `app` var "suc")  
 
-enat e =  Abs "A" $ Abs "zero" $ Abs "suc" $ e
-enats = map enat $ iterate (App (Var "suc")) (Var "zero")
+enat e =  abs "A" $ abs "zero" $ abs "suc" $ e
+enats = map enat $ iterate (app (var "suc")) (var "zero")
 e2 = enats !! 2
 
 rid = runCheck eid tid
 
-success = [(eid,tid),(ezero,tnat),(e2,tnat),(Sort Type,Sort Kind)]
+success = [(eid,tid),(ezero,tnat),(e2,tnat)] -- ,(Sort Type,Sort Kind)]
 failure = [(tid,tid)]
 
 runsuccs = map (uncurry runCheck) success

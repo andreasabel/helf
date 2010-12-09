@@ -13,7 +13,7 @@ data TyView val
   | VBase 
 
 data TmView fvar val
-  = VNe  fvar val [val]  -- x^A vs
+  = VNe  fvar val [val]  -- x^A vs, c^A vs
   | VVal                 -- Abs, Pi, Type, ...
 
 class Eq fvar => Value fvar val | val -> fvar where

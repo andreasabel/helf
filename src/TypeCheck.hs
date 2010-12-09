@@ -25,20 +25,29 @@ data Expr
 
 -- * Typechecking expressions.
 
-class (Monad m, Scoping.Scope m, MonadCxt val env m, MonadEval val env me) =>
+class (Monad m, -- Scoping.Scope m, 
+       MonadEval val env me, 
+       MonadCxt val env m) =>
   MonadCheckExpr val env me m | m -> me where
 
-  addLocal'    :: val -> val -> (val -> m a) -> m a
-  addLocal' b   = addLocal systemGeneratedName
-  lookupGlobal :: Name -> m val -- ^ lookup in signature
-  lookupIdent  :: Ident -> m val 
-  lookupIdent (Var x) = lookupLocal x
-  lookupIdent id      = lookupGlobal $ name id
   doEval       :: me a -> m a      -- ^ run evaluation
   app          :: val -> val -> m val
   app f v       = doEval $ apply f v
   eval         :: Expr -> m val
-  eval e         = getEnv >>= \ rho -> doEval $ evaluate e rho
+  eval e        = getEnv >>= \ rho -> doEval $ evaluate e rho
+
+{-
+  doCxt        :: mx a -> m a
+  addLocal     :: A.Name -> val -> (val -> m a) -> m a
+  addLocal x t  = doCxt . addBind x t cont
+-}
+  addLocal'    :: val -> val -> (val -> m a) -> m a
+  addLocal' b   = addLocal systemGeneratedName
+
+  lookupGlobal :: Name -> m val -- ^ lookup in signature
+  lookupIdent  :: Ident -> m val 
+  lookupIdent (Var x) = lookupLocal x
+  lookupIdent id      = lookupGlobal $ name id
 
 
 {-
@@ -100,7 +109,8 @@ infer e =
       case mx of 
         Nothing -> infer e'
         Just x  -> addLocal x a $ \ xv -> infer e'
-    _ -> failDoc $ text "cannot infer type of" <+> prettyM e
+    _ -> fail $ "cannot infer type"
+--    _ -> failDoc $ text "cannot infer type of" <+> prettyM e
         
 checkType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m ()
 checkType e = isType =<< infer e
@@ -161,13 +171,19 @@ equalTm t v1 v2 =
 
 -- * Typechecking declarations.
 
-class (Monad m, Scoping.Scope m, MonadSig val m, MonadEval val env me, MonadCheckExpr val env me mc) => MonadCheckDecl val env me mc m | m -> mc, m -> me, m -> env where
+class (Monad m, -- Scoping.Scope m, 
+       MonadSig  val m, 
+       MonadEval val env me, 
+       MonadCheckExpr val env me mc) => 
+  MonadCheckDecl val env me mc m | m -> mc, m -> me where
 
   doCheckExpr :: mc a -> m a
+{-
   checkExpr   :: Value fvar val => Expr -> val -> m ()
   checkExpr e t = doCheckExpr $ check e t
 --  checkType   :: Expr -> m ()         -- ^ is it a well-formed type or kind?
 --  checkType t  = doCheckExpr $ infer t >> return ()
+-}
   evalExpr    :: Expr -> m val
   evalExpr     = doCheckExpr . doEval . evaluate' 
 
