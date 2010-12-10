@@ -37,6 +37,17 @@ pair f g x = (f x, g x)
 appM2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 appM2 f ma mb = ma >>= \ a -> mb >>= f a
 
+-- * error
+
+-- | Expects a non-empty list of words which are concatenated to compose the
+--   error message.
+internalError :: [String] -> a
+internalError = error . unwords . ("internal error:" :)
+  -- where unwords =  foldr1 (\ h t -> h ++ ' ' : t) -- defined in Prelude
+
+fails :: Monad m => [String] -> m a
+fails = fail . unwords
+
 -- * maps
 
 lookupSafe :: (Ord k, Show k) => k -> Map k v -> v
