@@ -37,6 +37,21 @@ pair f g x = (f x, g x)
 appM2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 appM2 f ma mb = ma >>= \ a -> mb >>= f a
 
+-- * records
+
+-- | @Field@ is a specification of a lens (see Data.Record.Labels).
+class Field a r | r -> a where
+  getF :: r -> a
+  setF :: a -> r -> r
+  modF :: (a -> a) -> r -> r
+  modF f r = setF (f $ getF r) r
+
+{- This does not work well with the functional dependency
+instance Field r r where
+  getF = id
+  setF = const
+  modF f = f
+-}
 -- * error
 
 -- | Expects a non-empty list of words which are concatenated to compose the

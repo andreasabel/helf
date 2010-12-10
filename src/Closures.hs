@@ -11,6 +11,7 @@ import Prelude hiding (pi,abs)
 import Control.Applicative
 import Control.Monad.Error
 import Control.Monad.Reader
+import Control.Monad.State
 
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -92,6 +93,8 @@ instance MonadEval Val Env EvalM where
                         Nothing -> K <$> evaluate e' rho 
       A.Typ        -> return typ
 
+  evaluate' e = evaluate e Map.empty
+
 -- * Context monad
 
 data Context = Context
@@ -171,16 +174,48 @@ instance MonadCheckExpr Val Env EvalM CheckExprM where
       Nothing -> fail $ "unbound variable " ++ x 
 -}
 
-checkTySig :: A.Expr -> A.Expr -> CheckExprM ()
+checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
   -- checkType t
   t <- eval t
   check e t
 
-runCheck :: A.Expr -> A.Expr -> Err ()
+runCheck :: A.Expr -> A.Type -> Err ()
 runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
--- Testing
+-- * Declarations
+
+type CheckDeclM = StateT (MapSig Val) Err 
+
+instance Field (MapSig v) (MapSig v) where
+  getF = id
+  setF = const
+  modF = id
+
+instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
+{-
+  doCheckExpr cont = do
+    sig <- get 
+    case runReaderT cont $ SigCxt sig emptyContext of
+      Left err -> fail err
+      Right a  -> return a
+-}
+
+  doCheckExpr cont = either fail return . runReaderT cont . sigCxt =<< get where
+     sigCxt sig = SigCxt sig emptyContext
+
+--  doCheckExpr cont = (\ sig -> runReaderT cont $ SigCxt sig emptyContext) <$> get
+
+checkDeclaration :: A.Declaration -> CheckDeclM ()
+checkDeclaration = checkDecl
+
+checkDeclarations :: A.Declarations -> CheckDeclM ()
+checkDeclarations = mapM_ checkDeclaration . A.declarations
+
+runCheckDecls :: A.Declarations -> Err ()
+runCheckDecls ds = evalStateT (checkDeclarations ds) Map.empty
+
+-- * Testing
 
 -- polymorphic identity
 hashString = fromIntegral . foldr f 0

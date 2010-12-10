@@ -45,20 +45,6 @@ instance Signature val (MapSig val) where
   sigAdd    = Map.insert
   sigLookup = Map.lookup
 
--- I would like to extend signatures to records, but it only works for tuples,
--- because of limitations of the Haskell language.
-
-{-  This also leads to duplicate instances
-
-instance Signature val sig => Signature val (sig,a) where
-  sigAdd    x it = bimap (sigAdd x it) id
-  sigLookup x    = sigLookup x . fst
-
-instance Signature val sig => Signature val (a,sig) where
-  sigAdd    x it = bimap id (sigAdd x it)
-  sigLookup x    = sigLookup x . snd
--}
-
 {-
 newtype Signature val = Signature
   { signature :: Map A.Name (SigEntry val)
@@ -71,12 +57,28 @@ emptySignature = Signature Map.empty
 class HasSig sig a | a -> sig where
   getSig :: a -> sig
   mapSig :: (sig -> sig) -> a -> a
+-}
 
+{-
 -- | This produces overlapping instances and it thus unusable.
 instance (Signature val sig, HasSig sig a) => Signature val a where
   -- sigEmpty cannot be sensibly defined
   sigAdd x it = mapSig (sigAdd x it)
   sigLookup x = sigLookup x . getSig
+-}
+
+{-  This also leads to duplicate instances
+
+-- I would like to extend signatures to records, but it only works for tuples,
+-- because of limitations of the Haskell language.
+
+instance Signature val sig => Signature val (sig,a) where
+  sigAdd    x it = bimap (sigAdd x it) id
+  sigLookup x    = sigLookup x . fst
+
+instance Signature val sig => Signature val (a,sig) where
+  sigAdd    x it = bimap id (sigAdd x it)
+  sigLookup x    = sigLookup x . snd
 -}
 
 -- * Abstract signature monad
@@ -98,11 +100,13 @@ class (Applicative m) => MonadSig val m where
 instance ( Applicative m
          -- , Scoping.Scope m
          , Signature val sig
-         , MonadState sig m ) => MonadSig val m where
+         -- , HasSig sig st
+         , Field sig st
+         , MonadState st m ) => MonadSig val m where
 
-  addGlobal n it = modify $ sigAdd n it
+  addGlobal n it = modify $ modF $ sigAdd n it
   
-  lookupName n = sigLookup' n <$> get
+  lookupName n = sigLookup' n . getF <$> get
 
 {-
   lookupName n = do
