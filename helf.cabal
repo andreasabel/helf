@@ -27,13 +27,26 @@ executable helf
                     alex >= 2.0.1 && < 3
   extensions:       MultiParamTypeClasses
                     FunctionalDependencies
+                    UndecidableInstances
+                    OverlappingInstances
                     TypeSynonymInstances
                     FlexibleInstances
                     FlexibleContexts
                     GeneralizedNewtypeDeriving
   main-is:          Main.hs
-  other-modules:    Common
+  other-modules:    Abstract
+                    Closures
                     Concrete
+                    Context
                     Lexer
                     Main
+                    OperatorPrecedenceParser
                     Parser
+                    PrettyM
+                    ScopeMonad
+                    Scoping
+                    Signature
+                    TheMonad
+                    TypeCheck
+                    Util
+                    Value

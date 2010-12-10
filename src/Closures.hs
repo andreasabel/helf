@@ -2,6 +2,8 @@
 -- * values as explicit closures and 
 -- * environments as finite maps
 
+{-# LANGUAGE OverlappingInstances, IncoherentInstances #-}
+
 module Closures where
 
 import Prelude hiding (pi,abs)
@@ -68,7 +70,7 @@ update rho x e = Map.insert x e rho
 
 -- Evaluation
 
-type EvalM = Reader (Signature Val)
+type EvalM = Reader (MapSig Val)
 
 instance MonadEval Val Env EvalM where
 
@@ -80,8 +82,8 @@ instance MonadEval Val Env EvalM where
   
   evaluate e rho =
     case e of
-      A.Ident (A.Con x) -> con x . symbType . lookupSafe x . signature <$> ask
-      A.Ident (A.Def x) -> symbDef . lookupSafe x . signature <$> ask
+      A.Ident (A.Con x) -> con x . symbType . sigLookup' x <$> ask
+      A.Ident (A.Def x) -> symbDef . sigLookup' x  <$> ask
       A.Ident (A.Var x) -> return $ lookupSafe x rho
       A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)
       A.Lam x mt e -> return $ CLam x e rho
@@ -120,7 +122,7 @@ instance MonadCxt Val Env ContextM where
 
 -- * Type checking monad
 
-data SigCxt = SigCxt { globals :: Signature Val, locals :: Context }
+data SigCxt = SigCxt { globals :: MapSig Val, locals :: Context }
 
 type Err = Either String
 type CheckExprM = ReaderT SigCxt Err
@@ -141,12 +143,9 @@ instance MonadCxt Val Env CheckExprM where
 
 instance MonadCheckExpr Val Env EvalM CheckExprM where  
 
-  doEval comp = do
-    sig <- asks globals
-    return $ runReader comp sig
+  doEval comp = runReader comp <$> asks globals
 
-  lookupGlobal x = symbType . lookupSafe x <$> do
-    asks $ signature . globals
+  lookupGlobal x = symbType . sigLookup' x <$> asks globals
 
 --  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
     
@@ -179,7 +178,7 @@ checkTySig e t = do
   check e t
 
 runCheck :: A.Expr -> A.Expr -> Err ()
-runCheck e t = runReaderT (checkTySig e t) $ SigCxt emptySignature emptyContext
+runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
 -- Testing
 
