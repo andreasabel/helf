@@ -15,6 +15,7 @@ import qualified Stream
 import TheMonad
 import qualified Scoping 
 import qualified ScopeMonad as Scoping
+import Closures
 
 {-
 import TypeCheck
@@ -40,27 +41,25 @@ mainFile fileName = do
 --  putStrLn "%%% lexing %%%"
   let t = alexScanTokens file 
 --  putStrLn (show t)
-  putStrLn "%%% parsing %%%"
+  putStrLn $ "%%% parsing %%%"
   let cdecls = HappyParser.parse t
   putStrLn (show cdecls)
-  putStrLn "%%% scope checking %%%"
+  putStrLn $ "%%% scope checking %%%"
   (adecls, st) <- doScopeCheck cdecls
   cdecls <- doUnparse adecls st
   putStrLn . show $ cdecls
-{-
-  putStrLn "%%% type checking %%%"
-  doTypeCheck ast2
--}
+  putStrLn $ "%%% type checking %%%"
+  doTypeCheck adecls
   putStrLn $ "%%% closing " ++ show fileName ++ " %%%"
 
-{-
-doTypeCheck :: [A.Declaration] -> IO ([A.EDeclaration], Signature)
-doTypeCheck decls = do 
-  k <- typeCheck decls
-  case k of
+doTypeCheck :: A.Declarations -> IO ()
+doTypeCheck decls =
+  case (runCheckDecls decls) of
     Left err -> do 
       putStrLn $ "error during typechecking:\n" ++ show err
       exitFailure
+    Right () -> return ()
+{-
     Right (edecls, st) -> 
       return (edecls, signature st)
 -}

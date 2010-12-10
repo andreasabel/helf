@@ -1,5 +1,5 @@
 name:            helf
-version:         0.20101119
+version:         0.20101210
 build-type:      Simple
 cabal-version:   >= 1.8 && < 2
 license:         AllRightsReserved
@@ -22,6 +22,7 @@ executable helf
                     haskell98 >= 1.0 && < 1.2,
                     mtl == 2.0.*,
                     category-extras == 0.44.*,
+                    -- fclabels >= 0.9.1 && < 0.12,
                     pretty == 1.0.*
   build-tools:      happy >= 1.15 && < 2,
                     alex >= 2.0.1 && < 3
