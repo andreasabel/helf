@@ -34,9 +34,9 @@ data OExpr
   = OCon Name
   | ODef Name
   | O
-  | OApp OExpr Int OExpr
+  | OApp OExpr Int OExpr -- NOTE: the Int-value specifies the number of O's in the second expression (i.e. the 'argument', not the 'function'), but there is no real reason for this choice. In fact, this should be changed as it does not match the specification of 'split'
   | OAbs [Int] OExpr
-  | OPi  OType OType
+  | OPi  OType Int OType -- similar to OApp
   | OType
 --  | OKind -- only internally
     deriving (Eq,Ord,Show)
@@ -91,18 +91,39 @@ evaluate e osubst = case e of
     OCon x         -> symbType . sigLookup' x <$> ask
     ODef x         -> symbDef  . sigLookup' x <$> ask
     O              -> return $ DS.get osubst 0
-    OApp oe1 k oe2 -> let (osubst1, osubst2) = split k osubst 
+    OApp oe1 k oe2 -> let (osubst1, osubst2) = split ((DS.size osubst) - k) osubst 
                       in Util.appM2 OrderedSubst.apply (OrderedSubst.evaluate oe1 osubst1) (OrderedSubst.evaluate oe2 osubst2)
     OAbs _ _       -> return $ Clos e osubst
-    -- TODO: add OPi !
-    -- OPi ty1 ty2    -> Fun (OrderedSubst.evaluate ty1 osubst) (Clos ty2 osubst)
+    -- OPi ty1 ty2    -> Fun (OrderedSubst.evaluate ty1 osubst) (Clos ty2 osubst) -- wrong.
+    OPi ty1 k ty2  -> --return $ Sort Type
+                      let (osubst1, osubst2) = split ((DS.size osubst) - k) osubst
+                      in 
+                      -- this is not correct - but at least, it can be compiled:
+                      -- (OrderedSubst.evaluate ty2 osubst2) >>= ((return $ Sort Type)               >>= ( \a -> \b -> return (Fun a b) )  )
+                      -- this is correct but cannot be compiled:
+                      -- OrderedSubst.evaluate ty2 osubst2) >>= ((OrderedSubst.evaluate ty1 osubst1) >>= ( \a -> \b -> return (Fun a b) )  )
+                      -- okay, this also does not work:
+                      -- (return $ Sort Type)               >>= ((OrderedSubst.evaluate ty2 osubst2) >>= ( \a -> \b -> return (Fun a b) )  )
+                      -- finally, this works:
+                      do
+                      mty1 <- OrderedSubst.evaluate ty1 osubst1
+                      mty2 <- OrderedSubst.evaluate ty2 osubst2
+                      return $ Fun mty1 mty2
+                      
     OType          -> return $ typ
-    -- OKind          -> kind
+    -- OKind       -> kind
     
-    
+instance MonadEval Val OSubst EvalM where
+  apply = OrderedSubst.apply
+  evaluate  e = OrderedSubst.evaluate (transform e)
+  evaluate' e = OrderedSubst.evaluate (transform e) DS.empty
+
+
+
+
 -- hConst x = Ne (HConst x) []
-hConst :: A.Name -> Val -> Val
-hConst x t = Ne (HCon x) t []
+-- hConst :: A.Name -> Val -> Val
+-- hConst x t = Ne (HCon x) t []
 
 
 
@@ -220,11 +241,11 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
     Just n -> do
       (i1, oexpr1) <- trans ty1
       (i2, oexpr2) <- trans $ Lam n Nothing ty2 -- Nothing?
-      return (i1+i2, OPi oexpr1 oexpr2)
+      return (i1+i2, OPi oexpr1 i2 oexpr2)
     Nothing -> do
       (i1, oexpr1) <- trans ty1
       (i2, oexpr2) <- trans ty2
-      return (i1+i2, OPi oexpr1 $ OAbs [] oexpr2)
+      return (i1+i2, OPi oexpr1 i2 $ OAbs [] oexpr2)
   
   -- trans (Sort Type) = return (0, OType)
   -- trans (Sort Kind) = return (0, OKind)
