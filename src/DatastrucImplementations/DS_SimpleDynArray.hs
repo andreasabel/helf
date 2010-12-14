@@ -190,6 +190,7 @@ multiinsert x (k:klist) dyn =
 -------------------------------------------------------------
 -- Testing
 
+{-
 toList :: DynArray a -> [a]
 toList (DynArray n arr) = map (get' arr) [0..n-1]
 
@@ -243,3 +244,4 @@ testv = verboseCheck prop_joinSplit
 testn = quickCheck prop_joinSplitNaive
 testnv = verboseCheck prop_joinSplitNaive
 testnvp = verboseCheck prop_joinSplitNaivePretty
+-}
