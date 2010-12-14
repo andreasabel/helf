@@ -9,6 +9,7 @@ import Scoping (prettyM)
 import qualified Scoping
 import Signature 
 import Value
+import Util
 
 {-  
 type Name = String
@@ -35,7 +36,8 @@ class (Monad m, -- Scoping.Scope m,
   app f v       = doEval $ apply f v
   eval         :: Expr -> m val
   eval e        = getEnv >>= \ rho -> doEval $ evaluate e rho
-
+  abstrPi      :: val -> val -> val -> m val  -- ^ pi a x b
+  abstrPi a x b = doEval $ abstractPi a x b
 {-
   doCxt        :: mx a -> m a
   addLocal     :: A.Name -> val -> (val -> m a) -> m a
@@ -62,6 +64,10 @@ class (Monad m, Scoping.Scope m) => TypeCheck val m | m -> val where
 
 {-  Type checking   Gamma |- e <=: t
 
+   Gamma |- e' :=> type   Gamma |- [|e'|] = a   Gamma, x:a |- e <=: b x    
+   --------------------------------------------------------------------    
+   Gamma |- \x:e'.e <=: Pi a b 
+
    Gamma, x:a |- e <=: b x    Gamma |- e :=> t' 
    -----------------------    ----------------- Gamma |- t = t'
    Gamma |- \xe <=: Pi a b    Gamma |- e <=: t
@@ -70,7 +76,10 @@ check :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> tyVal -> m
 check e t =
   case e of
 --    Abs x e -> 
-    Lam x mt e ->
+    Lam x mt e -> do
+      whenMaybe mt $ \ te -> do
+        checkType te
+        equalType t =<< eval te
       case tyView t of
         VPi a b -> addLocal x a $ \ xv -> check e =<< (b `app` xv) 
         _       -> fail $ "not a function type"
@@ -91,6 +100,12 @@ infer e =
   case e of
 --    Var x -> lookupVar x
     Ident x -> lookupIdent x
+    Lam x (Just t) e -> do
+      checkType t
+      a <- eval t
+      addLocal x a $ \ xv -> do
+        bx <- infer e
+        abstrPi a xv bx        
     App f e -> do
       t <- infer f
       case tyView t of

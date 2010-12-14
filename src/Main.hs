@@ -43,18 +43,24 @@ mainFile fileName = do
 --  putStrLn (show t)
   putStrLn $ "%%% parsing %%%"
   let cdecls = HappyParser.parse t
+{-
   putStrLn (show cdecls)
+-}
   putStrLn $ "%%% scope checking %%%"
   (adecls, st) <- doScopeCheck cdecls
-  cdecls <- doUnparse adecls st
+{-
+--  cdecls <- doUnparse adecls st
+  cdecls <- return $ runSRM (Scoping.unparse adecls) st
   putStrLn . show $ cdecls
+-}
   putStrLn $ "%%% type checking %%%"
-  doTypeCheck adecls
+  doTypeCheck st adecls
   putStrLn $ "%%% closing " ++ show fileName ++ " %%%"
 
-doTypeCheck :: A.Declarations -> IO ()
-doTypeCheck decls =
-  case (runCheckDecls decls) of
+doTypeCheck :: Scoping.ScopeState -> A.Declarations -> IO ()
+doTypeCheck st decls = do
+  res <- runCheckDecls st decls 
+  case res of
     Left err -> do 
       putStrLn $ "error during typechecking:\n" ++ show err
       exitFailure
@@ -102,10 +108,11 @@ scopeCheckStream (C.Declarations cdecls) = loop cdecls initState where
   loop (cdec:cdecls) = 
 -}
 
+{-
 doUnparse :: A.Declarations -> TheState -> IO C.Declarations
 doUnparse adecls st = case runTCM (Scoping.unparse adecls) st of
      Left err          -> do 
        putStrLn $ "error during unparsing: " ++ show err
        exitFailure
      Right (cdecls, _) -> return cdecls
-
+-}

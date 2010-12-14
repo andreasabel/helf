@@ -24,3 +24,8 @@ type TCM = StateT TheState (ReaderT TheContext (ErrorT TheError Identity))
 
 runTCM :: TCM a -> TheState -> Either TheError (a, TheState)
 runTCM k st = runIdentity $ runErrorT $ k `runStateT` st `runReaderT` initContext
+
+type SRM = Reader TheState
+
+runSRM :: SRM a  -> TheState -> a
+runSRM k st = runReader k st

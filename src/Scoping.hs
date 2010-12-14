@@ -20,6 +20,10 @@ import Text.PrettyPrint
 
 type ParseError = O.ParseError
 
+class (Applicative m, Monad m) => ScopeReader m where
+  askName    :: A.Name -> m C.Name
+  askFixity  :: C.Name -> m (Maybe C.Fixity)
+
 class (Applicative m, Monad m) => Scope m where
   addGlobal  :: (A.Name -> A.Ident) -> C.Name -> m A.Name
   addCon     :: C.Name -> m A.Name
@@ -29,10 +33,10 @@ class (Applicative m, Monad m) => Scope m where
   addFixity  :: C.Name -> C.Fixity -> m ()
   addVar     :: C.Name -> (A.Name -> m a) -> m a
   getName    :: A.Name -> m C.Name
---  getIdentAndFixity :: C.Name -> m (A.Ident, C.Fixity)
   getFixity  :: C.Name -> m (Maybe C.Fixity)
   getIdent   :: C.Name -> m A.Ident
---  getIdent n  = fst <$> getIdentAndFixity n
+--  getIdent n  = fst <$> getIdentAndFixity n  
+--  getIdentAndFixity :: C.Name -> m (A.Ident, C.Fixity)
   parseError :: ParseError -> m a
   
 -- * parsing
@@ -127,8 +131,8 @@ parseApplication is =
 -- * unparsing
 
 class Pretty c => Unparse c a | a -> c where
-  unparse :: Scope m => a -> m c 
-  prettyM :: Scope m => a -> m Doc
+  unparse :: ScopeReader m => a -> m c 
+  prettyM :: ScopeReader m => a -> m Doc
   prettyM a = pretty <$> unparse a
 
 {-
@@ -142,8 +146,8 @@ instance Unparse C.Declarations A.Declarations where
 instance Unparse C.Declaration A.Declaration where
   unparse adecl =
     case adecl of
-      A.TypeSig n t -> C.TypeSig <$> getName n <*> unparse t
-      A.Defn n mt e -> C.Defn <$> getName n <*> mapM unparse mt <*> unparse e
+      A.TypeSig n t -> C.TypeSig <$> askName n <*> unparse t
+      A.Defn n mt e -> C.Defn <$> askName n <*> mapM unparse mt <*> unparse e
 
 instance Unparse C.Expr A.Expr where
   unparse aexpr = 
@@ -151,12 +155,12 @@ instance Unparse C.Expr A.Expr where
       A.Ident a           -> C.Ident <$> unparse a
       A.Typ               -> return $ C.Typ
       A.Pi Nothing  t1 t2 -> C.Fun <$> unparse t1 <*> unparse t2
-      A.Pi (Just x) t1 t2 -> C.Pi <$> getName x <*> unparse t1 <*> unparse t2
-      A.Lam x mt e        -> C.Lam <$> getName x <*> mapM unparse mt <*> unparse e
+      A.Pi (Just x) t1 t2 -> C.Pi <$> askName x <*> unparse t1 <*> unparse t2
+      A.Lam x mt e        -> C.Lam <$> askName x <*> mapM unparse mt <*> unparse e
       A.App{}             -> C.Apps <$> unparseApplication aexpr
 
 instance Unparse C.Name A.Ident where
-  unparse id = getName (A.name id)
+  unparse id = askName (A.name id)
 
-unparseApplication :: Scope m => A.Expr -> m [C.Expr] 
+unparseApplication :: ScopeReader m => A.Expr -> m [C.Expr] 
 unparseApplication (A.App f a) = mapM unparse [f,a] -- TODO!

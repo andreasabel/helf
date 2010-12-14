@@ -3,7 +3,7 @@
 files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping TypeCheck TheMonad Closures
 # Warshall Util TreeShapedOrder TraceError Extract HsSyntax ToHaskell PrettyTCM
 hsfiles=$(foreach file,$(files),$(file).hs)
-ghcflags=-fglasgow-exts -hide-package monads-fd
+ghcflags=-fglasgow-exts -ignore-package monads-fd
 
 .PHONY : test examples current default
 

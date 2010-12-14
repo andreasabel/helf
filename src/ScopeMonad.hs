@@ -21,6 +21,7 @@ import Scoping hiding (ParseError)
 import qualified Scoping
 type ParseError = Scoping.ParseError
 -}
+import Util
 
 -- * implementation of scoping monad by reader/state/error
 
@@ -44,6 +45,8 @@ type ParseError = Scoping.ParseError
 
 -}
 
+-- * scope reader
+
 data ScopeState = ScopeState
   { counter   :: A.Name
   , fixities  :: Map C.Name C.Fixity  -- assuming there are few fix.decls.
@@ -65,6 +68,32 @@ data ScopeEntry = ScopeEntry
   , name   :: C.Name -- ^ needs to be changed if shadowed 
   }
 -}
+
+instance Field ScopeState ScopeState where
+  getF = id
+  setF = const
+  modF = id
+
+instance ( Applicative m
+         , Field ScopeState st
+         , MonadReader st m    ) => ScopeReader m where
+
+  askName x = maybe (internalError ["unbound abstract identifier", show x]) id .
+                Map.lookup x . naming   . getF <$> ask
+
+  askFixity x = Map.lookup x . fixities . getF <$> ask
+
+{-
+instance ( Applicative m
+         , MonadState ScopeState m    ) => ScopeReader m where
+
+  getName x = maybe (internalError ["unbound abstract identifier", show x]) id .
+                Map.lookup x . naming   <$> get
+
+  getFixity x = Map.lookup x . fixities <$> get
+-}
+
+-- * full scope monad
 
 data ScopeContext = ScopeContext
   { localRen :: Map C.Name A.Ident
@@ -135,7 +164,7 @@ instance ( Applicative m
         nam <- gets naming
         case Map.lookup x nam of
           Just n -> return n
-          Nothing -> fail $ "error unbound abstract identifier " ++ show x
+          Nothing -> fail $ "internal error: unbound abstract identifier " ++ show x
 
   getFixity n = Map.lookup n <$> gets fixities
 

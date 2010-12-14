@@ -37,6 +37,9 @@ pair f g x = (f x, g x)
 appM2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 appM2 f ma mb = ma >>= \ a -> mb >>= f a
 
+whenMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
+whenMaybe m cont = maybe (return ()) cont m
+
 -- * records
 
 -- | @Field@ is a specification of a lens (see Data.Record.Labels).
