@@ -2,23 +2,26 @@
 -- * values as explicit closures and 
 -- * environments as finite maps
 
-{-# LANGUAGE OverlappingInstances, IncoherentInstances #-}
+{-# LANGUAGE OverlappingInstances, IncoherentInstances, PatternGuards #-}
 
 module Closures where
 
-import Prelude hiding (pi,abs)
+import Prelude hiding (pi,abs,mapM)
 
 import Control.Applicative
-import Control.Monad.Error
-import Control.Monad.Reader
-import Control.Monad.State
+import Control.Monad.Error  hiding (mapM)
+import Control.Monad.Reader hiding (mapM)
+import Control.Monad.State  hiding (mapM)
 
 import Data.Map (Map)
 import qualified Data.Map as Map
 -- import qualified Data.Maybe as Maybe
+import Data.Traversable
 
 import qualified Abstract as A
 import Context
+import Scoping
+import ScopeMonad
 import Signature
 import TypeCheck hiding (app)
 import Util
@@ -41,6 +44,7 @@ data Val
   | Sort Sort               -- s
   | CLam A.Name A.Expr Env  -- (\xe) rho
   | K    Val                -- constant function
+  | Abs  Var  Val Subst     -- abstraction
   | Fun  Val  Val           -- Pi a ((\xe)rho)
 
 instance Value Head Val where
@@ -62,24 +66,67 @@ instance Value Head Val where
 con :: A.Name -> Val -> Val
 con x t = Ne (HCon x) t []
 
--- Environments
+-- Environments (Values for expression (=bound) variables)
 
 type Env = Map A.Name Val
 
 update :: Env -> A.Name -> Val -> Env
 update rho x e = Map.insert x e rho 
 
+-- Substitutions (Values for value (=free) variables)
+
+type Subst = Map Var Val
+
+emptySubst = Map.empty
+sgSubst v x = Map.singleton x v
+updateSubst sigma x v = Map.insert x v sigma
+lookupSubst = Map.lookup
+-- updateSubsts = 
+
 -- Evaluation
 
 type EvalM = Reader (MapSig Val)
+
+-- | @substFree v x w = [v/x]w@
+substFree :: Val -> Var -> Val -> EvalM Val
+substFree w x = substs (sgSubst w x)
+{-
+substFree w x = subst where
+  subst (Ne (HVar y) a vs) 
+              | x == y = appsR w =<< mapM subst vs
+  subst (Ne h a vs)    = Ne h <$> subst a <*> mapM subst vs
+  subst (Sort s)       = return (Sort s)
+  subst (CLam y e rho) = CLam y e <$> mapM subst rho
+  subst (K v)          = K <$> subst v
+  subst (Abs{})        = fail $ "substFree: giving up"
+  subst (Fun a b)      = Fun <$> subst a <*> subst b
+-}
+substs :: Subst -> Val -> EvalM Val
+substs sigma = subst where
+  subst (Ne h@(HVar y) a vs) | Just w <- lookupSubst y sigma =
+    appsR w =<< mapM subst vs
+  subst (Ne h a vs)    = Ne h <$> subst a <*> mapM subst vs
+  subst (Sort s)       = return (Sort s)
+  subst (CLam y e rho) = CLam y e <$> mapM subst rho
+  subst (K v)          = K <$> subst v
+  subst (Abs x v tau)  = Abs x v . Map.union sigma <$> mapM subst tau
+  subst (Fun a b)      = Fun <$> subst a <*> subst b
+
+{-
+apps :: Val -> [Val] -> EvalM Val
+apps f vs = foldl (\ mf v -> mf >>= \ f -> apply f v) (return f) vs
+-}
+appsR :: Val -> [Val] -> EvalM Val
+appsR f vs = foldr (\ v mf -> mf >>= \ f -> apply f v) (return f) vs
 
 instance MonadEval Val Env EvalM where
 
   apply f v =
     case f of
-      K w          -> return $ w
-      Ne h t vs    -> return $ Ne h t (v:vs)
-      CLam x e rho -> evaluate e (update rho x v)
+      K w           -> return $ w
+      Ne h t vs     -> return $ Ne h t (v:vs)
+      CLam x e rho  -> evaluate e (update rho x v)
+      Abs x w sigma -> substs (updateSubst sigma x v) w
   
   evaluate e rho =
     case e of
@@ -94,6 +141,8 @@ instance MonadEval Val Env EvalM where
       A.Typ        -> return typ
 
   evaluate' e = evaluate e Map.empty
+
+  abstractPi a (Ne (HVar x) _ []) b = return $ Fun a $ Abs x b emptySubst
 
 -- * Context monad
 
@@ -185,7 +234,7 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
 -- * Declarations
 
-type CheckDeclM = StateT (MapSig Val) Err 
+type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
 
 instance Field (MapSig v) (MapSig v) where
   getF = id
@@ -207,13 +256,15 @@ instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
 --  doCheckExpr cont = (\ sig -> runReaderT cont $ SigCxt sig emptyContext) <$> get
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
-checkDeclaration = checkDecl
+checkDeclaration d = do
+  liftIO . putStrLn . show =<< unparse d
+  checkDecl d
 
 checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations
 
-runCheckDecls :: A.Declarations -> Err ()
-runCheckDecls ds = evalStateT (checkDeclarations ds) Map.empty
+runCheckDecls :: ScopeState -> A.Declarations -> IO (Err ())
+runCheckDecls st ds = runErrorT $ runReaderT (evalStateT (checkDeclarations ds) Map.empty) st
 
 -- * Testing
 
