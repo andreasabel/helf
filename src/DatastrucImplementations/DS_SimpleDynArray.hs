@@ -190,7 +190,7 @@ multiinsert x (k:klist) dyn =
 -------------------------------------------------------------
 -- Testing
 
-{-
+
 toList :: DynArray a -> [a]
 toList (DynArray n arr) = map (get' arr) [0..n-1]
 
@@ -240,8 +240,7 @@ prop_joinSplitNaivePretty = forAll (listOf (elements ['a'..'z'])) $ \ l ->
 
 
 test = quickCheck prop_joinSplit
-testv = verboseCheck prop_joinSplit
+--testv = verboseCheck prop_joinSplit
 testn = quickCheck prop_joinSplitNaive
-testnv = verboseCheck prop_joinSplitNaive
-testnvp = verboseCheck prop_joinSplitNaivePretty
--}
+--testnv = verboseCheck prop_joinSplitNaive
+--testnvp = verboseCheck prop_joinSplitNaivePretty
