@@ -101,7 +101,7 @@ evaluate e osubst = case e of
                       -- this is not correct - but at least, it can be compiled:
                       -- (OrderedSubst.evaluate ty2 osubst2) >>= ((return $ Sort Type)               >>= ( \a -> \b -> return (Fun a b) )  )
                       -- this is correct but cannot be compiled:
-                      -- OrderedSubst.evaluate ty2 osubst2) >>= ((OrderedSubst.evaluate ty1 osubst1) >>= ( \a -> \b -> return (Fun a b) )  )
+                      -- (OrderedSubst.evaluate ty2 osubst2) >>= ((OrderedSubst.evaluate ty1 osubst1) >>= ( \a -> \b -> return (Fun a b) )  )
                       -- okay, this also does not work:
                       -- (return $ Sort Type)               >>= ((OrderedSubst.evaluate ty2 osubst2) >>= ( \a -> \b -> return (Fun a b) )  )
                       -- finally, this works:
@@ -112,14 +112,22 @@ evaluate e osubst = case e of
                       
     OType          -> return $ typ
     -- OKind       -> kind
-    
+
+
+
+
+
 instance MonadEval Val OSubst EvalM where
   apply = OrderedSubst.apply
   evaluate  e = OrderedSubst.evaluate (transform e)
   evaluate' e = OrderedSubst.evaluate (transform e) DS.empty
-
-
-
+  
+  -- Here we get a problem: In this file, values are always closed. As b is a value, we can only form a "fake"-dependent type (which is not really dependent).
+  abstractPi a (Ne (HVar x) _ []) b = do
+                                      b' <- OrderedSubst.apply (Clos (OAbs [0] O) DS.empty) b
+                                      return $ Fun a b'
+  
+  
 
 -- hConst x = Ne (HConst x) []
 -- hConst :: A.Name -> Val -> Val
@@ -129,45 +137,6 @@ instance MonadEval Val OSubst EvalM where
 
 
 {-- Closures:
--- Type checking monad
-
-data Context = Context
-  { level  :: Int
-  , tyEnv  :: Env
-  , valEnv :: Env
-  }
-
-emptyContext :: Context
-emptyContext = Context 0 Map.empty Map.empty
-
-type Err = Either String
-type TCM = ReaderT Context Err
-
-instance TypeCheck Val TCM where  
-
-  app f v = return $ apply f v
-  
-  eval e = evaluate e <$> asks valEnv 
-    
-  addBind x a cont = do
-    Context level tyEnv valEnv <- ask
-    let xv   = freeVar level a
-    let cxt' = Context 
-                 (level + 1)
-                 (Map.insert x a tyEnv)
-                 (Map.insert x xv valEnv)
-    local (const cxt') (cont xv)
-
-  addBind' _ a cont = do
-    l <- asks level
-    let xv = freeVar l a
-    local (\ cxt -> cxt { level = level cxt + 1 }) (cont xv)
-
-  lookupVar x = do
-    gamma <- asks tyEnv
-    case Map.lookup x gamma of
-      Just t  -> return t
-      Nothing -> fail $ "unbound variable " ++ x 
 
 -}
 
