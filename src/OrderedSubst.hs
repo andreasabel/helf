@@ -12,20 +12,25 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
-import Abstract
+import Abstract as A
+import Value
 import TypeCheck
+-- import Context
+import Signature
+import Util
 
-import DataStructure
+import DataStructure as DS
 import DatastrucImplementations.DS_SimpleDynArray (DynArray)
 import DatastrucImplementations.DS_List (List)
+import DatastrucImplementations.DynArrayInstance
 
 -- "ordered" Expressions
 
 -- type OName = String
 type OType = OExpr
 
+
 data OExpr
---  = OVarFree OName
   = OCon Name
   | ODef Name
   | O
@@ -40,62 +45,64 @@ data OExpr
 
 type Var = Int
 
+
 data Head 
-  = HVar Var Val     -- typed variable 
-  | HSort Sort
-  | HConst Name
+  = HVar Var      -- (typed) variable 
+  | HCon A.Name   -- (typed) constructor
+  deriving (Eq,Ord,Show)
 
 data Val 
-  = Ne   Head [Val]   -- x vs^-1 | c vs^-1   last argument first in list!
-  | Clos OExpr OSubst -- (\xe) rho
-   -- | K    Val          -- constant function
-  | Fun  Val  Val     -- Pi a ((\x e) rho)
+  = Ne   Head Val [Val]     -- x^a vs^-1 | c^a vs^-1   last argument first in list!
+  | Sort Sort               -- s
+  | Clos OExpr OSubst       -- (\xe) rho
+  | Fun  Val  Val           -- Pi a ((\xe)rho)
 
 
-instance Value Var Val where
-  typ  = Ne (HSort Type) []
-  kind = Ne (HSort Kind) []
-  freeVar x t = Ne (HVar x t) []
+instance Value Head Val where
+  typ  = Sort Type
+  kind = Sort Kind
+  freeVar h t = Ne h t []
 
-  tyView v =
-    case v of
-      Fun a b        -> VPi a b
-      Ne (HSort s) _ -> VSort s
-      -- K _            -> VBase -- correct?
-      _              -> VBase
+  tyView (Fun a b) = VPi a b
+  tyView (Sort s)  = VSort s
+  tyView _         = VBase
  
-  tmView v =
-    case v of
-      Ne (HVar x t) vs -> VNe x t (reverse vs)
-      _                -> VVal
-
+  tmView (Ne h t vs) = VNe h t (reverse vs) -- see above: last argument first in list!
+  tmView _           = VVal
+  
 
 ---------------
 
 -- ordered substitution
 
-type OSubst = DynArray (Int, Val) 
+type OSubst = DynArray Val
+
+type EvalM = Reader (MapSig Val)
+
 
 -- Evaluation
-
-apply :: Val -> Int -> Val -> Val
+apply :: Val -> Val -> EvalM Val
 -- apply (K w) _ _ = w
-apply (Ne h vs) i v = Ne h (v:vs)
-apply (Clos (OAbs klist oe) osubst) i v = evaluate oe (multiinsert (i, v) klist osubst)
+apply (Ne head t vs) v = return $ Ne head t (v:vs)
+apply (Clos (OAbs klist oe) osubst) v = OrderedSubst.evaluate oe (multiinsert v klist osubst)
 
-evaluate :: OExpr -> OSubst -> Val
+evaluate :: OExpr -> OSubst -> EvalM Val
 evaluate e osubst = case e of
-    OVarFree x     -> hConst x
-    O              -> snd $ DataStructure.get osubst 0
-    OApp oe1 k oe2 -> let (osubst1, osubst2) = split k osubst in apply (evaluate oe1 osubst1) k (evaluate oe2 osubst2)
-    OAbs _ _       -> Clos e osubst
-    OPi ty1 ty2    -> Fun (evaluate ty1 osubst) (Clos ty2 osubst)
-    OType          -> typ
-    OKind          -> kind
+    OCon x         -> symbType . sigLookup' x <$> ask
+    ODef x         -> symbDef  . sigLookup' x <$> ask
+    O              -> return $ DS.get osubst 0
+    OApp oe1 k oe2 -> let (osubst1, osubst2) = split k osubst 
+                      in Util.appM2 OrderedSubst.apply (OrderedSubst.evaluate oe1 osubst1) (OrderedSubst.evaluate oe2 osubst2)
+    OAbs _ _       -> return $ Clos e osubst
+    -- TODO: add OPi !
+    -- OPi ty1 ty2    -> Fun (OrderedSubst.evaluate ty1 osubst) (Clos ty2 osubst)
+    OType          -> return $ typ
+    -- OKind          -> kind
     
     
-hConst x = Ne (HConst x) []
-
+-- hConst x = Ne (HConst x) []
+hConst :: A.Name -> Val -> Val
+hConst x t = Ne (HCon x) t []
 
 
 
@@ -172,24 +179,37 @@ transform :: Expr -> OExpr
 transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
   
   trans :: Expr -> Transform (Int, OExpr)
-  trans (Var x) = do
-    lbl <- ask
-    case Map.lookup x (bList lbl) of
-      Just k -> do
+  trans (Ident ident) = case ident of
+    Var x -> do
+      lbl <- ask
+      case Map.lookup x (bList lbl) of
+        Just k -> do
+          {- ll <- get
+          put $ incrKaddZero (lblsize lbl - 1 - k) ll  -}
+          modify $ incrKaddZero (lblsize lbl - 1 - k)
+          return (1, O)
+        Nothing -> fail $ "variable " ++ show x ++ " is not bound"
+    Con x -> return (0, OCon x)
+    Def x -> return (0, ODef x)
+  
   {-
-        ll <- get
-        put $ incrKaddZero (lblsize lbl - 1 - k) ll
+    trans (Apps (e:es)) = 
+    let
+    trShortApp :: Expr -> Expr -> OExpr
+    trShortApp e1 e2 = do
+      (i1, oexpr1) <- trans e1
+      (i2, oexpr2) <- trans e2
+      return (i1 + i2, OApp oexpr1 i2 oexpr2)
+    in
+    foldl trShortApp e es
   -}
-        modify $ incrKaddZero (lblsize lbl - 1 - k)
-        return (1, O)
-      Nothing -> return (0, OVarFree x)
   
   trans (App e1 e2) = do
     (i1, oexpr1) <- trans e1
     (i2, oexpr2) <- trans e2
     return (i1 + i2, OApp oexpr1 i2 oexpr2)
   
-  trans (Abs x e) = do
+  trans (Lam x mty e) = do -- !! Maybe Type !!
     modify ((:) [0]) 
     (i, oexpr) <- local (OrderedSubst.insert x) $ trans e
     (l':ll')   <- Control.Monad.State.get
@@ -199,18 +219,39 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
   trans (Pi name ty1 ty2) = case name of
     Just n -> do
       (i1, oexpr1) <- trans ty1
-      (i2, oexpr2) <- trans $ (Abs n ty2)
+      (i2, oexpr2) <- trans $ Lam n Nothing ty2 -- Nothing?
       return (i1+i2, OPi oexpr1 oexpr2)
     Nothing -> do
       (i1, oexpr1) <- trans ty1
       (i2, oexpr2) <- trans ty2
       return (i1+i2, OPi oexpr1 $ OAbs [] oexpr2)
   
-  trans (Sort Type) = return (0, OType)
-  trans (Sort Kind) = return (0, OKind)
+  -- trans (Sort Type) = return (0, OType)
+  -- trans (Sort Kind) = return (0, OKind)
+
+{- TODO delete this
+---
+type Type = Expr
+data Expr
+  = Ident Ident
+  | Typ                           -- ^ type
+  | Pi    (Maybe Name) Type Type  -- ^ A -> B or {x:A} B
+  | Lam   Name (Maybe Type) Expr  -- ^ [x:A] E or [x]E
+  | App   Expr Expr               -- ^ E1 E2 
+  deriving (Show)
+
+data Ident 
+  = Var { name :: Name }          -- ^ locally bound identifier
+  | Con { name :: Name }          -- ^ declared constant
+  | Def { name :: Name }          -- ^ defined identifier
+  deriving (Show)
+---
+-}
 
 
--- transform (original version)
+
+-- transform (original version, not updated)
+{-
 transform0 :: Expr -> OExpr
 transform0 e =
   let 
@@ -258,10 +299,12 @@ transform0 e =
   (i, oexpr, ll) = trans e lbl_empty []
   in 
   oexpr
+-}
 
 -----------------------------------------------------------------------------
--- Tests
+-- Tests (not updated yet)
 
+{-
 test = Abs "1" $ Abs "2" $ Abs "3" $ Abs "4" $ Abs "5" $ Abs "6" $ Var "3"
 
 ty = Sort Type
@@ -287,3 +330,4 @@ enats = map enat $ iterate (App (Var "suc")) (Var "zero")
 e2 = enats !! 2
 
 transTest = transform test -- etc
+-}
