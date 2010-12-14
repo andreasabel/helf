@@ -1,0 +1,3312 @@
+%{ Another supported domain are 32-bit integers. This domain is used
+mainly in Proof Carrying Code applications, and because of this, it
+has fairly different structure and features than the extension for
+(unrestricted) integers (see section 6.4 Integer Constraints). First
+of all, the algorithms used were kept short and simple, so that they
+can be easily read and verified to be correct. Secondly, the set of
+arithmetic operators provided has been kept to a minimum. Also, each
+of these is implemented as a type family instead of a function symbol,
+so that unification of arithmetic expressions follows the same rule as
+that of regular terms. Finally, for each arithmetic operator, we also
+provide a type family which, in addition to carry out the computation,
+also provides a proof object for it.
+
+Declaring
+
+%uses word32.
+causes the following signature to be loaded into the system:
+}%
+
+word32 : type.
++ : word32 -> word32 -> word32 -> type.
+* : word32 -> word32 -> word32 -> type.
+/ : word32 -> word32 -> word32 -> type.
+prove+ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} type.
+proof+ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove+ X Y Z P.
+prove* : {X:word32} {Y:word32} {Z:word32} {P:* X Y Z} type.
+proof* : {X:word32} {Y:word32} {Z:word32} {P:* X Y Z} prove* X Y Z P.
+prove/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} type.
+proof/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove/ X Y Z P.
+
+%% Not mentioned in the documentation:
+
+0 : word32.
+1 : word32.
+2 : word32.
+3 : word32.
+4 : word32.
+5 : word32.
+6 : word32.
+7 : word32.
+8 : word32.
+9 : word32.
+10 : word32.
+11 : word32.
+12 : word32.
+13 : word32.
+14 : word32.
+15 : word32.
+16 : word32.
+17 : word32.
+18 : word32.
+19 : word32.
+20 : word32.
+21 : word32.
+22 : word32.
+23 : word32.
+24 : word32.
+25 : word32.
+26 : word32.
+27 : word32.
+28 : word32.
+29 : word32.
+30 : word32.
+31 : word32.
+32 : word32.
+33 : word32.
+34 : word32.
+35 : word32.
+36 : word32.
+37 : word32.
+38 : word32.
+39 : word32.
+40 : word32.
+41 : word32.
+42 : word32.
+43 : word32.
+44 : word32.
+45 : word32.
+46 : word32.
+47 : word32.
+48 : word32.
+49 : word32.
+50 : word32.
+51 : word32.
+52 : word32.
+53 : word32.
+54 : word32.
+55 : word32.
+56 : word32.
+57 : word32.
+58 : word32.
+59 : word32.
+60 : word32.
+61 : word32.
+62 : word32.
+63 : word32.
+64 : word32.
+65 : word32.
+66 : word32.
+67 : word32.
+68 : word32.
+69 : word32.
+70 : word32.
+71 : word32.
+72 : word32.
+73 : word32.
+74 : word32.
+75 : word32.
+76 : word32.
+77 : word32.
+78 : word32.
+79 : word32.
+80 : word32.
+81 : word32.
+82 : word32.
+83 : word32.
+84 : word32.
+85 : word32.
+86 : word32.
+87 : word32.
+88 : word32.
+89 : word32.
+90 : word32.
+91 : word32.
+92 : word32.
+93 : word32.
+94 : word32.
+95 : word32.
+96 : word32.
+97 : word32.
+98 : word32.
+99 : word32.
+100 : word32.
+101 : word32.
+102 : word32.
+103 : word32.
+104 : word32.
+105 : word32.
+106 : word32.
+107 : word32.
+108 : word32.
+109 : word32.
+110 : word32.
+111 : word32.
+112 : word32.
+113 : word32.
+114 : word32.
+115 : word32.
+116 : word32.
+117 : word32.
+118 : word32.
+119 : word32.
+120 : word32.
+121 : word32.
+122 : word32.
+123 : word32.
+124 : word32.
+125 : word32.
+126 : word32.
+127 : word32.
+128 : word32.
+129 : word32.
+130 : word32.
+131 : word32.
+132 : word32.
+133 : word32.
+134 : word32.
+135 : word32.
+136 : word32.
+137 : word32.
+138 : word32.
+139 : word32.
+140 : word32.
+141 : word32.
+142 : word32.
+143 : word32.
+144 : word32.
+145 : word32.
+146 : word32.
+147 : word32.
+148 : word32.
+149 : word32.
+150 : word32.
+151 : word32.
+152 : word32.
+153 : word32.
+154 : word32.
+155 : word32.
+156 : word32.
+157 : word32.
+158 : word32.
+159 : word32.
+160 : word32.
+161 : word32.
+162 : word32.
+163 : word32.
+164 : word32.
+165 : word32.
+166 : word32.
+167 : word32.
+168 : word32.
+169 : word32.
+170 : word32.
+171 : word32.
+172 : word32.
+173 : word32.
+174 : word32.
+175 : word32.
+176 : word32.
+177 : word32.
+178 : word32.
+179 : word32.
+180 : word32.
+181 : word32.
+182 : word32.
+183 : word32.
+184 : word32.
+185 : word32.
+186 : word32.
+187 : word32.
+188 : word32.
+189 : word32.
+190 : word32.
+191 : word32.
+192 : word32.
+193 : word32.
+194 : word32.
+195 : word32.
+196 : word32.
+197 : word32.
+198 : word32.
+199 : word32.
+200 : word32.
+201 : word32.
+202 : word32.
+203 : word32.
+204 : word32.
+205 : word32.
+206 : word32.
+207 : word32.
+208 : word32.
+209 : word32.
+210 : word32.
+211 : word32.
+212 : word32.
+213 : word32.
+214 : word32.
+215 : word32.
+216 : word32.
+217 : word32.
+218 : word32.
+219 : word32.
+220 : word32.
+221 : word32.
+222 : word32.
+223 : word32.
+224 : word32.
+225 : word32.
+226 : word32.
+227 : word32.
+228 : word32.
+229 : word32.
+230 : word32.
+231 : word32.
+232 : word32.
+233 : word32.
+234 : word32.
+235 : word32.
+236 : word32.
+237 : word32.
+238 : word32.
+239 : word32.
+240 : word32.
+241 : word32.
+242 : word32.
+243 : word32.
+244 : word32.
+245 : word32.
+246 : word32.
+247 : word32.
+248 : word32.
+249 : word32.
+250 : word32.
+251 : word32.
+252 : word32.
+253 : word32.
+254 : word32.
+255 : word32.
+256 : word32.
+257 : word32.
+258 : word32.
+259 : word32.
+260 : word32.
+261 : word32.
+262 : word32.
+263 : word32.
+264 : word32.
+265 : word32.
+266 : word32.
+267 : word32.
+268 : word32.
+269 : word32.
+270 : word32.
+271 : word32.
+272 : word32.
+273 : word32.
+274 : word32.
+275 : word32.
+276 : word32.
+277 : word32.
+278 : word32.
+279 : word32.
+280 : word32.
+281 : word32.
+282 : word32.
+283 : word32.
+284 : word32.
+285 : word32.
+286 : word32.
+287 : word32.
+288 : word32.
+289 : word32.
+290 : word32.
+291 : word32.
+292 : word32.
+293 : word32.
+294 : word32.
+295 : word32.
+296 : word32.
+297 : word32.
+298 : word32.
+299 : word32.
+
+1000 : word32.
+
+512   : word32.
+1024  : word32.
+2048  : word32.
+4096  : word32.
+8192  : word32.
+16384 : word32.
+32768 : word32.
+65536 : word32.
+2147483648 : word32.
+4294967295 : word32.
+%{ 
+Goals involving + and * are immediately solved if at least two of
+the arguments are ground objects (i.e. numbers), and delayed as
+constraints otherwise. In particular
+
+?- + 3 X 9.
+
+is solved immediately and can be used to compute 9-3. Goals involving
+/ are delayed unless both the first and the second argument are
+known. The type families prove+, prove*, prove/ can be used to obtain
+proof object for the arithmetic operation, and use them in the
+remaining part of the computation:
+
+?- P : + 3 X 9.
+Solving...
+X = 6.
+P = 3+6.
+More? n
+?- prove+ 3 X 9 P.
+Solving...
+P = 3+6;
+X = 6.
+More? n
+
+It is important to stress that the domain modeled here is not the ring
+of integers modulo 32 but rather the restriction of the integer ring
+to the interval 0...4294967295, so that for example the query:
+
+?- + 1 X 0.
+will not admit a solution.
+}%% Copyright (c) 2004 Princeton University
+%	$Id: logic.elf,v 1.17 2005/02/10 15:21:23 richards Exp $
+
+tp     : type.
+tm     : tp -> type.
+form   : tp.
+tform  : type = tm form. 
+arrow  : tp -> tp -> tp.  %infix right 14 arrow.
+pf     : tform -> type.
+
+_lam    : {T1 : tp} {T2 : tp} (tm T1 -> tm T2) -> tm (T1 arrow T2).
+_@      : {T1 : tp} {T2 : tp} tm (T1 arrow T2) -> tm T1 -> tm T2.
+_forall : {T : tp} (tm T -> tform) -> tform.
+imp     : tform -> tform -> tform.   %infix right 10 imp.
+
+_beta_e  : {T1 : tp} {T2 : tp} {F : tm T1 -> tm T2} {X : tm T1}
+  {P : tm T2 -> tform} pf (P (_@ T1 T2 (_lam T1 T2 F) X)) ->  pf (P (F X)).
+
+_imp_i   : {A : tform} {B : tform} (pf A -> pf B) -> pf (A imp B).
+_imp_e   : {A : tform} {B : tform} pf (A imp B) -> pf A -> pf B.
+
+_forall_i:{T: tp} {A : tm T -> tform}({X : tm T} pf (A X)) -> pf (_forall T A).
+_forall_e:{T: tp} {A : tm T -> tform} pf (_forall T A) -> {X : tm T} pf (A X).
+
+pair     : tp -> tp -> tp.
+_mkpair  : {T1 : tp} {T2 : tp} tm (T1 arrow T2 arrow pair T1 T2).
+_fst     : {T1 : tp} {T2 : tp} tm (pair T1 T2 arrow T1).
+_snd     : {T1 : tp} {T2 : tp} tm (pair T1 T2 arrow T2).
+
+_fstpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
+ pf (_forall (T1 arrow form) [f : tm (T1 arrow form)]
+    (_@ T1 form f X) imp (_@ T1 form f (_@ (pair T1 T2) T1 (_fst T1 T2)
+     (_@ T2 (pair T1 T2) (_@ T1 (T2 arrow pair T1 T2) (_mkpair T1 T2) X) Y)))).
+
+_sndpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
+ pf (_forall (T2 arrow form) [f : tm (T2 arrow form)]
+    (_@ T2 form f Y) imp (_@ T2 form f (_@ (pair T1 T2) T2 (_snd T1 T2)
+     (_@ T2 (pair T1 T2) (_@ T1 (T2 arrow pair T1 T2) (_mkpair T1 T2) X) Y)))).
+% Copyright (c) 2004 Princeton University
+%	$Id: coredefs.elf,v 1.49 2004/07/29 00:30:38 rsimmons Exp $
+
+_frl_frm : (tform -> tform) -> tform = _forall form.
+
+_@_f : {T : tp} tm (T arrow form) -> tm T -> tform = [T : tp] _@ T form.
+
+_eq : {T : tp} tm T -> tm T -> tform =
+ [T : tp][A : tm T][B : tm T]
+  _forall (T arrow form) [P : tm (T arrow form)] _@_f T P B imp _@_f T P A.
+
+and : tform -> tform -> tform =
+ [A : tform][B : tform] _frl_frm [C : tform] (A imp B imp C) imp C.
+%infix right 12 and.
+
+or : tform -> tform -> tform =
+ [A : tform][B : tform] _frl_frm [C : tform] (A imp C) imp (B imp C) imp C.
+%infix right 11 or.
+
+false : tform = _frl_frm [A : tform] A.
+
+not : tform -> tform = [A : tform] A imp false.
+
+equiv : tform -> tform -> tform =
+ [A : tform][B : tform] (A imp B) and (B imp A).    %infix right 10 equiv.
+
+_lam2  = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
+  _lam T1 (T2 arrow T3) [x : tm T1] _lam T2 T3 (f x).
+
+_lam3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+        [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
+  _lam T1 (T2 arrow T3 arrow T4) [x : tm T1] _lam2 T2 T3 T4 (f x).
+
+_lam4 = [T1 : tp] [T2 : tp] [T3 : tp] [T4 : tp] [T5 : tp]
+        [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
+  _lam T1 (T2 arrow T3 arrow T4 arrow T5) [x : tm T1] _lam3 T2 T3 T4 T5 (f x).
+
+_@2 = [T1 : tp][T2 : tp][T3 : tp][f : tm (T1 arrow T2 arrow T3)]
+ [x1 : tm T1] _@ T2 T3 (_@ T1 (T2 arrow T3) f x1).
+
+_@3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+ [f : tm (T1 arrow T2 arrow T3 arrow T4)][x1 : tm T1]
+  _@2 T2 T3 T4 (_@ T1 (T2 arrow T3 arrow T4) f x1).
+
+_@4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+ [f : tm (T1 arrow T2 arrow T3 arrow T4 arrow T5)][x1 : tm T1]
+  _@3 T2 T3 T4 T5 (_@ T1 (T2 arrow T3 arrow T4 arrow T5) f x1).
+
+_forall2 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2 -> tform]
+  _forall T1 [x : tm T1] _forall T2 (f x).
+
+_forall3 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3 -> tform]
+  _forall T1 [x : tm T1] _forall2 T2 T3 (f x).
+
+_forall4 = [T1 : tp][T2 : tp][T3 : tp][T4: tp]
+           [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tform]
+  _forall T1 [x : tm T1] _forall3 T2 T3 T4 (f x).
+
+_forall5 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+	   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tform]
+  _forall T1 [x : tm T1] _forall4 T2 T3 T4 T5 (f x).
+
+_forall6 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp][T6 : tp]
+	   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6 -> tform]
+  _forall T1 [x : tm T1] _forall5 T2 T3 T4 T5 T6 (f x).
+
+_exists : {T : tp} (tm T -> tform) -> tform =
+ [T : tp][F : tm T -> tform]
+  _frl_frm [B : tform] (_forall T [X : tm T] F X imp B) imp B.
+
+_exists2 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2 -> tform]
+  _exists T1 [x : tm T1] _exists T2 (f x).
+
+_exists3 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3 -> tform]
+  _exists T1 [x : tm T1] _exists2 T2 T3 (f x).
+
+app1 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2][x1 : tm T1]
+ _@ T1 T2 (_lam T1 T2 f) x1.
+
+app2 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
+  _@2 T1 T2 T3 (_lam2 T1 T2 T3 f).
+
+app3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+  [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
+  _@3 T1 T2 T3 T4 (_lam3 T1 T2 T3 T4 f).
+
+app4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+  [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
+   _@4 T1 T2 T3 T4 T5 (_lam4 T1 T2 T3 T4 T5 f).
+
+app5 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5: tp][T6 : tp]
+ [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6][x1 : tm T1]
+  _@4 T2 T3 T4 T5 T6
+    ((app1 T1 (T2 arrow T3 arrow T4 arrow T5 arrow T6)
+     [x : tm T1] _lam4 T2 T3 T4 T5 T6 (f x)) x1).
+
+app6 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5: tp][T6 : tp][T7 : tp]
+ [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6 -> tm T7]
+ [x1 : tm T1][x2 : tm T2]
+  _@4 T3 T4 T5 T6 T7
+    ((app2 T1 T2 (T3 arrow T4 arrow T5 arrow T6 arrow T7)
+     [x : tm T1][y : tm T2] _lam4 T3 T4 T5 T6 T7 (f x y)) x1 x2).
+
+if : tform -> tform -> tform -> tform =
+ [E : tform][A : tform][B : tform] (E imp A) and (not E imp B).
+
+true : tform = not false.
+
+xor : tform -> tform -> tform =
+ [A : tform][B : tform] (A and (not B)) or ((not A) and B).
+%infix right 11 xor.
+
+_kleene_star : {T : tp} (tm T -> tm T -> tform) -> tm T -> tm T -> tform =
+  [T : tp][R : tm T -> tm T -> tform][V : tm T][W : tm T] 
+   _forall  (T arrow T arrow form) [S : tm (T arrow T arrow form)]
+   (_forall T [Z : tm T] _@2 T T form S Z Z) imp
+   (_forall3 T T T [X : tm T][Y : tm T][Z : tm T]
+    (app2 T T form R X Y) imp (_@2 T T form S Y Z)
+      imp (_@2 T T form S X Z)) imp
+   (_@2 T T form S V W).
+
+% Pairs out of pairs.
+% Object vs Meta logic.
+tuple2 : tp -> tp -> tp = pair.
+_mktuple2 : {T1 : tp}{T2 : tp} tm T1 -> tm T2 -> tm (tuple2 T1 T2) =
+ [T1 : tp][T2 : tp][x1 : tm T1][x2 : tm T2]
+  _@2 T1 T2 (pair T1 T2) (_mkpair T1 T2) x1 x2.
+_get1of2 = [T1 : tp][T2 : tp][p : tm (tuple2 T1 T2)]
+ _@ (pair T1 T2) T1 (_fst T1 T2) p.
+_get2of2 = [T1 : tp][T2 : tp][p : tm (tuple2 T1 T2)]
+ _@ (pair T1 T2) T2 (_snd T1 T2) p.
+
+% Quadruples out of pairs.
+tuple4 : tp -> tp -> tp -> tp -> tp =
+ [T1 : tp][T2 : tp][T3 : tp ][T4 : tp] pair (pair T1 T2) (pair T3 T4).
+_mktuple4 : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}
+           tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm (tuple4 T1 T2 T3 T4) =
+ [T1 : tp][T2 : tp][T3 : tp][T4 : tp][x1 : tm T1][x2 : tm T2][x3 : tm T3]
+ [x4 : tm T4] _@2 (pair T1 T2) (pair T3 T4) (tuple4 T1 T2 T3 T4)
+                  (_mkpair (pair T1 T2) (pair T3 T4))
+                  (_@2 T1 T2 (pair T1 T2) (_mkpair T1 T2) x1 x2)
+                  (_@2 T3 T4 (pair T3 T4) (_mkpair T3 T4) x3 x4).
+
+_get1of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T1 T2) T1 (_fst T1 T2)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T1 T2) (_fst (pair T1 T2) (pair T3 T4)) p).
+
+_get2of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T1 T2) T2 (_snd T1 T2)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T1 T2) (_fst (pair T1 T2) (pair T3 T4)) p).
+
+_get3of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T3 T4) T3 (_fst T3 T4)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T3 T4) (_snd (pair T1 T2) (pair T3 T4)) p).
+
+_get4of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T3 T4) T4 (_snd T3 T4)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T3 T4) (_snd (pair T1 T2) (pair T3 T4)) p).
+% Copyright (c) 2004 Princeton University
+%	$Id: arith-fix-checker.elf,v 1.7 2004/04/22 10:47:38 appel Exp $
+
+%use word32.
+
+rep_type = word32.
+rep_plus = +.
+rep_times = *.
+rep_div = /.
+% Copyright (c) 2004 Princeton University
+%	$Id: arith.elf,v 1.16 2004/04/22 10:47:38 appel Exp $
+
+% Author : Neophytos Michael
+%
+
+num : tp.
+tnum = tm num.
+
+const : rep_type -> tnum.
+
+isInt : tnum -> tform.
+
+zero = const 0.
+one  = const 1.
+
+p_one  : pf (isInt one).
+
+neg : tnum -> tnum.
+eqn : tnum -> tnum -> tform = _eq num.
+
+%
+% The existece of negatives is an axiom.
+%
+_neg_exists : {N : tnum} pf (isInt N) -> pf (isInt (neg N)).
+
+%
+% The integers with addition (Z, +) form an abelian group.
+%
+plus : tnum -> tnum -> tnum.
+
+_closure_add :
+ {N : tnum}{M : tnum}pf (isInt N) -> pf (isInt M) -> pf (isInt (plus N M)).
+
+_assoc_add : {A : tnum}{B : tnum}{C : tnum}
+             pf (eqn (plus (plus A B) C) (plus A (plus B C))).
+
+_comm_add : {A : tnum}{B : tnum} pf (eqn (plus A B) (plus B A)).
+
+_zero_add : {A : tnum} pf (eqn (plus A zero) A).
+
+_inv_add : {A : tnum} pf (eqn (plus A (neg A)) zero).
+
+%
+% The integers with multiplication (Z, *) form a monoid.
+%
+times : tnum -> tnum -> tnum.
+
+_closure_mult : {N : tnum}{M : tnum}
+                pf (isInt N) -> pf (isInt M) -> pf (isInt (times N M)).
+
+_assoc_mult : {A : tnum}{B : tnum}{C : tnum}
+              pf (eqn (times (times A B) C) (times A (times B C))).
+
+_zero_mult : {A : tnum} pf (eqn (times A one) A).
+
+_comm_mult : {A : tnum}{B : tnum} pf (eqn (times A B) (times B A)).
+
+% The 1 != 0 rule. This rules out the trivial structure of the single
+% element Ring.
+one_neq_zero : pf ((eqn one zero) imp false).
+
+%
+% The distributive law of multiplication over addition.
+%
+_distrib : {A : tnum}{B : tnum}{C : tnum}
+           pf (eqn (times A (plus B C)) (plus (times A B) (times A C))).
+
+%
+% The order relation on integers.
+%
+geq : tnum -> tnum -> tform.
+
+_ord_reflexivity : {A : tnum} pf (geq A A).
+
+_ord_transitivity : {A : tnum}{B : tnum}{C : tnum}
+                    pf (geq A B) -> pf (geq B C) -> pf (geq A C).
+
+_ord_dichotomy : {A : tnum}{B : tnum} pf ((geq A B) or (geq B A)).
+
+_ord_add_closure : {A : tnum}{B : tnum}{C : tnum}
+                   pf (geq A C) -> pf (geq (plus A B) (plus C B)).
+
+_ord_mult_closure : {A : tnum}{B : tnum} pf (geq A zero) -> pf (geq B zero)
+                     -> pf (geq (times A B) zero).
+
+_ord_antisymmetry : {A : tnum}{B : tnum}
+                    pf (geq A B) -> pf (geq B A) -> pf (eqn A B).
+
+_ord_excluded_middle : {A : tnum}{B : tnum} pf ((geq A B) or not (geq A B)).
+
+%
+% The cancelation Axiom
+%
+_cancelation : {A : tnum}{B : tnum}
+               pf (eqn (times A B) zero) -> pf ((eqn A zero) or (eqn B zero)).
+
+%
+% Finally the induction principle on the integers.
+%
+isNat = [n : tnum] (isInt n) and (geq n zero).
+
+induction : {A : tnum -> tform}
+            pf (A zero) ->
+            ({n : tnum}pf (isNat n) -> pf (A n) -> pf (A (plus n one))) ->
+            pf (_forall num [n : tnum] (isNat n) imp A n).
+
+sign  : tnum -> tnum.
+_sign0 : {N : tnum} pf (geq N zero) -> pf (eqn (sign N) zero).
+_sign1 : {N : tnum} pf (geq N zero imp false) -> pf (eqn (sign N) one).
+
+_eval_plus : {A : rep_type}{B : rep_type}{C : rep_type}
+             rep_plus A B C -> pf (eqn (plus (const A) (const B)) (const C)).
+
+_eval_times : {A : rep_type}{B : rep_type}{C : rep_type}
+             rep_times A B C -> pf (eqn (times (const A) (const B)) (const C)).
+
+_eval_div : {M : rep_type}{N : rep_type}{Q : rep_type} rep_div M N Q
+           -> pf (geq (const M) (times (const N) (const Q)) and
+                 (not (geq (const M) (times (const N) (plus one (const Q)))))).
+% Copyright (c) 2004 Princeton University
+%	$Id: arithdefs.elf,v 1.43 2004/10/07 22:39:18 gtan Exp $
+
+
+_frl_n  : (tnum -> tform) -> tform = _forall num.
+_exs_n  : (tnum -> tform) -> tform = _exists num.
+_exs_n2 : (tnum -> tnum -> tform) -> tform = _exists2 num num.
+_exs_n3 : (tnum -> tnum -> tnum -> tform) -> tform = _exists3 num num num.
+
+minus : tnum -> tnum -> tnum = [x : tnum][y : tnum] plus x (neg y).
+
+lt : tnum -> tnum -> tform = [x : tnum][y : tnum] not (geq x y).
+
+gt : tnum -> tnum -> tform = [x : tnum][y : tnum] lt y x.
+
+leq : tnum -> tnum -> tform = [x : tnum][y : tnum] geq y x.
+
+if1: tnum -> tnum -> tnum -> tnum = 
+ [A : tnum][B : tnum][C : tnum] plus (times A B) (times (minus one A) C).
+
+ifgtz : tnum -> tnum -> tnum -> tnum = [x : tnum] if1 (sign (neg x)).
+
+ifeq : tnum -> tnum -> tnum -> tnum -> tnum =
+ [I : tnum][J : tnum][A : tnum][B : tnum]
+  ifgtz (minus I J) B (ifgtz (minus J I) B A).
+
+% Some symbolic constants.
+two     : tnum = const 2.
+three   : tnum = const 3.
+four    : tnum = const 4.
+seven   : tnum = const 7.
+eight   : tnum = const 8.
+ten     : tnum = const 10.
+fifteen : tnum = const 15.
+sixteen : tnum = const 16.
+
+pred1 : tp -> type = [t1:tp] tm t1 -> tform.
+pred2 : tp -> tp -> type = [t1:tp][t2:tp] tm t1 -> pred1 t2.
+pred4 : tp -> tp -> tp -> tp -> type
+  = [t1:tp][t2:tp][t3:tp][t4:tp] tm t1 -> tm t2 -> pred2 t3 t4.
+pred5 : tp -> tp -> tp -> tp -> tp -> type
+  = [t1:tp][t2:tp][t3:tp][t4:tp][t5:tp] tm t1 -> pred4 t2 t3 t4 t5.
+
+high0 : type = pred2 form form.
+high1 : type = {t1:tp} pred1 t1 -> pred1 t1 -> pred1 t1.
+high2 : type = {t1:tp}{t2:tp} pred2 t1 t2 -> pred2 t1 t2 -> pred2 t1 t2.
+high4 : type = {t1:tp}{t2:tp}{t3:tp}{t4:tp}
+  pred4 t1 t2 t3 t4 -> pred4 t1 t2 t3 t4 -> pred4 t1 t2 t3 t4.
+high5 : type = {t1:tp}{t2:tp}{t3:tp}{t4:tp}{t5:tp}
+  pred5 t1 t2 t3 t4 t5 -> pred5 t1 t2 t3 t4 t5 -> pred5 t1 t2 t3 t4 t5.
+
+%abbrev mkhigh1 : high0 -> high1 =
+ [op:high0][t1:tp][h1:pred1 t1][h2:pred1 t1][x1:tm t1]
+ op (app1 t1 form h1 x1) (app1 t1 form h2 x1).
+
+%abbrev mkhigh2 : high0 -> high2 =
+ [op:high0][t1:tp][t2:tp][h1:pred2 t1 t2][h2:pred2 t1 t2][x1:tm t1][x2:tm t2]
+ op (app2 t1 t2 form h1 x1 x2) (app2 t1 t2 form h2 x1 x2).
+
+%abbrev mkhigh4 : high0 -> high4 =
+ [op:high0][t1:tp][t2:tp][t3:tp][t4:tp]
+ [h1:pred4 t1 t2 t3 t4][h2:pred4 t1 t2 t3 t4]
+ [x1:tm t1][x2:tm t2][x3:tm t3][x4:tm t4]
+ op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4)
+    (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4).
+
+%abbrev mkhigh5 : high0 -> high5 =
+ [op:high0][t1:tp][t2:tp][t3:tp][t4:tp][t5:tp]
+ [h1:pred5 t1 t2 t3 t4 t5][h2:pred5 t1 t2 t3 t4 t5]
+ [x1:tm t1][x2:tm t2][x3:tm t3][x4:tm t4][x5:tm t5]
+ op (app5 t1 t2 t3 t4 t5 form h1 x1 x2 x3 x4 x5)
+    (app5 t1 t2 t3 t4 t5 form h2 x1 x2 x3 x4 x5).
+
+%abbrev __and : pred2 form form = [a : tform][b : tform] a and b.
+%abbrev __or  : pred2 form form = [a : tform][b : tform] a or b.
+
+_&&  : high1 = mkhigh1 __and.
+_&&2 : high2 = mkhigh2 __and.
+_&&4 : high4 = mkhigh4 __and.
+_||  : high1 = mkhigh1 __or.
+_||2 : high2 = mkhigh2 __or.
+_||4 : high4 = mkhigh4 __or.
+_||5 : high5 = mkhigh5 __or.
+
+% A high level not operator
+_!! : {T : tp} (tm T -> tform) -> tm T -> tform =
+ [T : tp][p : tm T -> tform][w : tm T] not (_@ T form (_lam T form p) w).
+
+% These are used a lot in the trusted code so they've been moved here.
+succ : tnum -> tnum = [n : tnum] plus n one.
+pred : tnum -> tnum = [n : tnum] minus n one.
+
+% The definitions of ncomp and sequences
+% See core/sequence.elf
+
+sequence : tp -> tp = [T : tp] num arrow T arrow form.
+
+_ncomp : {T : tp} tm (T arrow T) -> tm num -> tm T -> tm T -> tform =
+ [T : tp][F : tm (T arrow T)][N : tnum][X : tm T][Y : tm T]
+   _forall ((T arrow T) arrow num arrow T arrow T arrow form)
+    [NC : tm ((T arrow T) arrow num arrow T arrow T arrow form)]
+      (_forall T [Z : tm T]
+        _@4 (T arrow T) num T T form NC F zero Z Z) imp
+      (_forall3 num T T [N' : tm num][Z1 : tm T][Z2 : tm T] 
+             (isNat N') imp (gt N' zero) imp
+             (_@4 (T arrow T) num T T form NC F (pred N') Z1 Z2) imp
+             (_@4 (T arrow T) num T T form NC F N' Z1 (_@ T T F Z2))) imp
+      (_@4 (T arrow T) num T T form NC F N X Y).
+
+double : tm (num arrow num) = _lam num num [x : tnum] times two x.
+
+_power2 : tnum ->  tnum -> tform =
+ [a : tnum][b : tnum] (isNat a) and (_ncomp num double a one b).
+
+bignum_base : rep_type = 256.
+bignum      : tnum = zero.
+dig         : tnum -> rep_type -> tnum =
+ [x : tnum][d : rep_type] plus (times x (const bignum_base)) (const d).
+%infix left 1000 dig.
+
+pow2_8  : tnum = bignum dig 1 dig 0.
+pow2_16 : tnum = bignum dig 1 dig 0 dig 0.
+pow2_24 : tnum = bignum dig 1 dig 0 dig 0 dig 0.
+pow2_32 : tnum = bignum dig 1 dig 0 dig 0 dig 0 dig 0.
+pow2_64 : tnum = bignum dig 1 dig 0 dig 0 dig 0 dig 0 dig 0 dig 0 dig 0 dig 0.
+pow2_31     = const 2147483648.
+
+_abs : tnum -> tnum -> tform =
+ [a : tnum][abs_a : tnum] if (geq a zero) (eqn abs_a a) (eqn abs_a (neg a)).
+
+% Arithmetic modulo an integer
+_divide_mod : tnum -> tnum -> tnum -> tnum -> tform =
+ [m : tnum][n : tnum][q : tnum][r : tnum]
+  (gt n zero) and
+  (eqn m (plus (times q n) r)) and
+  (isInt q) and geq r zero and lt r n.
+
+_divide : tnum -> tnum -> tnum -> tform =
+ [n : tnum][m : tnum][q : tnum] _exs_n [r : tnum] _divide_mod n m q r.
+
+_modulo : tnum -> tnum -> tnum -> tform =
+ [n: tnum][m : tnum][r : tnum] _exs_n [q : tnum] _divide_mod n m q r.
+
+_modulo32 : tnum -> tnum -> tform =
+ [n : tnum][res : tnum] _modulo n pow2_32 res.
+
+_plus_mod16 : tnum -> tnum -> tnum -> tform =
+ [a : tnum][b : tnum][c : tnum] _modulo (plus a b) pow2_16 c.
+
+_plus_mod32 : tnum -> tnum -> tnum -> tform =
+ [a : tnum][b : tnum][c : tnum] _modulo (plus a b) pow2_32 c.
+
+_minus_mod32 : tnum -> tnum -> tnum -> tform =
+ [a : tnum][b : tnum][c : tnum] _modulo (minus a b) pow2_32 c.
+
+_times_mod32 : tnum -> tnum -> tnum -> tform =
+ [a : tnum][b : tnum][c : tnum] _modulo (times a b) pow2_32 c.
+
+% Bitwise operations
+_bits : tnum -> tnum -> tnum -> tnum -> tform =
+ [r : tnum][l : tnum][v : tnum][word : tnum]
+  _exs_n3 [pr : tnum][plr : tnum][shifted : tnum]
+  (_power2 r pr) and
+  (_power2 (succ (minus l r)) plr) and
+  (_divide word pr shifted) and
+  (_modulo shifted plr v).
+
+_inrange2 : tnum -> tnum -> tnum -> tform =
+  [lo:tnum][hi:tnum][x:tnum]
+  isInt x and leq lo x and lt x hi.
+
+_set_disjoint : {t: tp} (tm t -> tform) -> (tm t -> tform) -> tform =
+  [t: tp] [s1: tm t -> tform] [s2: tm t -> tform]
+  not (_exists t [x:tm t] s1 x and s2 x).
+
+_rbits : rep_type -> rep_type -> tnum -> tnum -> tform =
+ [r : rep_type][l : rep_type] _bits (const r) (const l).
+
+% Number is even
+even? : tnum -> tform = [m: tnum] _modulo m two zero.
+
+% Number is a multiple of four
+mult4? : tnum -> tform = [m: tnum] _modulo m four zero.
+% Copyright (c) 2004 Princeton University
+%	$Id: arith-fix-axioms.elf,v 1.4 2004/04/22 10:47:38 appel Exp $
+
+% All rations are word32 (unsigned ints) for this theory.
+
+_warning_not_portable_to_arith_rat : {C : rep_type} pf (isNat (const C)).
+% Copyright (c) 2004 Princeton University
+%	$Id: classic.elf,v 1.4 2004/04/22 10:47:39 appel Exp $
+
+_not_not_e : {B : tform}
+ pf ((B imp (_frl_frm [A : tform] A)) imp (_frl_frm [A : tform] A)) -> pf B.
+% Copyright (c) 2004 Princeton University
+%	$Id: ops.elf,v 1.87 2004/04/22 10:49:18 appel Exp $
+
+registers : tp = num arrow num.
+memory    : tp = num arrow num.
+
+tregs : type = tm registers.
+tmem  : type = tm memory.
+
+program : tp = num arrow num arrow form.
+__program__ : type = tm program.
+
+_exs_r : (tregs -> tform) -> tform = _exists registers.
+
+_readable   : tregs -> tmem -> tnum -> tform.
+_writable   : tregs -> tmem -> tnum -> tform.
+_executable : tregs -> tmem -> tnum -> tform.
+
+instr : tp = registers arrow memory arrow registers arrow memory arrow form.
+app_instr = _@4 registers memory registers memory form.
+
+% no api steps for now
+api_step : tm instr = 
+  _lam4 registers memory registers memory form
+   [r: tregs][m: tmem][r': tregs][m': tmem] false.
+
+tnfn : tp -> tp -> type = [T1 : tp][T2 : tp] tm (T1 arrow T2).
+
+upd_typ = [T1 : tp][T2 : tp] tnfn T1 T2 -> tnfn T1 T2 -> tm T1 -> tform.
+
+_k0 = [T1 : tp][T2 : tp][f : tnfn T1 T2][f' : tnfn T1 T2][z : tm T1]
+  _eq T2 (_@ T1 T2 f' z) (_@ T1 T2 f z).
+
+_upd/cc = [T1 : tp][T2 : tp][d : tm T1][x : tm T2]
+ [k : upd_typ T1 T2][f : tnfn T1 T2][f' : tnfn T1 T2][z : tm T1]
+  if (_eq T1 z d) (_eq T2 (_@ T1 T2 f' d) x)
+                  (_@3 (T1 arrow T2) (T1 arrow T2) T1 form
+                      (_lam3 (T1 arrow T2) (T1 arrow T2) T1 form k) f f' z).
+
+_upd : {T1 : tp}{T2 : tp} tnfn T1 T2 -> tm T1 -> tm T2 -> tnfn T1 T2 -> tform =
+ [T1 : tp][T2 : tp][f : tnfn T1 T2][d : tm T1][x : tm T2][f' : tnfn T1 T2]
+  _forall T1 [z : tm T1] _upd/cc T1 T2 d x (_k0 T1 T2) f f' z.
+
+_upd2 = [T1 : tp][T2 : tp][f : tnfn T1 T2][d1 : tm T1][x1 : tm T2]
+       [d2 : tm T1][x2 : tm T2][f' : tnfn T1 T2] _forall T1 [z : tm T1]
+    _upd/cc T1 T2 d1 x1 (_upd/cc T1 T2 d2 x2 (_k0 T1 T2)) f f' z.
+
+_upd3 = [T1 : tp][T2 : tp][f : tnfn T1 T2][d1 : tm T1][x1 : tm T2][d2 : tm T1]
+  [x2 : tm T2][d3 : tm T1][x3 : tm T2][f' : tnfn T1 T2]
+  _forall T1 [z : tm T1] _upd/cc T1 T2 d1 x1 (_upd/cc T1 T2 d2 x2
+    (_upd/cc T1 T2 d3 x3 (_k0 T1 T2))) f f' z.
+
+_upd4 = [T1 : tp][T2 : tp][f : tnfn T1 T2][d1 : tm T1][x1 : tm T2][d2 : tm T1]
+  [x2 : tm T2][d3 : tm T1][x3 : tm T2][d4 : tm T1][x4 : tm T2][f' : tnfn T1 T2]
+  _forall T1 [z : tm T1] _upd/cc T1 T2 d1 x1 (_upd/cc T1 T2 d2 x2
+    (_upd/cc T1 T2 d3 x3 (_upd/cc T1 T2 d4 x4 (_k0 T1 T2)))) f f' z.
+
+app1_pred = app1 num form.
+app_get_t = app2 registers num.
+app_get   = app_get_t num.
+app_upd   = app4 registers num num registers form.
+app_upd2  = app6 registers num num num num registers form.
+
+updn_typ = tnfn num num -> tm num -> tm num -> tnfn num num -> tform.
+updn2_typ = tnfn num num -> tm num -> tm num -> tm num -> tm num
+             -> tnfn num num -> tform.
+updn3_typ = tnfn num num -> tm num -> tm num -> tm num -> tm num
+             -> tm num -> tm num -> tnfn num num -> tform.
+
+updn  : updn_typ  = _upd num num.
+updn2 : updn2_typ = _upd2 num num.
+updn3 : updn3_typ = _upd3 num num.
+
+strictify_num = [f : tform][c : tnum] app1_pred ([_ : tnum] f) c.
+
+true_fn = strictify_num true.
+
+get_mem = [m : tmem][a : tnum] _@ num num m a.
+get_reg = [r : tregs][a : tnum] _@ num num r a.
+
+_eq_mem : tmem -> tmem -> tform =
+ [m : tmem][m' : tmem] _frl_n [i : tnum] eqn (get_mem m i) (get_mem m' i).
+
+_eq_regs : tregs -> tregs -> tform =
+ [r : tregs][r' : tregs]_frl_n [i : tnum] eqn (get_reg r i) (get_reg r' i).
+
+_eq_hidden_regs: tregs -> tregs -> tform =
+ [r : tregs][r' : tregs] _frl_n [i : tnum] 
+    geq i (const 1000) imp eqn (get_reg r i) (get_reg r' i).
+
+_is_word : tnum -> tform = [x : tnum] isNat x and lt x pow2_32.
+
+_regmempred_extensional : (tregs -> tmem -> tnum -> tform) -> tform =
+ [f : tregs -> tmem -> tnum -> tform] 
+  _forall5 registers registers memory memory num
+    [r : tregs][r' : tregs][m : tmem][m' : tmem][n : tnum] _eq_hidden_regs r r'
+      imp (_frl_n [x : tm num]
+	    not (_writable r m x) imp eqn (get_mem m x) (get_mem m' x))
+      imp f r m n equiv f r' m' n.
+
+_readable_extensional : pf (_regmempred_extensional _readable).
+_writable_extensional : pf (_regmempred_extensional _writable).
+_executable_extensional : pf (_regmempred_extensional _executable).
+_executable_isword : {R:tregs} {M:tmem} {X:tnum}
+                     pf (_executable R M X) -> pf (_is_word X).
+
+instr_lam : (tregs -> tmem -> tregs -> tmem -> tform) -> tm instr =
+ _lam4 registers memory registers memory form.
+
+% This definition converts the byte input argument to the number of bits
+% that are contained in the given number of bytes.
+byte2bit = [bytes : tnum] times bytes eight.
+
+% This definition makes sure that the bit pattern between "left" and "right"
+% is identical in words "v1" and "v2".
+eq_between = [right : tnum][left : tnum][v1 : tnum][v2 : tnum]
+  _exs_n [t : tnum] _bits right left t v1 and _bits right left t v2.
+
+% Sign extend an integer.  "msb" is the most significant bit of the
+% number we are sign extending, "v" is the number itself and "vres" is
+% the result of the sign extension. "v" must always be a positive
+% integer.
+sign_ext = [msb : tnum][v : tnum][vres : tnum]
+  _exs_n [s : tnum]
+   _bits msb msb s v and
+   (if (eqn s zero) (eqn vres v)
+                (_exs_n [p : tnum] (_power2 (succ msb) p) and
+                                   (eqn vres (plus v (minus pow2_32 p))))).
+
+% This definition forms the "address" and the "offset" arguments when
+% given an unaligned argument.  It also ensures that the address is
+% well aligned given the size of the value we are trying to fetch.
+form_address = [u_address : tnum][alignment_bit : tnum][address : tnum]
+               [offset : tnum][size : tnum]
+  _bits zero alignment_bit offset u_address and
+  _minus_mod32 u_address offset address and
+  _modulo offset size zero.
+
+% This definition is used to cast the value of a word to the appropriate
+% size.  It is used by the load instructions to chop the value fetched
+% from memory to the appopriate size.
+chop_value = [m : tmem][address : tnum][offset : tnum][size : tnum][v : tnum]
+  _exs_n2 [right : tnum][left : tnum]
+    eqn left (minus (const 31) (byte2bit offset)) and
+    eqn right (minus (succ left) (byte2bit size)) and
+    _bits right left v (get_mem m address).
+
+% This definition is used (in conjuction with the above) by the load
+% instructions.  The function sign extends a value from the
+% appropriate bit depending on the size.  After the value is choped
+% then if we are dealing with a sign extending load the value fetched
+% from memory must be sign-extended.
+sign_extend_from_size = [v : tnum][signed : tform][size : tnum][vres : tnum]
+  if signed (((eqn size one) and (sign_ext seven v vres)) or
+             ((eqn size two) and (sign_ext fifteen v vres)) or
+             ((eqn size four) and (eqn v vres)))
+            (eqn v vres).
+
+% This definition is used to fetch the value stored in a memory
+% location due to a load instruction.  It performs sign extention and
+% casting to the appropriate machine type.
+fetch_value = [m : tmem][address : tnum][offset : tnum][signed : tform]
+              [size : tnum][val : tnum]
+ _exs_n [v : tnum] chop_value m address offset size v and
+                   sign_extend_from_size v signed size val.
+
+mk_stored_value_word = [reg_val : tnum][new_val : tnum] eqn new_val reg_val.
+
+mk_stored_value_half =
+ [mem_val : tnum][reg_val : tnum][offset : tnum][new_val : tnum]
+  _exs_n2 [mp_right : tnum][mp_left : tnum] _exs_n2 [p1 : tnum][p2 : tnum]
+   _power2 (byte2bit (minus four offset)) p2 and
+   _power2 (byte2bit (minus (minus four offset) two)) p1 and
+   _modulo mem_val p1 mp_right and
+   _divide mem_val p2 mp_left and
+   eqn new_val (plus (plus (times mp_left p2) (times reg_val p1)) mp_right).
+
+mk_stored_value_byte =
+ [mem_val : tnum][reg_val : tnum][offset : tnum][new_val : tnum]
+  _exs_n2 [mp_left : tnum][mp_right : tnum] _exs_n2 [p1 : tnum][p2 : tnum]
+   (_power2 (byte2bit (minus four offset)) p2) and
+   (_power2 (byte2bit (pred (minus four offset))) p1) and
+   _modulo mem_val p1 mp_right and
+   _divide mem_val p2 mp_left and
+   eqn new_val (plus (plus (times mp_left p2) (times reg_val p1)) mp_right).
+
+% This definition is used for manufucturing the value to be stored
+% into a memory location by the store kind of instructions.
+make_stored_value : tmem -> tnum -> tnum -> tnum -> tnum -> tnum -> tform =
+ [m : tmem][address : tnum][offset : tnum]
+ [size : tnum][reg_val : tnum][new_val : tnum]
+  _exs_n2 [mem_val : tnum][rval : tnum]
+   (eqn mem_val (get_mem m address)) and
+   (_bits zero (pred (byte2bit size)) rval reg_val) and
+   ((eqn size four and mk_stored_value_word rval new_val) or
+    (eqn size two  and mk_stored_value_half mem_val rval offset new_val) or
+    (eqn size one  and mk_stored_value_byte mem_val rval offset new_val)).
+
+% Operators for logical/Arithmetic operations.
+alu_fun = tnum -> tnum -> tnum -> tform.
+
+app_alu = app3 num num num form.
+app_alu2 = app2 num num form.
+
+% Logical
+bitwise : (tform -> tform -> tform)-> alu_fun =
+ [f : tform -> tform -> tform][x : tnum][y : tnum][z : tnum]
+   _is_word z and
+   _frl_n [i : tnum] (_bits i i one z)
+        equiv ( _inrange2 zero (const 32) i and
+                _@2 form form form (_lam2 form form form f)
+                                 (_bits i i one x) (_bits i i one y)).
+
+and_oper  : alu_fun = bitwise [x : tform][y : tform] x and y.
+andn_oper : alu_fun = bitwise [x : tform][y : tform] x and not y.
+or_oper   : alu_fun = bitwise [x : tform][y : tform] x or y.
+orn_oper  : alu_fun = bitwise [x : tform][y : tform] x or not y.
+xor_oper  : alu_fun = bitwise [x : tform][y : tform] x equiv not y.
+xnor_oper : alu_fun = bitwise [x : tform][y : tform] x equiv y.
+
+bits_0_31 : tnum -> tnum -> tform = _rbits 0 31.
+get_lsb5  : tnum -> tnum -> tform = _rbits 0 4.
+
+% Shift Left logical
+shift_ll_oper : alu_fun = [x : tnum][y : tnum][z : tnum]
+ _exs_n2 [lsb5 : tnum][s : tnum]
+  (get_lsb5 lsb5 y) and (_power2 lsb5 s) and (bits_0_31 z (times x s)).
+
+% Shift right logical
+shift_rl_oper : alu_fun = [x : tnum][y : tnum][z : tnum]
+ _exs_n [lsb5 : tnum] (get_lsb5 lsb5 y) and (_bits lsb5 (const 31) z x).
+
+% Shift right arithmetic
+shift_ra_oper : alu_fun = [x : tnum][y : tnum][z : tnum]
+ _exs_n2 [r : tnum][lsb5 : tnum]
+  (shift_rl_oper x y r) and (get_lsb5 lsb5 y) and
+  (sign_ext (minus (const 31) lsb5) r z).
+
+% Negate in two's complement
+neg_2s_comp = [c : tnum][x : tnum][y : tnum]
+  if (eqn x zero) (eqn y zero) (eqn y (minus c x)).
+
+neg_2s_comp_16 : tnum -> tnum -> tform = neg_2s_comp pow2_16.
+neg_2s_comp_32 : tnum -> tnum -> tform = neg_2s_comp pow2_32.
+neg_2s_comp_64 : tnum -> tnum -> tform = neg_2s_comp pow2_64.
+
+% Arith plus
+% commented out since it overlaps with _plus_mod32
+% plus_mod32_oper = [x : tnum][y : tnum][z : tnum] bits_0_31 z (plus x y).
+
+% Arith minus
+% commented out since it overlaps with _minus_mod32
+% minus_mod32_oper : alu_fun = [x : tnum][y : tnum][z : tnum]
+%  _exs_n [negy : tnum] neg_2s_comp_32 y negy and bits_0_31 z (plus x negy).
+
+% Floating point types
+o_flt32 : tp = num.
+o_flt64 : tp = pair o_flt32 o_flt32.
+o_flt128 : tp = pair o_flt64 o_flt64.
+
+flt32  : type = tm o_flt32.
+flt64  : type = tm o_flt64.
+flt128 : type = tm o_flt128.
+
+mk_float64  = _mktuple2 num num.
+mk_float128 = _mktuple4 num num num num.
+
+% Convert ints to floats
+int32->float32  : tnum -> flt32  -> tform.
+int32->float64  : tnum -> flt64  -> tform.
+int32->float128 : tnum -> flt128 -> tform.
+
+% Convert floats to ints
+float32->int32  : flt32 -> tnum -> tform.
+float64->int32  : flt64 -> tnum -> tform.
+float128->int32 : flt128 -> tnum -> tform.
+
+% Convert floats to floats
+float32->float64  : flt32 -> flt64 -> tform.
+float32->float128 : flt32 -> flt128 -> tform.
+float64->float32  : flt64 -> flt32 -> tform.
+float64->float128 : flt64 -> flt128 -> tform.
+float128->float32 : flt128 -> flt32 -> tform.
+float128->float64 : flt128 -> flt64 -> tform.
+
+% Floating point negate
+float32_neg : flt32 -> flt32 -> tform.
+float64_neg : flt64 -> flt64 -> tform.
+
+% Floating point absolute value
+float32_abs : flt32 -> flt32 -> tform.
+float64_abs : flt64 -> flt64 -> tform.
+
+% Floating point square root
+float32_sqrt  : flt32 -> flt32 -> tform.
+float64_sqrt  : flt64 -> flt64 -> tform.
+float128_sqrt : flt128 -> flt128 -> tform.
+
+% Floating point bin operators
+float32_oper_type  : type = flt32 -> flt32 -> flt32 -> tform.
+float64_oper_type  : type = flt64 -> flt64 -> flt64 -> tform.
+float128_oper_type : type = flt128 -> flt128 -> flt128 -> tform.
+
+% Floating point add, and subtract
+float32_add  : float32_oper_type.
+float64_add  : float64_oper_type.
+float128_add : float128_oper_type.
+
+float32_sub  : float32_oper_type.
+float64_sub  : float64_oper_type.
+float128_sub : float128_oper_type.
+
+% Floating point multiply, and divide
+float32_mul  : float32_oper_type.
+float64_mul  : float64_oper_type.
+float128_mul : float128_oper_type.
+
+float32->64_mul  : flt32 -> flt32 -> flt64 -> tform.
+float64->128_mul : flt64 -> flt64 -> flt128 -> tform.
+
+float32_div  : float32_oper_type.
+float64_div  : float64_oper_type.
+float128_div : float128_oper_type.
+
+% Ordering relations
+float32_eq : flt32 -> flt32 -> tform.
+float32_gt : flt32 -> flt32 -> tform.
+float32_lt : flt32 -> flt32 -> tform.
+float32_uo : flt32 -> flt32 -> tform.
+
+float64_eq : flt64 -> flt64 -> tform.
+float64_gt : flt64 -> flt64 -> tform.
+float64_lt : flt64 -> flt64 -> tform.
+float64_uo : flt64 -> flt64 -> tform.
+
+float128_eq : flt128 -> flt128 -> tform.
+float128_gt : flt128 -> flt128 -> tform.
+float128_lt : flt128 -> flt128 -> tform.
+float128_uo : flt128 -> flt128 -> tform.
+
+app_upd_t = [T : tp] app6 registers num T registers memory memory form.
+
+% Perform a unary floating point operation
+float_unary_op =
+ [T1 : tp][fs2c : tnum -> tform][getf : tregs -> tnum -> tm T1]
+ [T2 : tp][upd  : tregs -> tnum -> tm T2 -> tregs -> tmem -> tmem -> tform]
+ [f  : tm T1 -> tm T2 -> tform][fs2 : tnum][fd : tnum]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+  (app1_pred fs2c fs2) and
+  (_exists T2 [v : tm T2] (app2 T1 T2 form f (app_get_t T1 getf r fs2) v) and
+                          (app_upd_t T2 upd r fd v r' m m')).
+
+% Perform a binary floating point operation
+float_binary_op =
+ [T1 : tp][fsc : tnum -> tform][getf : tregs -> tnum -> tm T1]
+ [T2 : tp][upd : tregs -> tnum -> tm T2 -> tregs -> tmem -> tmem -> tform]
+ [f : tm T1 -> tm T1 -> tm T2 -> tform][fs1 : tnum][fs2 : tnum][fd : tnum]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (app1_pred fsc fs1) and (fsc fs2) and
+   (_exists T2 [v : tm T2]
+    (app3 T1 T1 T2 form f (app_get_t T1 getf r fs1)
+                          (app_get_t T1 getf r fs2) v) and
+   (app_upd_t T2 upd r fd v r' m m')).
+
+
+pi_typ = tnum -> tform.
+f_typ = [T : tp] tm T -> tnum -> tform.
+
+&&n : pi_typ -> pi_typ -> pi_typ = _&& num. %infix right 5 &&n.
+
+fld0 = [T : tp][p_pi : pi_typ][icons : tm T][ins : tm T][word : tnum]
+ app1_pred p_pi word and _eq T ins icons.
+
+fld1 = [T : tp][T1 : tp][f0 : f_typ T1][p_pi : pi_typ]
+          [icons : tm T1 -> tm T][ins : tm T][word : tnum]
+    _exists T1 [g : tm T1] (f0 g &&n fld0 T p_pi (icons g) ins) word.
+
+fld2 = [T : tp][T1 : tp][T2 : tp]
+  [f0 : f_typ T1][f1 : f_typ T2][p_pi : pi_typ]
+  [icons : tm T1 -> tm T2 -> tm T][ins : tm T][word : tnum]
+   _exists T1 [g : tm T1] (f0 g &&n fld1 T T2 f1 p_pi (icons g) ins) word.
+
+fld3 = [T : tp][T1 : tp][T2 : tp][T3 : tp]
+  [f0 : f_typ T1][f1 : f_typ T2][f2 : f_typ T3][p_pi : pi_typ]
+  [icons : tm T1 -> tm T2 -> tm T3 -> tm T][ins : tm T][word : tnum]
+    _exists T1  [g : tm T1] 
+     (f0 g &&n fld2 T T2 T3 f1 f2 p_pi (icons g) ins) word.
+
+fld4 = [T : tp][T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+  [f0 : f_typ T1][f1 : f_typ T2][f2 : f_typ T3][f3 : f_typ T4][p_pi : pi_typ]
+  [icons : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T][ins : tm T][word : tnum]
+    _exists T1  [g : tm T1] 
+     (f0 g &&n fld3 T T2 T3 T4 f1 f2 f3 p_pi (icons g) ins) word.
+
+fld0i = fld0 instr.
+fld1i = fld1 instr.
+fld2i = fld2 instr.
+fld3i = fld3 instr.
+fld4i = fld4 instr.
+
+field_typ = tnum -> tnum -> tform.
+pat_typ = tnum -> tform.
+%abbrev fldapp = [f : field_typ][v : rep_type] f (const v).
+
+||2n = _||2 instr num. %infix right 4 ||2n.
+% Copyright (c) 2004 Princeton University
+%	$Id: float_axioms.elf,v 1.4 2004/04/22 10:49:17 appel Exp $
+
+
+% The floating point axioms for the sparc V8 machine.
+
+float32_range : flt32 -> tform =
+ [v : flt32] (geq v zero and leq v (const 4294967295)).
+
+float64_range : flt64 -> tform =
+ [vp : flt64] float32_range (_get1of2 o_flt32 o_flt32 vp) and
+              float32_range (_get2of2 o_flt32 o_flt32 vp).
+
+float128_range : flt128 -> tform =
+ [vpp : flt128] float64_range (_get1of2 o_flt64 o_flt64 vpp) and
+                float64_range (_get2of2 o_flt64 o_flt64 vpp).
+
+float_unary_prop : {T1 : tp}{T2 : tp} (tm T2 -> tform)
+                    -> (tm T1 -> tm T2 -> tform) -> tform =
+ [T1 : tp][T2 : tp][range : tm T2 -> tform][f : tm T1 -> tm T2 -> tform]
+ _forall T1 [x : tm T1]
+  (_exists T2 [y : tm T2] f x y) and
+  (_forall2 T2 T2 [y : tm T2][y' : tm T2] f x y and f x y' imp _eq T2 y y') and
+  (_forall T2 [y : tm T2] f x y imp range y).
+
+float_unary_prop_32 : {T : tp} (tm T -> flt32 -> tform) -> tform =
+ [T : tp] float_unary_prop T o_flt32  float32_range.
+float_unary_prop_64 : {T : tp} (tm T -> flt64 -> tform) -> tform =
+ [T : tp] float_unary_prop T o_flt64  float64_range.
+float_unary_prop_128 : {T : tp} (tm T -> flt128 -> tform) -> tform =
+ [T : tp] float_unary_prop T o_flt128 float128_range.
+
+% Convert ints to floats axioms
+int32->float32_axiom  : pf (float_unary_prop_32  num int32->float32).
+int32->float64_axiom  : pf (float_unary_prop_64  num int32->float64).
+int32->float128_axiom : pf (float_unary_prop_128 num int32->float128).
+
+% Convert floats to ints
+float32->int32_axiom  : pf (float_unary_prop_32 o_flt32  float32->int32).
+float64->int32_axiom  : pf (float_unary_prop_32 o_flt64  float64->int32).
+float128->int32_axiom : pf (float_unary_prop_32 o_flt128 float128->int32).
+
+% Convert floats to floats
+float32->float64_axiom  : pf (float_unary_prop_64  o_flt32  float32->float64).
+float32->float128_axiom : pf (float_unary_prop_128 o_flt32  float32->float128).
+float64->float32_axiom  : pf (float_unary_prop_32  o_flt64  float64->float32).
+float64->float128_axiom : pf (float_unary_prop_128 o_flt64  float64->float128).
+float128->float32_axiom : pf (float_unary_prop_32  o_flt128 float128->float32).
+float128->float64_axiom : pf (float_unary_prop_64  o_flt128 float128->float64).
+
+% Negate axiom
+float32_neg_axiom : pf (float_unary_prop_32 o_flt32 float32_neg).
+float64_neg_axiom : pf (float_unary_prop_64 o_flt64 float64_neg).
+
+% Absolute value axiom
+float32_abs_axiom : pf (float_unary_prop_32 o_flt32 float32_abs).
+float64_abs_axiom : pf (float_unary_prop_64 o_flt64 float64_abs).
+
+% Floating point square root
+float32_sqrt_axiom  : pf (float_unary_prop_32  o_flt32  float32_sqrt).
+float64_sqrt_axiom  : pf (float_unary_prop_64  o_flt64  float64_sqrt).
+float128_sqrt_axiom : pf (float_unary_prop_128 o_flt128 float128_sqrt).
+
+% Floating point bin operators
+
+float_binary_prop : {T1 : tp} {T2 : tp}{T3 : tp}
+         (tm T3 -> tform) -> (tm T1 -> tm T2 -> tm T3 -> tform) -> tform =
+ [T1 : tp][T2 : tp][T3 : tp]
+ [range : tm T3 -> tform][f : tm T1 -> tm T2 -> tm T3 -> tform]
+  _forall2 T1 T2 [x1 : tm T1][x2 : tm T2]
+   (_exists T3 [y : tm T3] f x1 x2 y) and
+   (_forall2 T3 T3 [y : tm T3][y' : tm T3] (f x1 x2 y) and (f x1 x2 y')
+                                           imp _eq T3 y y') and
+   (_forall T3 [y : tm T3] (f x1 x2 y) imp (range y)).
+
+float_binary_prop_32 :
+ {T1:tp} {T2:tp} (tm T1 -> tm T2 -> tm o_flt32 -> tform) -> tform =
+ [T1 : tp][T2 : tp] float_binary_prop T1 T2 o_flt32 float32_range.
+
+float_binary_prop_64 :
+ {T1:tp} {T2:tp} (tm T1 -> tm T2 -> tm o_flt64 -> tform) -> tform =
+ [T1 : tp][T2 : tp] float_binary_prop T1 T2 o_flt64 float64_range.
+
+float_binary_prop_128 :
+ {T1:tp} {T2:tp}(tm T1 -> tm T2 -> tm o_flt128 -> tform) -> tform =
+ [T1 : tp][T2 : tp] float_binary_prop T1 T2 o_flt128 float128_range.
+
+% Floating point add and subtract axioms
+float32_add_axiom  : pf (float_binary_prop_32  o_flt32  o_flt32  float32_add).
+float64_add_axiom  : pf (float_binary_prop_64  o_flt64  o_flt64  float64_add).
+float128_add_axiom : pf (float_binary_prop_128 o_flt128 o_flt128 float128_add).
+
+float32_sub_axiom  : pf (float_binary_prop_32  o_flt32  o_flt32  float32_sub).
+float64_sub_axiom  : pf (float_binary_prop_64  o_flt64  o_flt64  float64_sub).
+float128_sub_axiom : pf (float_binary_prop_128 o_flt128 o_flt128 float128_sub).
+
+% Floating point multiply, and divide axioms
+float32_mul_axiom  : pf (float_binary_prop_32  o_flt32  o_flt32  float32_mul).
+float64_mul_axiom  : pf (float_binary_prop_64  o_flt64  o_flt64  float64_mul).
+float128_mul_axiom : pf (float_binary_prop_128 o_flt128 o_flt128 float128_mul).
+
+float32->64_axiom  : pf (float_binary_prop_64 o_flt32 o_flt32 float32->64_mul).
+float64->128_axiom: pf(float_binary_prop_128 o_flt64 o_flt64 float64->128_mul).
+
+float32_div_axiom  : pf (float_binary_prop_32  o_flt32  o_flt32  float32_div).
+float64_div_axiom  : pf (float_binary_prop_64  o_flt64  o_flt64  float64_div).
+float128_div_axiom : pf (float_binary_prop_128 o_flt128 o_flt128 float128_div).
+
+% Ordering axiom
+cmptyp : tp -> type = [T : tp] tm T -> tm T -> tform.
+
+float*_order : {T : tp} cmptyp T -> cmptyp T -> cmptyp T -> cmptyp T -> tform =
+ [T : tp][eq : cmptyp T][gt : cmptyp T][lt : cmptyp T][uo : cmptyp T]
+  _forall2 T T [x : tm T][y : tm T]
+   (eq x y) xor (gt x y) xor (lt x y) xor (uo x y).
+
+float32_order_axiom : pf (float*_order o_flt32
+                            float32_eq float32_gt float32_lt float32_uo).
+
+float64_order_axiom : pf (float*_order o_flt64
+                            float64_eq float64_gt float64_lt float64_uo).
+
+float128_order_axiom : pf (float*_order o_flt128
+                             float128_eq float128_gt float128_lt float128_uo).
+% Copyright (c) 2004 Princeton University
+%	$Id: oper_types.elf,v 1.4 2004/04/22 10:49:20 appel Exp $
+
+
+regaddr : tp = registers arrow num arrow form.
+
+address_ : tp = registers arrow num arrow form.
+
+reg_or_imm : tp = registers arrow num arrow form.
+
+% Copyright (c) 2004 Princeton University
+%	$Id: oper_injectors.elf,v 1.4 2004/04/22 10:49:20 appel Exp $
+
+
+app_constr : tm reg_or_imm -> tregs -> tnum -> tform = _@2 registers num form.
+
+inj_imode : tnum -> tm reg_or_imm = 
+ [n : tnum] _lam2 registers num form
+             [r : tregs][x : tnum] sign_ext (const 12) n x.
+
+inj_rmode : tnum -> tm reg_or_imm =
+ [i : tnum] _lam2 registers num form
+             [r : tregs][x : tnum] eqn (get_reg r i) x.
+
+inj_generalA : tnum -> tm reg_or_imm -> tm address_ =
+  [rs1 : tnum][reg_imm : tm reg_or_imm]
+    _lam2 registers num form [r : tregs][x : tnum]
+     _exs_n [y : tnum] app_constr reg_imm r y and
+                       _plus_mod32 (get_reg r rs1) y x.
+
+inj_indexR : tnum -> tnum -> tm regaddr =
+ [rs1 : tnum][rs2 : tnum]
+  _lam2 registers num form [r : tregs][x : tnum]
+    _plus_mod32 (get_reg r rs1) (get_reg r rs2) x.
+% Copyright (c) 2004 Princeton University
+%	$Id: instr_sem.elf,v 1.70 2004/06/01 21:38:09 gtan Exp $
+
+% Instruction Semantics for the sparc V8 machine.
+
+% We use numbers >= 32 to hold non-numbered machine registers.
+pc    : tnum = const 32.     % The program counter
+npc   : tnum = const 33.     % The next program counter
+icc   : tnum = const 34.     % The 4 bit condition code register
+fcc   : tnum = const 35.     % The 2 bit condition code register (floating)
+y_reg : tnum = const 36.     % The Y register used for integer multiplication
+icnt  : tnum = const 37.     % The number of instructions executed
+                                 % this includes the current instruction
+last_cbr    : tnum = const 38.   % The last time a cbr instr was executed
+last_cmpfcc : tnum = const 39.   % The last time a cmpfcc instr was executed
+last_wry    : tnum = const 40.   % The last time a wry instr was executed
+opc         : tnum = const 41.   % The old pc i.e. the pc of the instr we are
+                                 % currently executing
+flt_offset : tnum = const 128. % Offset at which floating-point registers begin
+
+% Compute the offset into the reg bank of floating point register "reg"
+flt_num : tnum -> tnum = [reg : tnum] plus flt_offset reg.
+
+% Get integer register.
+get_ireg : tregs -> tnum -> tnum = get_reg.
+
+% Get floating point register.
+get_freg = [r : tregs][fd : tnum] get_reg r (flt_num fd).
+
+set_from_icnt : tnum -> tregs -> tregs -> tform =
+ [reg : tnum][r : tregs][r' : tregs] updn r reg (get_ireg r icnt) r'.
+
+set_cbr    : tregs -> tregs -> tform = set_from_icnt last_cbr.
+set_cmpfcc : tregs -> tregs -> tform = set_from_icnt last_cmpfcc.
+set_wry    : tregs -> tregs -> tform = set_from_icnt last_wry.
+
+cbr_in_progress? : tregs -> tform =
+ [r : tregs] eqn (get_ireg r icnt) (succ (get_ireg r last_cbr)).
+cmpfcc_in_progress? : tregs -> tform =
+ [r : tregs] eqn (get_ireg r icnt) (succ (get_ireg r last_cmpfcc)).
+wry_in_progress? : tregs -> tform =
+ [r : tregs] lt (get_ireg r icnt) (plus (get_ireg r last_wry) four).
+
+word_size   : tnum = four.    % The word size of the machine
+word_bits   : tnum = pow2_32. % The word size in bits.
+double_size : tnum = eight.   % The alignment of a double word
+instr_size  : tnum = four.    % The instruction size
+
+% The bit to look at to establish if the number is negative
+sign_bit : rep_type = 31.
+sign_bit? : tnum -> tnum -> tform = _rbits sign_bit sign_bit.
+
+% The predicates that decides negativity, positiveness and nulity
+negative? : tnum -> tform = sign_bit? one.
+positive? : tnum -> tform = sign_bit? zero.
+zero?     : tnum -> tform = [x : tnum] eqn x zero.
+
+% Bit locations of the icc fields in the cc word
+icc_n_bit : tnum = three.
+icc_z_bit : tnum = two.
+icc_v_bit : tnum = one.
+icc_c_bit : tnum = zero.
+
+% The bits below indicate the status of the 32-bit ALU result
+% of the last instruction that modified the icc field
+icc_n? : tnum -> tnum -> tform = _bits icc_n_bit icc_n_bit.
+icc_z? : tnum -> tnum -> tform = _bits icc_z_bit icc_z_bit.
+icc_v? : tnum -> tnum -> tform = _bits icc_v_bit icc_v_bit.
+icc_c? : tnum -> tnum -> tform = _bits icc_c_bit icc_c_bit.
+
+% Result was negative (1 = negative, 0 = non negative)
+icc_n : tnum -> tform = icc_n? one.
+
+% Result was zero (1 = zero, 0 = nonzero)
+icc_z : tnum -> tform = icc_z? one.
+
+% Result was out of range (overflow) (1 = overflow, 0 = no overflow)
+icc_v : tnum -> tform = icc_v? one.
+
+% This bit indicates whether a carry out or borrow occurred.  Carry is
+% set on addition if there is a carry out of bit 31.  Carry is set on
+% subtraction if there is a borrow into bit 31. (1 = carry, 0 = no carry)
+icc_c : tnum -> tform = icc_c? one.
+
+% Floating point condition codes (field of the fcc register)
+fcc? : tnum -> tnum -> tform = _eq num.
+
+% Equal (freg_rs1 = freg_rs2)
+fcc_e : tnum -> tform = fcc? zero.
+
+% Greater (freg_rs1 > freg_rs2)
+fcc_g : tnum -> tform = fcc? two.
+
+% Less (freg_rs1 < freg_rs2)
+fcc_l : tnum -> tform = fcc? one.
+
+% Unordered (freg_rs1 ? freg_rs2)
+fcc_u : tnum -> tform = fcc? three.
+
+% Update the icc register
+upd_icc : tregs -> tnum -> tregs -> tform =
+ [r : tregs][v : tnum][r' : tregs] updn r icc v r'.
+
+% Set the fcc register
+upd_fcc : tregs -> tnum -> tregs -> tform =
+ [r : tregs][v : tnum][r' : tregs] updn r fcc v r'.
+
+% Update a sparc machine integer reg (when target is zero do nothing).
+upd_ireg = [r : tregs][rd : tnum][v : tnum][r' : tregs]
+  updn2 r zero (get_reg r zero) rd v r'.
+
+% Same as above for two registers.
+upd_ireg2 = [r: tregs][rd1: tnum][v1: tnum][rd2: tnum][v2: tnum][r': tregs]
+  updn3 r zero (get_reg r zero) rd1 v1 rd2 v2 r'.
+
+% Update one sparc machine floating point register.
+upd_freg = [r : tregs][fd : tnum][v : tnum][r' : tregs]
+ updn r (flt_num fd) v r'.
+
+% Update two sparc machine floating point registers.
+upd_freg2 = [r: tregs][fd1: tnum][v1: tnum][fd2: tnum][v2: tnum][r': tregs]
+ updn2 r (flt_num fd1) v1 (flt_num fd2) v2 r'.
+
+% Update four sparc machine floating point registers.
+upd_freg4 = [r : tregs][fd1 : tnum][v1 : tnum][fd2 : tnum][v2 : tnum]
+            [fd3 : tnum][v3 : tnum][fd4 : tnum][v4 : tnum][r' : tregs]
+ _exs_r [r'' : tregs] (updn2 r (flt_num fd1) v1 (flt_num fd2) v2 r'') and
+                      (updn2 r'' (flt_num fd3) v3 (flt_num fd4) v4 r').
+
+% This definition is true if the input argument "v" is indeed the value
+% that is represented by "reg_imm" in the given register set.
+load_reg_imm : tregs -> tm reg_or_imm -> tnum -> tform =
+ [r : tregs][reg_imm : tm reg_or_imm][v : tnum] app_constr reg_imm r v.
+
+% This definition is true if the input value "v" is indeed the result
+% of the load generalA operation (see the syntax definition for sparc).
+load_generalA : tregs -> tnum -> tm reg_or_imm -> tnum -> tform =
+ [r : tregs][rs1 : tnum][reg_imm : tm reg_or_imm][v : tnum]
+  _exs_n [v_reg_imm : tnum] load_reg_imm r reg_imm v_reg_imm and
+                            _plus_mod32 (get_ireg r rs1) v_reg_imm v.
+
+% This definition is true if the "address_" given is equal to the num
+% supplied in the input variable "v".  It uses the definition of
+% "generalA" defined above.  It also makes sure that the address is
+% appropriately aligned.
+load_address_align : tregs -> tm address_ -> tnum -> tnum -> tnum -> tform =
+ [r : tregs][addr : tm address_][address : tnum][offset : tnum][size : tnum]
+  _exs_n [v' : tnum] app_constr addr r v' and
+                     form_address v' one address offset size.
+
+load_address_align_aux =
+ [read/write-able : tregs -> tmem -> tnum -> tform]
+ [r : tregs][m : tmem][addr : tm address_]
+ [address : tnum][offset : tnum][size : tnum]
+  load_address_align r addr address offset size and
+  _@3 registers memory num form 
+    (_lam3 registers memory num form read/write-able) r m address.
+
+% This definition computes the address we are trying to load from,
+% makes sure that this address is readable and that it is
+% appropriately aligned.
+load_address_read_align = load_address_align_aux _readable.
+
+% This definition computes the address we are trying to write to
+% makes sure that this address is writable and that it is
+% appropriately aligned.
+load_address_write_align = load_address_align_aux _writable.
+
+% Loadg
+loadg_typ = tm address_ -> tnum -> tm instr.
+
+% The load instruction family.
+i_loadg : tform -> tnum -> updn_typ -> loadg_typ =
+ [signed : tform][size : tnum][upd : updn_typ] [addr : tm address_][rd : tnum]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (_exs_n3 [address : tnum][offset : tnum][value : tnum]
+     (load_address_read_align r m addr address offset size) and
+     (fetch_value m address offset signed size value) and
+     (app_upd upd r rd value r')) and
+    (_eq_mem m m').
+                                        % Load Signed Byte
+i_LDSB : tm address_ -> tnum -> tm instr = i_loadg true  (const 1) upd_ireg.
+                                        % Load Signed Halfword
+i_LDSH : tm address_ -> tnum -> tm instr = i_loadg true  (const 2) upd_ireg.
+                                        % Load Unsigned Byte
+i_LDUB : tm address_ -> tnum -> tm instr = i_loadg false (const 1) upd_ireg.
+                                        % Load Unsigned Halfword
+i_LDUH : tm address_ -> tnum -> tm instr = i_loadg false (const 2) upd_ireg.
+                                        % Load Word
+i_LD   : tm address_ -> tnum -> tm instr = i_loadg false (const 4) upd_ireg.
+
+i_LDSTUB : tm address_ -> tnum -> tm instr =  % Atomic Load-Store Unsigned Byte
+ [addr : tm address_][rd : tnum]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (_exs_n3 [address : tnum][offset : tnum][value : tnum]
+    _exs_n [value' : tnum]
+    (load_address_read_align r m addr address offset one) and
+    (fetch_value m address offset false one value) and
+    (_writable r m address) and
+    (make_stored_value m address offset one (const 255) value') and
+    (upd_ireg r rd value r') and (updn m address value' m')).
+
+i_SWAP_DOT : tm address_ -> tnum -> tm instr =  % Swap r Register with Memory
+ [addr : tm address_][rd : tnum]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (_exs_n3 [address : tnum][offset : tnum][value : tnum]
+    (load_address_read_align r m addr address offset word_size) and
+    (fetch_value m address offset false word_size value) and
+    (_writable r m address) and
+    (upd_ireg r rd value r') and (updn m address (get_ireg r rd) m')).
+
+ldd_aux : updn2_typ -> tm address_ -> tnum -> tm instr =
+ [upd : updn2_typ][addr : tm address_][rd : tnum]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (even? rd) and
+    (_exs_n3 [address : tnum][address' : tnum][offset : tnum]
+     _exs_n3 [offset' : tnum][v1 : tnum][v2 : tnum]
+     (load_address_read_align r m addr address offset double_size) and
+     (fetch_value m address offset false word_size v1) and
+     (_plus_mod32 address word_size address') and
+     (_readable r m address') and
+     (fetch_value m address' offset' false word_size v2) and
+     (app_upd2 upd r rd v1 (plus rd one) v2 r')) and
+    (_eq_mem m m').
+                                               % Load Doubleword
+i_LDD : tm address_ -> tnum -> tm instr = ldd_aux upd_ireg2.
+                                               % Load Floating-point
+i_LDF : tm address_ -> tnum -> tm instr = i_loadg false four upd_freg.
+                                               % Load Double Floating-point
+i_LDDF : tm address_ -> tnum -> tm instr = ldd_aux upd_freg2.
+
+i_LDC  : tm address_ -> tnum -> tm instr.      % Load Coprocessor
+i_LDDC : tm address_ -> tnum -> tm instr.      % Load Double Coprocessor
+
+% Storeg
+storeg_typ = tnum -> tm address_ -> tm instr.
+
+% The store instruction family.
+i_storeg =
+ [size : tnum][get : tregs -> tnum -> tnum][rd : tnum][addr : tm address_]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (_exs_n3 [address : tnum][offset : tnum][value : tnum]
+     (load_address_write_align r m addr address offset size) and
+     (make_stored_value m address offset size (app_get get r rd) value) and
+     (updn m address value m')) and
+    (_eq_regs r r').
+                                              % Store Byte
+i_STB : tnum -> tm address_ -> tm instr = i_storeg one  get_ireg.
+                                              % Store Halfword
+i_STH : tnum -> tm address_ -> tm instr = i_storeg two  get_ireg.
+                                              % Store Word
+i_ST  : tnum -> tm address_ -> tm instr = i_storeg four get_ireg.
+
+std_aux =
+ [get : tregs -> tnum -> tnum][rd : tnum][addr : tm address_]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (even? rd) and
+    (_exs_n3 [address : tnum][address' : tnum][offset : tnum]
+     (load_address_write_align r m addr address offset double_size) and
+     (eqn address'(plus address word_size)) and
+     (_writable r m address') and
+     (updn2 m address  (app_get get r rd)
+              address' (app_get get r (plus rd one)) m')) and
+    (_eq_regs r r').
+
+i_STD : storeg_typ = std_aux get_ireg.          % Store Doubleword
+                                                % Store Floating-point
+i_STF : tnum -> tm address_ -> tm instr = i_storeg four get_freg.
+                                                % Store Double Floating-point
+i_STDF : tnum -> tm address_ -> tm instr = std_aux get_freg.
+
+i_STC : tnum -> tm address_ -> tm instr.        % Store Coprocessor
+i_STDC : tnum -> tm address_ -> tm instr.       % Store Double Coprocessor
+
+loada_typ = tm regaddr -> tnum -> tnum -> tm instr.
+
+i_loada : tnum -> tform -> loada_typ.
+
+% Here FAS = From Alternative Space.
+i_LDSBA : loada_typ = i_loada one true.         % Load Signed Byte FAS
+i_LDSHA : loada_typ = i_loada two true.         % Load Signed Halfword FAS
+i_LDUBA : loada_typ = i_loada one false.        % Load Unsigned Byte FAS
+i_LDUHA : loada_typ = i_loada two false.        % Load Unsigned Halfword FAS
+i_LDA   : loada_typ = i_loada word_size false.  % Load Word FAS
+i_LDSTUBA : loada_typ.                 % Atomic Load-Store Unsigned Byte FAS
+
+i_SWAPA : loada_typ.                   % Swap r Register with Memory FAS
+
+i_LDDA : loada_typ.                    % Load Double Word FAS
+
+storea_typ = tnum -> tm regaddr -> tnum -> tm instr.
+
+i_storea : tnum -> storea_typ.
+
+% Here IAS = Into Alternative Space.
+i_STBA : storea_typ = i_storea (const 1).          % Store Byte IAS
+i_STHA : storea_typ = i_storea (const 2).          % Store Halfword IAS
+i_STA  : storea_typ = i_storea word_size.          % Store Word IAS
+
+i_STDA : storea_typ.                               % Store Doubleword IAS
+
+i_LDFSR : loadg_typ.         % Load Floating-point State Register
+i_LDCSR : loadg_typ.         % Load Coprocessor State Register
+i_STFSR : storeg_typ.        % Store Floating-point State Register
+i_STCSR : storeg_typ.        % Store Coprocessor State Register
+i_STDFQ : storeg_typ.        % Store Double Floating-point
+                                    % deferred-trap Queue (**)
+i_STDCQ : storeg_typ.        % Store Double Coprocessor
+                                    % deferred-trap Queue (**)
+i_RDY =                      % Read Y Register
+  [rd : tnum]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (not (wry_in_progress? r)) and
+    (upd_ireg r rd (get_ireg r y_reg) r') and (_eq_mem m m').
+
+rd_instr_typ = tnum -> tm instr.
+
+i_RDPSR : rd_instr_typ.         % Read Processor State Register (**)
+i_RDWIM : rd_instr_typ.         % Read Window Invalid Mask Register (**)
+i_RDTBR : rd_instr_typ.         % Read Trap Base Register (**)
+
+i_WRY : tnum -> tm reg_or_imm -> tm instr =          % Write Y Register
+ [rs1 : tnum][reg_imm : tm reg_or_imm]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (_exists3 num num registers [v : tnum][xor_v : tnum][r'' : tregs]
+    (load_reg_imm r reg_imm v) and (xor_oper (get_ireg r rs1) v xor_v) and
+    (upd_ireg r y_reg xor_v r'') and (set_wry r'' r')) and
+   (_eq_mem m m').
+
+rs1_reg_imm_typ : type = tnum -> tm reg_or_imm -> tm instr.
+
+i_WRPSR : rs1_reg_imm_typ.      % Write PSR (**)
+i_WRWIM : rs1_reg_imm_typ.      % Write Window Invalid Mask Reg (**)
+i_WRTBR : rs1_reg_imm_typ.      % Write Trap Base Register (**)
+i_RDASR : tnum -> tnum -> tm instr. % Read Ancillary State Register (***)
+
+i_WRASR : tnum -> tm reg_or_imm -> tnum -> tm instr. % Write ASR (***)
+i_STBAR : tm instr.                % Store Barrier
+
+alu_typ = tnum -> tm reg_or_imm -> tnum -> tm instr.
+
+% This definition computes the result of an alu operation based on
+% whether or not a carry forward was specified.
+compute_with_carry =
+ [x : tform][func : alu_fun][r : tregs][rs1 : tnum][v : tnum][v' : tnum]
+  if x (_exs_n2 [d : tnum][ires : tnum]
+        (icc_c? d (get_ireg r icc)) and
+        (app_alu func (get_ireg r rs1) v ires) and (app_alu func ires d v'))
+       (func (get_ireg r rs1) v v').
+
+% A condition-code function takes two operands and the result, and
+% decides whether the corresponding cc should be set or not.
+cc_fun = tnum -> tnum -> tnum -> tform.
+
+% the cc_fun to set the cc to zero
+%abbrev
+cc_zero : cc_fun = [_ : tnum][_ : tnum][_ : tnum] false.
+
+% The following predicates compute V and C condition codes for add instruction.
+add_overflow : cc_fun =
+ [w1 : tnum][w2 : tnum][res : tnum]
+  _exs_n3 [b1 : tnum][b2 : tnum][b3 : tnum]
+   sign_bit? b1 w1 and sign_bit? b2 w2 and sign_bit? b3 res and
+   eqn b1 b2 and not (eqn b1 b3).
+
+add_carry : cc_fun =
+ [w1 : tnum][w2 : tnum][res : tnum]
+  negative? w1 and negative? w2 or
+  positive? res and (negative? w1 or negative? w2).
+
+% The following predicates compute V and C condition codes for sub instruction.
+sub_overflow : cc_fun =
+ [w1 : tnum][w2 : tnum][res : tnum]
+  _exs_n3 [b1 : tnum][b2 : tnum][b3 : tnum]
+   sign_bit? b1 w1 and sign_bit? b2 w2 and sign_bit? b3 res and
+   not (eqn b1 b2) and not (eqn b1 b3).
+
+sub_carry : cc_fun =
+ [w1 : tnum][w2 : tnum][res : tnum]
+  positive? w1 and negative? w2 or
+  negative? res and (positive? w1 or negative? w2).
+
+% Here the processor state register is updated after an alu instruction.
+compute_new_icc : tnum -> tnum -> tnum -> cc_fun -> cc_fun -> tnum -> tform =
+[w1 : tnum][w2 : tnum][res : tnum][v_fun : cc_fun][c_fun : cc_fun][vcc' : tnum]
+ _exs_n3 [n : tnum][z : tnum][v : tnum] _exs_n [c : tnum]
+  (if (negative? res)           (eqn n eight) (eqn n zero)) and
+  (if (zero? res)               (eqn z four)  (eqn z zero)) and
+  (if (app_alu v_fun w1 w2 res) (eqn v two)   (eqn v zero)) and
+  (if (app_alu c_fun w1 w2 res) (eqn c one)   (eqn c zero)) and
+  (eqn vcc' (plus n (plus z (plus v c)))).
+
+% This definition implements the semantics of any alu operation (where
+% any is as defined in "sparc/instr_sem.elf").  It relates the machine
+% state (r, m) before the instruction occured to the state (r', m') at
+% the end of the instruction.
+i_aluxcc_aux : cc_fun -> cc_fun -> tform -> tform -> alu_fun -> alu_typ =
+ [v_fun : cc_fun][c_fun : cc_fun][x : tform][cc : tform][func : alu_fun]
+  [rs1 : tnum][reg_imm : tm reg_or_imm][rd : tnum]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (_exs_n3 [v : tnum][v' : tnum][vcc' : tnum] _exs_r [r'' : tregs]
+      (load_reg_imm r reg_imm v) and
+      (compute_with_carry x func r rs1 v v') and
+      (if cc (compute_new_icc (get_ireg r rs1) v v' v_fun c_fun vcc' and
+              upd_icc r vcc' r'')
+	     (_eq_regs r r'')) and
+      (upd_ireg r'' rd v' r')) and
+    (_eq_mem m m').
+
+i_aluxcc : tform -> tform -> alu_fun -> alu_typ = i_aluxcc_aux cc_zero cc_zero.
+i_aluxcc_x : tform -> alu_fun -> alu_typ = i_aluxcc true.
+i_aluxcc_no_x : tform -> alu_fun -> alu_typ = i_aluxcc false.
+
+mul_unsigned32->64 : tnum -> tnum -> tnum -> tform =
+ [v1 : tnum][v2 : tnum][w : tnum] eqn w (times v1 v2).
+
+mul_signed32->64 : tnum -> tnum -> tnum -> tform =
+ [v1 : tnum][v2 : tnum][w : tnum]
+  (_exs_n3 [s1 : tnum][s2 : tnum][v1' : tnum] _exs_n2 [v2' : tnum][res : tnum]
+   (sign_bit? s1 v1) and (sign_bit? s2 v2) and
+   (if (eqn s1 one) (neg_2s_comp_32 v1 v1') (eqn v1' v1)) and
+   (if (eqn s2 one) (neg_2s_comp_32 v2 v2') (eqn v2' v2)) and
+   (mul_unsigned32->64 v1' v2' res) and
+   (if (not (eqn s1 s2)) (neg_2s_comp_32 res w) (eqn w res))).
+
+i_multiply : tform -> alu_fun -> alu_typ =
+ [cc : tform][fun : alu_fun][rs1 : tnum][reg_imm : tm reg_or_imm][rd : tnum]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (_exs_n3 [v1 : tnum][v2 : tnum][res : tnum]
+     _exs_n2 [res1 : tnum][res2 : tnum] _exs_r [r'' : tregs]
+     (eqn v1 (get_ireg r rs1)) and (load_reg_imm r reg_imm v2) and
+     (app_alu fun v1 v2 res) and
+     (_rbits 0 31 res1 res) and (_rbits 32 63 res2 res) and
+     (if cc (_exs_n2 [n : tnum][z : tnum]
+             (if (negative? res1) (eqn n eight) (eqn n zero)) and
+             (if (zero? res1) (eqn z four) (eqn z zero)) and
+             (upd_icc r (plus n z) r''))
+            (_eq_regs r r'')) and
+     (upd_ireg2 r'' rd res1 y_reg res2 r')) and
+   (_eq_mem m m').
+
+i_multiply_cc : alu_fun -> alu_typ = i_multiply true.
+i_multiply_no_cc : alu_fun -> alu_typ = i_multiply false.
+
+div_neg_res_overflow_method : tm form.
+
+div_alu_typ = tnum -> tnum -> tnum -> tnum -> tform.
+
+div_unsigned64->32 : div_alu_typ =
+ [x1 : tnum][x2 : tnum][w : tnum][v : tnum]
+  (_exs_n2 [quo : tnum][rem : tnum]
+   (_divide_mod x1 x2 quo rem) and
+   (if ((geq quo pow2_32) and (eqn rem (pred x2)))
+       ((eqn v two) and (eqn w (pred pow2_32)))
+       (eqn v zero) and (bits_0_31 w quo))).
+
+div_signed64->32 : div_alu_typ =
+ [x1 : tnum][x2 : tnum][w : tnum][v : tnum]
+  (_exs_n2 [s1 : tnum][s2 : tnum] _exs_n2 [x1' : tnum][x2' : tnum]
+   (_exs_n3 [quo : tnum][rem : tnum][quo_pos : tnum]
+    _exs_n2 [rem_pos : tnum][quo_2s : tnum]
+   (_rbits 63 63 s1 x1) and (sign_bit? s2 x2) and
+   (if (eqn s1 one) (neg_2s_comp_64 x1 x1') (eqn x1' x1)) and
+   (if (eqn s2 one) (neg_2s_comp_32 x2 x2') (eqn x2' x2)) and
+   (_divide_mod x1' x2' quo_pos rem_pos) and
+   (if (eqn s1 s2) ((eqn quo quo_pos) and (eqn quo_2s quo_pos))
+                  ((eqn quo (neg quo_pos)) and
+                   (neg_2s_comp_64 quo quo_2s))) and
+   (if (eqn s1 zero) (eqn rem rem_pos)
+                    (eqn rem (neg rem_pos))) and
+   (if ((geq quo pow2_31) and (eqn rem (pred x2')))
+      ((eqn v two) and (eqn w (pred pow2_31)))
+      (if (leq quo (neg pow2_31))
+        (if ((div_neg_res_overflow_method and (eqn rem (neg (pred x2')))) or
+               (not div_neg_res_overflow_method and (eqn rem zero)))
+           ((eqn v two) and (eqn w (neg pow2_31)))
+           ((eqn v zero) and (bits_0_31 w quo_2s)))
+         ((eqn v zero) and (bits_0_31 w quo_2s)))))).
+
+i_divide : tform -> div_alu_typ -> tnum -> tm reg_or_imm -> tnum -> tm instr =
+[cc : tform][fun : div_alu_typ][rs1 : tnum][reg_imm : tm reg_or_imm][rd : tnum]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (_exs_n3 [v1 : tnum][v2 : tnum][v3 : tnum]
+    _exists2 num registers [res : tnum][r'' : tregs]
+    _exs_n3 [n : tnum][z : tnum][v : tnum]
+    _exs_n  [y: tnum]
+     (if (wry_in_progress? r) (_is_word y) (eqn y (get_ireg r y_reg))) and
+     (eqn v1 (get_ireg r rs1)) and (load_reg_imm r reg_imm v2) and
+     (eqn v3 (plus v1 (times pow2_32 y))) and
+     (fun v3 v2 res v) and
+     (if cc ((if (negative? res) (eqn n eight) (eqn n zero)) and
+             (if (zero? res) (eqn z four) (eqn z zero)) and
+             (upd_icc r (plus n (plus z v)) r''))
+            (_eq_regs r r'')) and
+     (upd_ireg r'' rd res r')) and
+   (_eq_mem m m').
+
+i_divide_cc = i_divide true.
+i_divide_no_cc = i_divide false.
+
+% Logical
+i_AND    = i_aluxcc_no_x false and_oper.  % And
+i_ANDcc  = i_aluxcc_no_x true  and_oper.  % And and modify icc
+i_ANDN   = i_aluxcc_no_x false andn_oper. % And not
+i_ANDNcc = i_aluxcc_no_x true  andn_oper. % And not and modify icc
+i_OR     = i_aluxcc_no_x false or_oper.   % Inclusive-Or
+i_ORcc   = i_aluxcc_no_x true  or_oper.   % Inclusive-Or and modify icc
+i_ORN    = i_aluxcc_no_x false orn_oper.  % Inclusive-Or not
+i_ORNcc  = i_aluxcc_no_x true  orn_oper.  % Inclusive-Or not and modify icc
+i_XOR    = i_aluxcc_no_x false xor_oper.  % Exclusive-Or
+i_XORcc  = i_aluxcc_no_x true  xor_oper.  % Exclusive-Or and modify icc
+i_XNOR   = i_aluxcc_no_x false xnor_oper. % Exclusive-NOr
+i_XNORcc = i_aluxcc_no_x true  xnor_oper. % Exclusive-NOr and modify icc
+
+% Shift
+i_SLL = i_aluxcc_no_x false shift_ll_oper.     % Shift Left Logical
+i_SRL = i_aluxcc_no_x false shift_rl_oper.     % Shift Right Logical
+i_SRA = i_aluxcc_no_x false shift_ra_oper.     % Shift Right Arithmetic
+
+% Arith
+i_ADD     = i_aluxcc_no_x false _plus_mod32.  % Add
+                                                  % Add and modify icc
+i_ADDcc   = i_aluxcc_aux add_overflow add_carry false true _plus_mod32.
+i_ADDX    = i_aluxcc_x false _plus_mod32.     % Add with Carry
+                                               % Add with Carry and modify icc
+i_ADDXcc  = i_aluxcc_aux add_overflow add_carry true  true _plus_mod32.
+
+i_TADDcc   : alu_typ.            % Tagged Add and modify icc
+i_TADDccTV : alu_typ.            % Tagged Add, modify icc and trap on overflow
+
+i_SUB    = i_aluxcc_no_x false _minus_mod32.  % Subtract
+                                                  % Subtract and modify icc
+i_SUBcc  = i_aluxcc_aux sub_overflow sub_carry false true _minus_mod32.
+
+i_SUBX   = i_aluxcc_x false _minus_mod32.   % Subtract with Carry
+                                           % Subtract with Carry and modify icc
+i_SUBXcc = i_aluxcc_aux sub_overflow sub_carry true true _minus_mod32.
+
+i_TSUBcc   : alu_typ.           % Tagged Subtract and mod icc
+i_TSUBccTV : alu_typ.           % Tagged Subtract, mod icc and trap on overflow
+
+i_MULScc : alu_typ.             % Multiply step and modify icc
+
+i_UMUL    = i_multiply_no_cc mul_unsigned32->64.  % U Int Mult
+i_SMUL    = i_multiply_no_cc mul_signed32->64.    % S Int mult
+i_UMULcc  = i_multiply_cc    mul_unsigned32->64.  % U Int Mult and w/ icc
+i_SMULcc  = i_multiply_cc    mul_signed32->64.    % S Int mult w/ icc
+i_UDIV    = i_divide_no_cc   div_unsigned64->32.  % U Int Div
+i_SDIV    = i_divide_no_cc   div_signed64->32.    % S Int Div
+i_UDIVcc  = i_divide_cc      div_unsigned64->32.  % U Int Div w/ icc
+i_SDIVcc  = i_divide_cc      div_signed64->32.    % S Int Div w/ icc
+
+i_SAVE    : alu_typ.                              % Save caller's window
+i_RESTORE : alu_typ.                              % Restore caller's window
+
+branch_typ = tnum -> tnum -> tm instr.
+
+comp_btarget : tnum -> tnum -> tnum -> tform =
+ [loc : tnum][disp : tnum][target : tnum]
+  _exs_n2 [d1 : tnum][d2 : tnum] (sign_ext (const 21) disp d1) and
+                                 (_times_mod32 four d1 d2) and
+                                 (_plus_mod32 loc d2 target).
+
+annul_instr : tregs -> tregs -> tform =
+ [r : tregs][r' : tregs]
+ _exists num [new_npc: tm num]
+    _plus_mod32 (get_reg r npc) instr_size new_npc and
+    updn2 r pc (get_ireg r npc) npc new_npc r'.
+
+annul? : tnum -> tform = [x : tnum] (eqn x one).
+
+branch_aux =
+ [init_cond : tregs -> tform][get_cc : tregs -> tnum]
+ [ba : tform][comp : tnum -> tform][a : tnum][disp : tnum]
+   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (init_cond r) and
+    (_exs_r [r''' : tregs]
+     (if (app1_pred comp (get_cc r))
+         (_exists2 num registers [target : tnum][r'' : tregs]
+           (comp_btarget (get_ireg r opc) disp target) and
+           (updn r npc target r'') and
+           (if (ba and annul? a) (annul_instr r'' r''')
+                                   (_eq_regs r'' r''')))
+         (if (annul? a) (annul_instr r r''')
+                          (_eq_regs r r'''))) and
+     (if ba (_eq_regs r''' r')
+            (set_cbr r''' r'))) and
+    (_eq_mem m m').
+
+i_init_cond = [r : tregs] not (cbr_in_progress? r).
+f_init_cond = [r : tregs] not (cbr_in_progress? r) and
+                          not (cmpfcc_in_progress? r).
+
+i_ibranch : tform -> (tnum -> tform) -> branch_typ =
+ branch_aux i_init_cond [r : tregs] (get_ireg r icc).
+
+i_fbranch : tform -> (tnum -> tform) -> branch_typ =
+ branch_aux f_init_cond [r : tregs] (get_ireg r fcc).
+
+i_cbranch  : (tnum -> tform) -> branch_typ.
+
+cnd_bn   = strictify_num false.
+cnd_be   = [vcc : tnum] (icc_z vcc).
+cnd_ble  = [vcc : tnum] (icc_z vcc) or ((icc_n vcc) xor (icc_v vcc)).
+cnd_bl   = [vcc : tnum] (icc_n vcc) xor (icc_v vcc).
+cnd_bleu = [vcc : tnum] (icc_c vcc) or (icc_z vcc).
+cnd_bcs  = [vcc : tnum] (icc_c vcc).
+cnd_bneg = [vcc : tnum] (icc_n vcc).
+cnd_bvs  = [vcc : tnum] (icc_v vcc).
+cnd_ba   = strictify_num true.
+cnd_bne  = [vcc : tnum] not (icc_z vcc).
+cnd_bg   = [vcc : tnum] not ((icc_z vcc) or ((icc_n vcc) xor (icc_v vcc))).
+cnd_bge  = [vcc : tnum] not ((icc_n vcc) xor (icc_v vcc)).
+cnd_bgu  = [vcc : tnum] not ((icc_c vcc) or (icc_z vcc)).
+cnd_bcc  = [vcc : tnum] not (icc_c vcc).
+cnd_bpos = [vcc : tnum] not (icc_n vcc).
+cnd_bvc  = [vcc : tnum] not (icc_v vcc).
+
+nrBranch = i_ibranch false.  % Normal branch i.e. not a ba
+baBranch = i_ibranch true.   % A ba branch - annul behavior differs
+
+i_BN   = nrBranch cnd_bn.    % Branch Never
+i_BE   = nrBranch cnd_be.    % Branch on Equal
+i_BLE  = nrBranch cnd_ble.   % Branch on Less or Equal
+i_BL   = nrBranch cnd_bl.    % Branch on Less
+i_BLEU = nrBranch cnd_bleu.  % Branch on Less or Equal Unsigned
+i_BCS  = nrBranch cnd_bcs.   % Branch on Carry Set (Less than, Unsigned)
+i_BNEG = nrBranch cnd_bneg.  % Branch on Negative
+i_BVS  = nrBranch cnd_bvs.   % Branch on Overflow Set
+i_BA   = baBranch cnd_ba.    % Branch Always - the annul behavior
+                             % is different for this instruction
+i_BNE  = nrBranch cnd_bne.   % Branch on Not Equal
+i_BG   = nrBranch cnd_bg.    % Branch on Greater
+i_BGE  = nrBranch cnd_bge.   % Branch on Greater or Equal
+i_BGU  = nrBranch cnd_bgu.   % Branch on Greater Unsigned
+i_BCC  = nrBranch cnd_bcc.   % Branch on Carry Clear (Greater or eq Unsigned)
+i_BPOS = nrBranch cnd_bpos.  % Branch on Positive
+i_BVC  = nrBranch cnd_bvc.   % Branch on Overflow Set
+
+% Floating point
+cnd_fbn   = strictify_num false.
+cnd_fbne  = [fsr : tnum] (fcc_l fsr) or (fcc_g fsr) or (fcc_u fsr).
+cnd_fblg  = [fsr : tnum] (fcc_l fsr) or (fcc_g fsr).
+cnd_fbul  = [fsr : tnum] (fcc_l fsr) or (fcc_u fsr).
+cnd_fbl   = [fsr : tnum] (fcc_l fsr).
+cnd_fbug  = [fsr : tnum] (fcc_g fsr) or (fcc_u fsr).
+cnd_fbg   = [fsr : tnum] (fcc_g fsr).
+cnd_fbu   = [fsr : tnum] (fcc_u fsr).
+cnd_fba   = strictify_num true.
+cnd_fbe   = [fsr : tnum] (fcc_e fsr).
+cnd_fbue  = [fsr : tnum] (fcc_u fsr) or (fcc_e fsr).
+cnd_fbge  = [fsr : tnum] (fcc_e fsr) or (fcc_g fsr).
+cnd_fbuge = [fsr : tnum] (fcc_e fsr) or (fcc_g fsr) or (fcc_u fsr).
+cnd_fble  = [fsr : tnum] (fcc_l fsr) or (fcc_e fsr).
+cnd_fbule = [fsr : tnum] (fcc_e fsr) or (fcc_l fsr) or (fcc_u fsr).
+cnd_fbo   = [fsr : tnum] (fcc_e fsr) or (fcc_l fsr) or (fcc_g fsr).
+
+f_nrBranch = i_fbranch false.    % Normal branch i.e. not a ba
+f_baBranch = i_fbranch true.     % A ba branch - annul behavior differs
+
+i_FBN   = f_nrBranch cnd_fbn.    % Branch Never
+i_FBNE  = f_nrBranch cnd_fbne.   % Branch on Not Equal
+i_FBLG  = f_nrBranch cnd_fblg.   % Branch on Less or Greater
+i_FBUL  = f_nrBranch cnd_fbul.   % Branch on Unordered or Less
+i_FBL   = f_nrBranch cnd_fbl.    % Branch on Less
+i_FBUG  = f_nrBranch cnd_fbug.   % Branch on Unordered or Greater
+i_FBG   = f_nrBranch cnd_fbg.    % Branch on Greater
+i_FBU   = f_nrBranch cnd_fbu.    % Branch on Unordered
+i_FBA   = f_baBranch cnd_fba.    % Branch Always -- the annul behavior
+                                 % is different for this instruction
+i_FBE   = f_nrBranch cnd_fbe.    % Branch on Equal
+i_FBUE  = f_nrBranch cnd_fbue.   % Branch on Unordered or Equal
+i_FBGE  = f_nrBranch cnd_fbge.   % Branch on Greater or Equal
+i_FBUGE = f_nrBranch cnd_fbuge.  % Branch on Unordered or Greater or Equal
+i_FBLE  = f_nrBranch cnd_fble.   % Branch on Less or Equal
+i_FBULE = f_nrBranch cnd_fbule.  % Branch on Unordered or Less or Equal
+i_FBO   = f_nrBranch cnd_fbo.    % Branch on Unordered
+
+always_false = strictify_num false.
+
+i_CBN    = i_cbranch always_false.
+i_CB123  = i_cbranch always_false.
+i_CB12   = i_cbranch always_false.
+i_CB13   = i_cbranch always_false.
+i_CB1    = i_cbranch always_false.
+i_CB23   = i_cbranch always_false.
+i_CB2    = i_cbranch always_false.
+i_CB3    = i_cbranch always_false.
+i_CBA    = i_cbranch always_false.
+i_CB0    = i_cbranch always_false.
+i_CB03   = i_cbranch always_false.
+i_CB02   = i_cbranch always_false.
+i_CB023  = i_cbranch always_false.
+i_CB01   = i_cbranch always_false.
+i_CB013  = i_cbranch always_false.
+i_CB012  = i_cbranch always_false.
+
+i_CALL = [disp : tnum]                            % Call and Link
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (not (cbr_in_progress? r)) and
+   (updn2 r fifteen (get_ireg r opc) npc (times four disp) r') and
+   (_eq_mem m m').
+
+% Get a floating point value from the register bank
+get_float32 = get_freg.
+get_float64 = [r : tregs][fs2 : tnum]
+ mk_float64 (get_freg r fs2) (get_freg r (succ fs2)).
+
+get_float128 = [r : tregs][fs2 : tnum]
+ mk_float128 (get_freg r fs2) (get_freg r (succ fs2))
+             (get_freg r (plus fs2 two)) (get_freg r (plus fs2 three)).
+
+% Update the floating point register, and declare
+% that there was no memory change
+upd_freg32_no_mem_change =
+ [r : tregs][fd : tnum][v : flt32][r' : tregs][m : tmem][m' : tmem]
+  (upd_freg r fd v r') and (_eq_mem m m').
+
+% Update a 64 bit floating point registers, and declare
+% that there was no memory change
+upd_freg64_no_mem_change =
+ [r : tregs][fd : tnum][v : flt64][r' : tregs][m : tmem][m' : tmem]
+  (even? fd) and
+  (_exs_n2 [v1 : tnum][v2 : tnum]
+   (_eq o_flt64 v (mk_float64 v1 v2)) and
+   (upd_freg2 r fd v1 (succ fd) v2 r')) and
+  (_eq_mem m m').
+
+% Update a 128 bit floating point registers, and declare
+% that there was no memory change
+upd_freg128_no_mem_change =
+ [r : tregs][fd : tnum][v : flt128][r' : tregs][m : tmem][m' : tmem]
+  (mult4? fd) and
+  (_exs_n2 [v1 : tnum][v2 : tnum] _exs_n2 [v3 : tnum][v4 : tnum]
+   (_eq o_flt128 v (mk_float128 v1 v2 v3 v4)) and
+   (upd_freg4 r fd v1 (succ fd) v2 (plus fd two) v3 (plus fd three) v4 r')) and
+  (_eq_mem m m').
+
+% Unary floating point operations
+float_unary_op_32 = float_unary_op o_flt32 true_fn get_float32.
+
+float_unary_op_32->32  = float_unary_op_32 o_flt32  upd_freg32_no_mem_change.
+float_unary_op_32->64  = float_unary_op_32 o_flt64  upd_freg64_no_mem_change.
+float_unary_op_32->128 = float_unary_op_32 o_flt128 upd_freg128_no_mem_change.
+
+float_unary_op_64 = float_unary_op o_flt64 even? get_float64.
+
+float_unary_op_64->32  = float_unary_op_64 o_flt32 upd_freg32_no_mem_change.
+float_unary_op_64->64  = float_unary_op_64 o_flt64 upd_freg64_no_mem_change.
+float_unary_op_64->128 = float_unary_op_64 o_flt128 upd_freg128_no_mem_change.
+
+float_unary_op_128 = float_unary_op o_flt128 mult4? get_float128.
+
+float_unary_op_128->32 = float_unary_op_128 o_flt32 upd_freg32_no_mem_change.
+float_unary_op_128->64 = float_unary_op_128 o_flt64 upd_freg64_no_mem_change.
+float_unary_op_128->128 =
+ float_unary_op_128 o_flt128 upd_freg128_no_mem_change.
+
+i_FMOVs  = float_unary_op_32->32 (_eq o_flt32).     % Move
+i_FNEGs  = float_unary_op_32->32 float32_neg.       % Negate
+i_FABSs  = float_unary_op_32->32 float32_abs.       % Absolute Value
+i_FSQRTs = float_unary_op_32->32 float32_sqrt.      % Square Root Single
+
+i_FSQRTd = float_unary_op_64->64 float64_sqrt.      % Square Root Double
+i_FSQRTq = float_unary_op_128->128 float128_sqrt.   % Square Root Quad
+
+i_FiTOs = float_unary_op_32->32 int32->float32.     % Convert Integer to Single
+i_FsTOi = float_unary_op_32->32 float32->int32.     % Convert Single to Integer
+
+i_FiTOd = float_unary_op_32->64 int32->float64.     % Convert Integer to Double
+
+i_FsTOd = float_unary_op_32->64 float32->float64.   % Convert Single to Double
+
+i_FiTOq = float_unary_op_32->128 int32->float128.   % Convert Integer to Quad
+i_FsTOq = float_unary_op_32->128 float32->float128. % Convert Single to Quad
+
+i_FdTOi = float_unary_op_64->32 float64->int32.     % Convert Double to Integer
+i_FdTOs = float_unary_op_64->32 float64->float32.   % Convert Double to Single
+
+i_FqTOs = float_unary_op_128->32 float128->float32. % Convert Quad to Single
+i_FqTOi = float_unary_op_128->32 float128->int32.   % Convert Quad to Integer
+
+i_FqTOd = float_unary_op_128->64 float128->float64. % Convert Quad to Double
+i_FdTOq = float_unary_op_64->128 float64->float128. % Convert Double to Quad
+
+% Binary floating point operations
+float_bin_op_32 = float_binary_op o_flt32 true_fn get_float32.
+
+float_bin_op_32->32 = float_bin_op_32 o_flt32 upd_freg32_no_mem_change.
+float_bin_op_32->64 = float_bin_op_32 o_flt64 upd_freg64_no_mem_change.
+
+float_bin_op_64 = float_binary_op o_flt64 even? get_float64.
+
+float_bin_op_64->64  = float_bin_op_64 o_flt64 upd_freg64_no_mem_change.
+float_bin_op_64->128 = float_bin_op_64 o_flt128 upd_freg128_no_mem_change.
+
+float_bin_op_128 = float_binary_op o_flt128 mult4? get_float128.
+float_bin_op_128->128 = float_bin_op_128 o_flt128 upd_freg128_no_mem_change.
+
+i_FADDs = float_bin_op_32->32 float32_add.     % Add Single
+i_FSUBs = float_bin_op_32->32 float32_sub.     % Subtract Single
+i_FMULs = float_bin_op_32->32 float32_mul.     % Multiply Single
+i_FDIVs = float_bin_op_32->32 float32_div.     % Divide Single
+
+i_FADDd = float_bin_op_64->64 float64_add.     % Add Double
+i_FSUBd = float_bin_op_64->64 float64_sub.     % Subtract Double
+i_FMULd = float_bin_op_64->64 float64_mul.     % Multiply Double
+i_FDIVd = float_bin_op_64->64 float64_div.     % Divide Double
+
+i_FADDq = float_bin_op_128->128 float128_add.  % Add Quad
+i_FSUBq = float_bin_op_128->128 float128_sub.  % Subtract Quad
+i_FMULq = float_bin_op_128->128 float128_mul.  % Multiply Quad
+i_FDIVq = float_bin_op_128->128 float128_div.  % Divide Quad
+
+i_FsMULd = float_bin_op_32->64  float32->64_mul.  % Multiply Single to Double
+i_FdMULq = float_bin_op_64->128 float64->128_mul. % Multiply Double to Quad
+
+% The Compare instructions.
+f_compare =
+ [T : tp]
+ [getf : tregs -> tnum -> tm T][ceq : tm T -> tm T -> tform]
+ [clt : tm T -> tm T -> tform][cgt : tm T -> tm T -> tform]
+ [ex  : tform][fs1 : tnum][fs2 : tnum]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+    (_exists3 T T num [v1 : tm T][v2 : tm T][fccv : tnum] _exs_r [r'' : tregs]
+     (_eq T v1 (app_get_t T getf r fs1)) and
+     (_eq T v2 (app_get_t T getf r fs2)) and 
+     (if (ceq v1 v2) (eqn fccv zero)
+        (if (clt v1 v2) (eqn fccv one)
+           (if (cgt v1 v2) (eqn fccv two)
+              (eqn fccv three)))) and
+     (not (ex and (eqn fccv three))) and
+     (upd_fcc r fccv r'') and (set_cmpfcc r'' r')) and
+    (_eq_mem m m').
+
+f_compare32  = f_compare o_flt32 get_float32 float32_eq float32_lt float32_gt.
+f_compare64  = f_compare o_flt64 get_float64 float64_eq float64_lt float64_gt.
+f_compare128 = f_compare o_flt128 get_float128 float128_eq float128_lt
+                                               float128_gt.
+
+i_FCMPs  = f_compare32  false. % Compare Single
+i_FCMPEs = f_compare32  true.  % Compare Single and Exception if Unordered
+i_FCMPd  = f_compare64  false. % Compare Double
+i_FCMPEd = f_compare64  true.  % Compare Double and Exception if Unordered
+i_FCMPq  = f_compare128 false. % Compare Quad
+i_FCMPEq = f_compare128 true.  % Compare Quad and Exception if Unordered
+
+i_FLUSH : tm address_ -> tm instr.  % Flush Instruction Memory
+
+i_JMPL = [addr : tm address_][rd : tnum]      % Jump and Link
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (not (cbr_in_progress? r)) and
+   (_exs_n2 [target : tnum][offset : tnum]
+    (load_address_align r addr target offset word_size) and
+    (upd_ireg2 r rd (get_ireg r opc) npc target r')) and
+   (_eq_mem m m').
+
+i_RETT : tm address_ -> tm instr.  % Return from Trap
+
+trap_oper = tnum.
+tn   : trap_oper = const 0.
+te   : trap_oper = const 1.
+tle  : trap_oper = const 2.
+tl   : trap_oper = const 3.
+tleu : trap_oper = const 4.
+tcs  : trap_oper = const 5.
+tneg : trap_oper = const 6.
+tvs  : trap_oper = const 7.
+ta   : trap_oper = const 8.
+tne  : trap_oper = const 9.
+tg   : trap_oper = const 10.
+tge  : trap_oper = const 11.
+tgu  : trap_oper = const 12.
+tcc  : trap_oper = const 13.
+tpos : trap_oper = const 14.
+tvc  : trap_oper = const 15.
+
+trap : trap_oper -> tm address_ -> tm instr.
+
+i_TN   = trap tn.    % Trap Never
+i_TE   = trap te.    % Trap on Equal
+i_TLE  = trap tle.   % Trap on Less or Equal
+i_TL   = trap tl.    % Trap on Less
+i_TLEU = trap tleu.  % Trap on Less or Equal Unsigned
+i_TCS  = trap tcs.   % Trap on Carry Set (Less Than, Unsigned)
+i_TNEG = trap tneg.  % Trap on Negative
+i_TVS  = trap tvs.   % Trap on Overflow Set
+i_TA   = trap ta.    % Trap Always
+i_TNE  = trap tne.   % Trap on Not Equal
+i_TG   = trap tg.    % Trap on Greater
+i_TGE  = trap tge.   % Trap on Greater or Equal
+i_TGU  = trap tgu.   % Trap on Greater Unsigned
+i_TCC  = trap tcc.   % Trap on Carry Clear (Greater then or Equal, Unsigned)
+i_TPOS = trap tpos.  % Trap on Positive
+i_TVC  = trap tvc.   % Trap on Overflow Clear
+                             % The unimplemented instruction
+                             % used when returning a structure in a C program
+i_UNIMP : tnum -> tm instr =   
+ [imm : tnum] instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+  app1_pred ([_ : tnum] false) imm.
+
+i_SETHI =                          % Set High 22 bits of r Register
+ [rd : tnum][val : tnum]
+  instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+   (upd_ireg r rd (times (const 1024) val) r') and (_eq_mem m m').
+
+i_NOP = i_SETHI zero zero.
+% Copyright (c) 2004 Princeton University
+%	$Id: fields.elf,v 1.8 2004/04/22 10:49:20 appel Exp $
+
+% 
+% The encoding of the instruction fields.
+% This is a machine generated file.  Do not edit!
+% 
+f_inst    : field_typ = _rbits 0 31.
+f_op      : field_typ = _rbits 30 31.
+f_disp30  : field_typ = _rbits 0 29.
+f_rd      : field_typ = _rbits 25 29.
+f_op2     : field_typ = _rbits 22 24.
+f_imm22   : field_typ = _rbits 0 21.
+f_a       : field_typ = _rbits 29 29.
+f_cond    : field_typ = _rbits 25 28.
+f_disp22  : field_typ = _rbits 0 21.
+f_op3     : field_typ = _rbits 19 24.
+f_rs1     : field_typ = _rbits 14 18.
+f_i       : field_typ = _rbits 13 13.
+f_asi     : field_typ = _rbits 5 12.
+f_rs2     : field_typ = _rbits 0 4.
+f_simm13  : field_typ = _rbits 0 12.
+f_opf     : field_typ = _rbits 5 13.
+f_fd      : field_typ = _rbits 25 29.
+f_cd      : field_typ = _rbits 25 29.
+f_fs1     : field_typ = _rbits 14 18.
+f_fs2     : field_typ = _rbits 0 4.
+f_rs1i    : field_typ = _rbits 14 18.
+f_rdi     : field_typ = _rbits 25 29.
+% Copyright (c) 2004 Princeton University
+%	$Id: patterns.elf,v 1.9 2004/04/22 10:49:21 appel Exp $
+
+% 
+% The encoding of the instruction patterns.
+% This is a machine generated file.  Do not edit!
+% 
+
+!!n : pat_typ -> pat_typ = _!! num.
+
+p_TABLE_F2  : pat_typ = f_op (const 0).
+p_CALL      : pat_typ = f_op (const 1).
+p_TABLE_F3  : pat_typ = f_op (const 2).
+p_TABLE_F4  : pat_typ = f_op (const 3).
+p_UNIMP     : pat_typ = p_TABLE_F2 &&n f_op2 (const 0).
+p_Bicc      : pat_typ = p_TABLE_F2 &&n f_op2 (const 2).
+p_SETHI     : pat_typ = p_TABLE_F2 &&n f_op2 (const 4).
+p_FBfcc     : pat_typ = p_TABLE_F2 &&n f_op2 (const 6).
+p_CBccc     : pat_typ = p_TABLE_F2 &&n f_op2 (const 7).
+p_ADD       : pat_typ = p_TABLE_F3 &&n f_op3 (const 0).
+p_ADDcc     : pat_typ = p_TABLE_F3 &&n f_op3 (const 16).
+p_TADDcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 32).
+p_WRxxx     : pat_typ = p_TABLE_F3 &&n f_op3 (const 48).
+p_AND       : pat_typ = p_TABLE_F3 &&n f_op3 (const 1).
+p_ANDcc     : pat_typ = p_TABLE_F3 &&n f_op3 (const 17).
+p_TSUBcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 33).
+p_WRPSR     : pat_typ = p_TABLE_F3 &&n f_op3 (const 49).
+p_OR        : pat_typ = p_TABLE_F3 &&n f_op3 (const 2).
+p_ORcc      : pat_typ = p_TABLE_F3 &&n f_op3 (const 18).
+p_TADDccTV  : pat_typ = p_TABLE_F3 &&n f_op3 (const 34).
+p_WRWIM     : pat_typ = p_TABLE_F3 &&n f_op3 (const 50).
+p_XOR       : pat_typ = p_TABLE_F3 &&n f_op3 (const 3).
+p_XORcc     : pat_typ = p_TABLE_F3 &&n f_op3 (const 19).
+p_TSUBccTV  : pat_typ = p_TABLE_F3 &&n f_op3 (const 35).
+p_WRTBR     : pat_typ = p_TABLE_F3 &&n f_op3 (const 51).
+p_SUB       : pat_typ = p_TABLE_F3 &&n f_op3 (const 4).
+p_SUBcc     : pat_typ = p_TABLE_F3 &&n f_op3 (const 20).
+p_MULScc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 36).
+p_FPop1     : pat_typ = p_TABLE_F3 &&n f_op3 (const 52).
+p_ANDN      : pat_typ = p_TABLE_F3 &&n f_op3 (const 5).
+p_ANDNcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 21).
+p_SLL       : pat_typ = p_TABLE_F3 &&n f_op3 (const 37).
+p_FPop2     : pat_typ = p_TABLE_F3 &&n f_op3 (const 53).
+p_ORN       : pat_typ = p_TABLE_F3 &&n f_op3 (const 6).
+p_ORNcc     : pat_typ = p_TABLE_F3 &&n f_op3 (const 22).
+p_SRL       : pat_typ = p_TABLE_F3 &&n f_op3 (const 38).
+p_CPop1     : pat_typ = p_TABLE_F3 &&n f_op3 (const 54).
+p_XNOR      : pat_typ = p_TABLE_F3 &&n f_op3 (const 7).
+p_XNORcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 23).
+p_SRA       : pat_typ = p_TABLE_F3 &&n f_op3 (const 39).
+p_CPop2     : pat_typ = p_TABLE_F3 &&n f_op3 (const 55).
+p_ADDX      : pat_typ = p_TABLE_F3 &&n f_op3 (const 8).
+p_ADDXcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 24).
+p_RDxxx     : pat_typ = p_TABLE_F3 &&n f_op3 (const 40).
+p_JMPL      : pat_typ = p_TABLE_F3 &&n f_op3 (const 56).
+p_RDPSR     : pat_typ = p_TABLE_F3 &&n f_op3 (const 41).
+p_RETT      : pat_typ = p_TABLE_F3 &&n f_op3 (const 57).
+p_UMUL      : pat_typ = p_TABLE_F3 &&n f_op3 (const 10).
+p_UMULcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 26).
+p_RDWIM     : pat_typ = p_TABLE_F3 &&n f_op3 (const 42).
+p_Ticc      : pat_typ = p_TABLE_F3 &&n f_op3 (const 58).
+p_SMUL      : pat_typ = p_TABLE_F3 &&n f_op3 (const 11).
+p_SMULcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 27).
+p_RDTBR     : pat_typ = p_TABLE_F3 &&n f_op3 (const 43).
+p_FLUSH     : pat_typ = p_TABLE_F3 &&n f_op3 (const 59).
+p_SUBX      : pat_typ = p_TABLE_F3 &&n f_op3 (const 12).
+p_SUBXcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 28).
+p_SAVE      : pat_typ = p_TABLE_F3 &&n f_op3 (const 60).
+p_RESTORE   : pat_typ = p_TABLE_F3 &&n f_op3 (const 61).
+p_UDIV      : pat_typ = p_TABLE_F3 &&n f_op3 (const 14).
+p_UDIVcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 30).
+p_SDIV      : pat_typ = p_TABLE_F3 &&n f_op3 (const 15).
+p_SDIVcc    : pat_typ = p_TABLE_F3 &&n f_op3 (const 31).
+p_WRASR     : pat_typ = p_WRxxx &&n !!n (f_rd (const 0)).
+p_WRY       : pat_typ = p_WRxxx &&n f_rd (const 0).
+p_RDASR     : pat_typ = p_RDxxx &&n !!n (f_rs1 (const 0)) &&n !!n (f_rd (const 0)).
+p_RDY       : pat_typ = p_RDxxx &&n f_rs1 (const 0).
+p_STBAR     : pat_typ = p_RDxxx &&n f_rs1 (const 15) &&n f_rd (const 0).
+p_LD        : pat_typ = p_TABLE_F4 &&n f_op3 (const 0).
+p_LDA       : pat_typ = p_TABLE_F4 &&n f_op3 (const 16).
+p_LDF       : pat_typ = p_TABLE_F4 &&n f_op3 (const 32).
+p_LDC       : pat_typ = p_TABLE_F4 &&n f_op3 (const 48).
+p_LDUB      : pat_typ = p_TABLE_F4 &&n f_op3 (const 1).
+p_LDUBA     : pat_typ = p_TABLE_F4 &&n f_op3 (const 17).
+p_LDFSR     : pat_typ = p_TABLE_F4 &&n f_op3 (const 33).
+p_LDCSR     : pat_typ = p_TABLE_F4 &&n f_op3 (const 49).
+p_LDUH      : pat_typ = p_TABLE_F4 &&n f_op3 (const 2).
+p_LDUHA     : pat_typ = p_TABLE_F4 &&n f_op3 (const 18).
+p_LDD       : pat_typ = p_TABLE_F4 &&n f_op3 (const 3).
+p_LDDA      : pat_typ = p_TABLE_F4 &&n f_op3 (const 19).
+p_LDDF      : pat_typ = p_TABLE_F4 &&n f_op3 (const 35).
+p_LDDC      : pat_typ = p_TABLE_F4 &&n f_op3 (const 51).
+p_ST        : pat_typ = p_TABLE_F4 &&n f_op3 (const 4).
+p_STA       : pat_typ = p_TABLE_F4 &&n f_op3 (const 20).
+p_STF       : pat_typ = p_TABLE_F4 &&n f_op3 (const 36).
+p_STC       : pat_typ = p_TABLE_F4 &&n f_op3 (const 52).
+p_STB       : pat_typ = p_TABLE_F4 &&n f_op3 (const 5).
+p_STBA      : pat_typ = p_TABLE_F4 &&n f_op3 (const 21).
+p_STFSR     : pat_typ = p_TABLE_F4 &&n f_op3 (const 37).
+p_STCSR     : pat_typ = p_TABLE_F4 &&n f_op3 (const 53).
+p_STH       : pat_typ = p_TABLE_F4 &&n f_op3 (const 6).
+p_STHA      : pat_typ = p_TABLE_F4 &&n f_op3 (const 22).
+p_STDFQ     : pat_typ = p_TABLE_F4 &&n f_op3 (const 38).
+p_STDCQ     : pat_typ = p_TABLE_F4 &&n f_op3 (const 54).
+p_STD       : pat_typ = p_TABLE_F4 &&n f_op3 (const 7).
+p_STDA      : pat_typ = p_TABLE_F4 &&n f_op3 (const 23).
+p_STDF      : pat_typ = p_TABLE_F4 &&n f_op3 (const 39).
+p_STDC      : pat_typ = p_TABLE_F4 &&n f_op3 (const 55).
+p_LDSB      : pat_typ = p_TABLE_F4 &&n f_op3 (const 9).
+p_LDSBA     : pat_typ = p_TABLE_F4 &&n f_op3 (const 25).
+p_LDSH      : pat_typ = p_TABLE_F4 &&n f_op3 (const 10).
+p_LDSHA     : pat_typ = p_TABLE_F4 &&n f_op3 (const 26).
+p_LDSTUB    : pat_typ = p_TABLE_F4 &&n f_op3 (const 13).
+p_LDSTUBA   : pat_typ = p_TABLE_F4 &&n f_op3 (const 29).
+p_SWAP_DOT  : pat_typ = p_TABLE_F4 &&n f_op3 (const 15).
+p_SWAPA     : pat_typ = p_TABLE_F4 &&n f_op3 (const 31).
+p_FMOVs     : pat_typ = p_FPop1 &&n f_opf (const 1).
+p_FNEGs     : pat_typ = p_FPop1 &&n f_opf (const 5).
+p_FABSs     : pat_typ = p_FPop1 &&n f_opf (const 9).
+p_FSQRTs    : pat_typ = p_FPop1 &&n f_opf (const 41).
+p_FSQRTd    : pat_typ = p_FPop1 &&n f_opf (const 42).
+p_FSQRTq    : pat_typ = p_FPop1 &&n f_opf (const 43).
+p_FiTOs     : pat_typ = p_FPop1 &&n f_opf (const 196).
+p_FdTOs     : pat_typ = p_FPop1 &&n f_opf (const 198).
+p_FqTOs     : pat_typ = p_FPop1 &&n f_opf (const 199).
+p_FiTOd     : pat_typ = p_FPop1 &&n f_opf (const 200).
+p_FsTOd     : pat_typ = p_FPop1 &&n f_opf (const 201).
+p_FqTOd     : pat_typ = p_FPop1 &&n f_opf (const 203).
+p_FiTOq     : pat_typ = p_FPop1 &&n f_opf (const 204).
+p_FsTOq     : pat_typ = p_FPop1 &&n f_opf (const 205).
+p_FdTOq     : pat_typ = p_FPop1 &&n f_opf (const 206).
+p_FsTOi     : pat_typ = p_FPop1 &&n f_opf (const 209).
+p_FdTOi     : pat_typ = p_FPop1 &&n f_opf (const 210).
+p_FqTOi     : pat_typ = p_FPop1 &&n f_opf (const 211).
+p_FADDs     : pat_typ = p_FPop1 &&n f_opf (const 65).
+p_FADDd     : pat_typ = p_FPop1 &&n f_opf (const 66).
+p_FADDq     : pat_typ = p_FPop1 &&n f_opf (const 67).
+p_FSUBs     : pat_typ = p_FPop1 &&n f_opf (const 69).
+p_FSUBd     : pat_typ = p_FPop1 &&n f_opf (const 70).
+p_FSUBq     : pat_typ = p_FPop1 &&n f_opf (const 71).
+p_FMULs     : pat_typ = p_FPop1 &&n f_opf (const 73).
+p_FMULd     : pat_typ = p_FPop1 &&n f_opf (const 74).
+p_FMULq     : pat_typ = p_FPop1 &&n f_opf (const 75).
+p_FDIVs     : pat_typ = p_FPop1 &&n f_opf (const 77).
+p_FDIVd     : pat_typ = p_FPop1 &&n f_opf (const 78).
+p_FDIVq     : pat_typ = p_FPop1 &&n f_opf (const 79).
+p_FsMULd    : pat_typ = p_FPop1 &&n f_opf (const 105).
+p_FdMULq    : pat_typ = p_FPop1 &&n f_opf (const 110).
+p_FCMPs     : pat_typ = p_FPop2 &&n f_opf (const 81).
+p_FCMPEs    : pat_typ = p_FPop2 &&n f_opf (const 85).
+p_FCMPd     : pat_typ = p_FPop2 &&n f_opf (const 82).
+p_FCMPEd    : pat_typ = p_FPop2 &&n f_opf (const 86).
+p_FCMPq     : pat_typ = p_FPop2 &&n f_opf (const 83).
+p_FCMPEq    : pat_typ = p_FPop2 &&n f_opf (const 87).
+p_BN        : pat_typ = p_Bicc &&n f_cond (const 0).
+p_BE        : pat_typ = p_Bicc &&n f_cond (const 1).
+p_BLE       : pat_typ = p_Bicc &&n f_cond (const 2).
+p_BL        : pat_typ = p_Bicc &&n f_cond (const 3).
+p_BLEU      : pat_typ = p_Bicc &&n f_cond (const 4).
+p_BCS       : pat_typ = p_Bicc &&n f_cond (const 5).
+p_BNEG      : pat_typ = p_Bicc &&n f_cond (const 6).
+p_BVS       : pat_typ = p_Bicc &&n f_cond (const 7).
+p_BA        : pat_typ = p_Bicc &&n f_cond (const 8).
+p_BNE       : pat_typ = p_Bicc &&n f_cond (const 9).
+p_BG        : pat_typ = p_Bicc &&n f_cond (const 10).
+p_BGE       : pat_typ = p_Bicc &&n f_cond (const 11).
+p_BGU       : pat_typ = p_Bicc &&n f_cond (const 12).
+p_BCC       : pat_typ = p_Bicc &&n f_cond (const 13).
+p_BPOS      : pat_typ = p_Bicc &&n f_cond (const 14).
+p_BVC       : pat_typ = p_Bicc &&n f_cond (const 15).
+p_FBN       : pat_typ = p_FBfcc &&n f_cond (const 0).
+p_FBNE      : pat_typ = p_FBfcc &&n f_cond (const 1).
+p_FBLG      : pat_typ = p_FBfcc &&n f_cond (const 2).
+p_FBUL      : pat_typ = p_FBfcc &&n f_cond (const 3).
+p_FBL       : pat_typ = p_FBfcc &&n f_cond (const 4).
+p_FBUG      : pat_typ = p_FBfcc &&n f_cond (const 5).
+p_FBG       : pat_typ = p_FBfcc &&n f_cond (const 6).
+p_FBU       : pat_typ = p_FBfcc &&n f_cond (const 7).
+p_FBA       : pat_typ = p_FBfcc &&n f_cond (const 8).
+p_FBE       : pat_typ = p_FBfcc &&n f_cond (const 9).
+p_FBUE      : pat_typ = p_FBfcc &&n f_cond (const 10).
+p_FBGE      : pat_typ = p_FBfcc &&n f_cond (const 11).
+p_FBUGE     : pat_typ = p_FBfcc &&n f_cond (const 12).
+p_FBLE      : pat_typ = p_FBfcc &&n f_cond (const 13).
+p_FBULE     : pat_typ = p_FBfcc &&n f_cond (const 14).
+p_FBO       : pat_typ = p_FBfcc &&n f_cond (const 15).
+p_CBN       : pat_typ = p_CBccc &&n f_cond (const 0).
+p_CB123     : pat_typ = p_CBccc &&n f_cond (const 1).
+p_CB12      : pat_typ = p_CBccc &&n f_cond (const 2).
+p_CB13      : pat_typ = p_CBccc &&n f_cond (const 3).
+p_CB1       : pat_typ = p_CBccc &&n f_cond (const 4).
+p_CB23      : pat_typ = p_CBccc &&n f_cond (const 5).
+p_CB2       : pat_typ = p_CBccc &&n f_cond (const 6).
+p_CB3       : pat_typ = p_CBccc &&n f_cond (const 7).
+p_CBA       : pat_typ = p_CBccc &&n f_cond (const 8).
+p_CB0       : pat_typ = p_CBccc &&n f_cond (const 9).
+p_CB03      : pat_typ = p_CBccc &&n f_cond (const 10).
+p_CB02      : pat_typ = p_CBccc &&n f_cond (const 11).
+p_CB023     : pat_typ = p_CBccc &&n f_cond (const 12).
+p_CB01      : pat_typ = p_CBccc &&n f_cond (const 13).
+p_CB013     : pat_typ = p_CBccc &&n f_cond (const 14).
+p_CB012     : pat_typ = p_CBccc &&n f_cond (const 15).
+p_TN        : pat_typ = p_Ticc &&n f_cond (const 0).
+p_TE        : pat_typ = p_Ticc &&n f_cond (const 1).
+p_TLE       : pat_typ = p_Ticc &&n f_cond (const 2).
+p_TL        : pat_typ = p_Ticc &&n f_cond (const 3).
+p_TLEU      : pat_typ = p_Ticc &&n f_cond (const 4).
+p_TCS       : pat_typ = p_Ticc &&n f_cond (const 5).
+p_TNEG      : pat_typ = p_Ticc &&n f_cond (const 6).
+p_TVS       : pat_typ = p_Ticc &&n f_cond (const 7).
+p_TA        : pat_typ = p_Ticc &&n f_cond (const 8).
+p_TNE       : pat_typ = p_Ticc &&n f_cond (const 9).
+p_TG        : pat_typ = p_Ticc &&n f_cond (const 10).
+p_TGE       : pat_typ = p_Ticc &&n f_cond (const 11).
+p_TGU       : pat_typ = p_Ticc &&n f_cond (const 12).
+p_TCC       : pat_typ = p_Ticc &&n f_cond (const 13).
+p_TPOS      : pat_typ = p_Ticc &&n f_cond (const 14).
+p_TVC       : pat_typ = p_Ticc &&n f_cond (const 15).
+% Copyright (c) 2004 Princeton University
+%	$Id: oper_selectors.elf,v 1.7 2004/04/22 10:49:20 appel Exp $
+
+% 
+% The encoding of the instruction operator selectors.
+% This is a machine generated file.  Do not edit!
+% 
+||2_r :
+ (tm reg_or_imm -> tm num -> tform) -> (tm reg_or_imm -> tm num -> tform)
+  -> tm reg_or_imm -> tm num -> tform = _||2 reg_or_imm num.
+
+sel_imode : tm reg_or_imm -> tnum -> tform =
+    fld1 reg_or_imm num f_simm13 (f_i (const 1)) inj_imode.
+
+% sel_imode : tm reg_or_imm -> tnum -> tform =
+%   [obj : tm reg_or_imm][word : tnum]
+%     f_i (const 1) word and
+%     _exs_n [g1200 : tnum] f_simm13 g1200 word and
+%                           _eq reg_or_imm obj (inj_imode g1200).
+
+sel_rmode : tm reg_or_imm -> tnum -> tform =
+   fld1 reg_or_imm num f_rs2 (f_i (const 0)) inj_rmode.
+
+% sel_rmode : tm reg_or_imm -> tnum -> tform =
+%   [obj : tm reg_or_imm][word : tnum]
+%    f_i (const 0) word and
+%    _exs_n [g1201 : tnum] f_rs2 g1201 word and
+%                          _eq reg_or_imm obj (inj_rmode g1201).
+
+oper_reg_or_imm : tm reg_or_imm -> tnum -> tform =
+  ||2_r sel_imode sel_rmode.
+
+sel_generalA : tm address_ -> tnum -> tform =
+   fld2 address_ num reg_or_imm f_rs1 oper_reg_or_imm true_fn inj_generalA.
+
+% sel_generalA : tm address_ -> tnum -> tform =
+%   [obj : tm address_][word : tnum]
+%     _exists2 num reg_or_imm [g1202 : tnum][g1203 : tm reg_or_imm]
+%      (f_rs1 g1202 &&n oper_reg_or_imm g1203) word and
+%      _eq address_ obj (inj_generalA g1202 g1203).
+
+oper_address_ : tm address_ -> tnum -> tform =
+ [obj : tm address_][word : tnum] sel_generalA obj word.
+
+sel_indexR : tm regaddr -> tnum -> tform =
+   fld2 regaddr num num f_rs1 f_rs2 (f_i (const 0)) inj_indexR.
+
+%  [obj : tm regaddr][word : tnum]
+%    f_i (const 0) word and
+%    _exs_n2 [g1204 : tnum][g1205 : tnum]
+%     (f_rs1 g1204 &&n f_rs2 g1205) word and
+%     _eq regaddr obj (inj_indexR g1204 g1205).
+
+oper_regaddr : tm regaddr -> tnum -> tform =
+ [obj : tm regaddr][word : tnum] sel_indexR obj word.
+
+% Copyright (c) 2004 Princeton University
+%	$Id: instructions.elf,v 1.15 2004/04/22 10:49:20 appel Exp $
+
+% 
+% The encoding of the instructions.
+% This is a machine generated file.  Do not edit!
+% 
+aux_loadg = fld2 instr address_ num oper_address_ f_rd.
+
+ins_loadg =
+  aux_loadg p_LDSB i_LDSB ||2n aux_loadg p_LDSH i_LDSH ||2n
+  aux_loadg p_LDUB i_LDUB ||2n aux_loadg p_LDUH i_LDUH ||2n
+  aux_loadg p_LD i_LD ||2n aux_loadg p_LDSTUB i_LDSTUB ||2n
+  aux_loadg p_SWAP_DOT i_SWAP_DOT ||2n
+  aux_loadg p_LDFSR i_LDFSR ||2n aux_loadg p_LDCSR i_LDCSR.
+
+ins_LDD = fld2 instr address_ num oper_address_ f_rd p_LDD i_LDD.
+
+ins_LDF = fld2 instr address_ num oper_address_ f_fd p_LDF i_LDF.
+
+ins_LDDF = fld2 instr address_ num oper_address_ f_fd p_LDDF i_LDDF.
+
+ins_LDC = fld2 instr address_ num oper_address_ f_cd p_LDC i_LDC.
+
+ins_LDDC = fld2 instr address_ num oper_address_ f_cd p_LDDC i_LDDC.
+
+aux_storeg = fld2 instr num address_ f_rd oper_address_.
+
+ins_storeg =
+  aux_storeg p_STB i_STB ||2n aux_storeg p_STH i_STH ||2n
+  aux_storeg p_ST i_ST ||2n aux_storeg p_STFSR i_STFSR ||2n
+  aux_storeg p_STCSR i_STCSR ||2n aux_storeg p_STDFQ i_STDFQ ||2n
+  aux_storeg p_STDCQ i_STDCQ.
+
+ins_STD = fld2 instr num address_ f_rd oper_address_ p_STD i_STD.
+
+ins_STF = fld2 instr num address_ f_fd oper_address_ p_STF i_STF.
+
+ins_STDF = fld2 instr num address_ f_fd oper_address_ p_STDF i_STDF.
+
+ins_STC = fld2 instr num address_ f_cd oper_address_ p_STC i_STC.
+
+ins_STDC = fld2 instr num address_ f_cd oper_address_ p_STDC i_STDC.
+
+aux_loada = fld3 instr address_ num num oper_regaddr f_asi f_rd.
+
+ins_loada =
+  aux_loada p_LDSBA i_LDSBA ||2n aux_loada p_LDSHA i_LDSHA ||2n
+  aux_loada p_LDUBA i_LDUBA ||2n aux_loada p_LDUHA i_LDUHA ||2n
+  aux_loada p_LDA i_LDA ||2n aux_loada p_LDSTUBA i_LDSTUBA ||2n
+  aux_loada p_SWAPA i_SWAPA.
+
+ins_LDDA = fld3 instr address_ num num oper_regaddr f_asi f_rd p_LDDA i_LDDA.
+
+aux_storea = fld3 instr num address_ num f_rd oper_regaddr f_asi.
+
+ins_storea =
+  aux_storea p_STBA i_STBA ||2n aux_storea p_STHA i_STHA ||2n
+  aux_storea p_STA i_STA.
+
+ins_STDA = fld3 instr num address_ num f_rd oper_regaddr f_asi p_STDA i_STDA.
+
+ins_LDFSR = aux_loadg p_LDFSR i_LDFSR.
+
+ins_LDCSR = aux_loadg p_LDCSR i_LDCSR.
+
+ins_STFSR = aux_storeg p_STFSR i_STFSR.
+
+ins_STCSR = aux_storeg p_STCSR i_STCSR.
+
+ins_STDFQ = aux_storeg p_STDFQ i_STDFQ.
+
+ins_STDCQ = aux_storeg p_STDCQ i_STDCQ.
+
+ins_RDY = fld1 instr num f_rd p_RDY i_RDY.
+
+ins_RDPSR = fld1 instr num f_rd p_RDPSR i_RDPSR.
+
+ins_RDWIM = fld1 instr num f_rd p_RDWIM i_RDWIM.
+
+ins_RDTBR = fld1 instr num f_rd p_RDTBR i_RDTBR.
+
+ins_WRY = fld2 instr num reg_or_imm f_rs1 oper_reg_or_imm p_WRY i_WRY.
+
+ins_WRPSR = fld2 instr num reg_or_imm f_rs1 oper_reg_or_imm p_WRPSR i_WRPSR.
+
+ins_WRWIM = fld2 instr num reg_or_imm f_rs1 oper_reg_or_imm p_WRWIM i_WRWIM.
+
+ins_WRTBR = fld2 instr num reg_or_imm f_rs1 oper_reg_or_imm p_WRTBR i_WRTBR.
+
+ins_RDASR = fld2 instr num num f_rs1 f_rd p_RDASR i_RDASR.
+
+ins_WRASR = fld3 instr num reg_or_imm num f_rs1 oper_reg_or_imm f_rd p_WRASR i_WRASR.
+
+ins_STBAR = fld0 instr p_STBAR i_STBAR.
+
+aux_alu = fld3 instr num reg_or_imm num f_rs1 oper_reg_or_imm f_rd.
+
+ins_alu =
+  aux_alu p_AND i_AND ||2n aux_alu p_ANDcc i_ANDcc ||2n
+  aux_alu p_ANDN i_ANDN ||2n aux_alu p_ANDNcc i_ANDNcc ||2n
+  aux_alu p_OR i_OR ||2n aux_alu p_ORcc i_ORcc ||2n
+  aux_alu p_ORN i_ORN ||2n aux_alu p_ORNcc i_ORNcc ||2n
+  aux_alu p_XOR i_XOR ||2n aux_alu p_XORcc i_XORcc ||2n
+  aux_alu p_XNOR i_XNOR ||2n aux_alu p_XNORcc i_XNORcc ||2n
+  aux_alu p_SLL i_SLL ||2n aux_alu p_SRL i_SRL ||2n
+  aux_alu p_SRA i_SRA ||2n aux_alu p_ADD i_ADD ||2n
+  aux_alu p_ADDcc i_ADDcc ||2n aux_alu p_ADDX i_ADDX ||2n
+  aux_alu p_ADDXcc i_ADDXcc ||2n aux_alu p_TADDcc i_TADDcc ||2n
+  aux_alu p_TADDccTV i_TADDccTV ||2n aux_alu p_SUB i_SUB ||2n
+  aux_alu p_SUBcc i_SUBcc ||2n aux_alu p_SUBX i_SUBX ||2n
+  aux_alu p_SUBXcc i_SUBXcc ||2n aux_alu p_TSUBcc i_TSUBcc ||2n
+  aux_alu p_TSUBccTV i_TSUBccTV ||2n aux_alu p_MULScc i_MULScc ||2n
+  aux_alu p_UMUL i_UMUL ||2n aux_alu p_SMUL i_SMUL ||2n
+  aux_alu p_UMULcc i_UMULcc ||2n aux_alu p_SMULcc i_SMULcc ||2n
+  aux_alu p_UDIV i_UDIV ||2n aux_alu p_SDIV i_SDIV ||2n
+  aux_alu p_UDIVcc i_UDIVcc ||2n aux_alu p_SDIVcc i_SDIVcc ||2n
+  aux_alu p_SAVE i_SAVE ||2n aux_alu p_RESTORE i_RESTORE.
+
+aux_branch = fld2 instr num num f_a f_disp22.
+
+ins_branch =
+  aux_branch p_BN i_BN ||2n aux_branch p_BE i_BE ||2n
+  aux_branch p_BLE i_BLE ||2n aux_branch p_BL i_BL ||2n
+  aux_branch p_BLEU i_BLEU ||2n aux_branch p_BCS i_BCS ||2n
+  aux_branch p_BNEG i_BNEG ||2n aux_branch p_BVS i_BVS ||2n
+  aux_branch p_BA i_BA ||2n aux_branch p_BNE i_BNE ||2n
+  aux_branch p_BG i_BG ||2n aux_branch p_BGE i_BGE ||2n
+  aux_branch p_BGU i_BGU ||2n aux_branch p_BCC i_BCC ||2n
+  aux_branch p_BPOS i_BPOS ||2n aux_branch p_BVC i_BVC ||2n
+  aux_branch p_FBN i_FBN ||2n aux_branch p_FBNE i_FBNE ||2n
+  aux_branch p_FBLG i_FBLG ||2n aux_branch p_FBUL i_FBUL ||2n
+  aux_branch p_FBL i_FBL ||2n aux_branch p_FBUG i_FBUG ||2n
+  aux_branch p_FBG i_FBG ||2n aux_branch p_FBU i_FBU ||2n
+  aux_branch p_FBA i_FBA ||2n aux_branch p_FBE i_FBE ||2n
+  aux_branch p_FBUE i_FBUE ||2n aux_branch p_FBGE i_FBGE ||2n
+  aux_branch p_FBUGE i_FBUGE ||2n aux_branch p_FBLE i_FBLE ||2n
+  aux_branch p_FBULE i_FBULE ||2n aux_branch p_FBO i_FBO ||2n
+  aux_branch p_CBN i_CBN ||2n aux_branch p_CB123 i_CB123 ||2n
+  aux_branch p_CB12 i_CB12 ||2n aux_branch p_CB13 i_CB13 ||2n
+  aux_branch p_CB1 i_CB1 ||2n aux_branch p_CB23 i_CB23 ||2n
+  aux_branch p_CB2 i_CB2 ||2n aux_branch p_CB3 i_CB3 ||2n
+  aux_branch p_CBA i_CBA ||2n aux_branch p_CB0 i_CB0 ||2n
+  aux_branch p_CB03 i_CB03 ||2n aux_branch p_CB02 i_CB02 ||2n
+  aux_branch p_CB023 i_CB023 ||2n aux_branch p_CB01 i_CB01 ||2n
+  aux_branch p_CB013 i_CB013 ||2n aux_branch p_CB012 i_CB012.
+
+ins_CALL = fld1 instr num f_disp30 p_CALL i_CALL.
+
+aux_float2s = fld2 instr num num f_fs2 f_fd.
+
+ins_float2s =
+  aux_float2s p_FMOVs i_FMOVs ||2n aux_float2s p_FNEGs i_FNEGs ||2n
+  aux_float2s p_FABSs i_FABSs ||2n aux_float2s p_FSQRTs i_FSQRTs.
+
+ins_FSQRTd = fld2 instr num num f_fs2 f_fd p_FSQRTd i_FSQRTd.
+
+ins_FSQRTq = fld2 instr num num f_fs2 f_fd p_FSQRTq i_FSQRTq.
+
+aux_FTOs = fld2 instr num num f_fs2 f_fd.
+
+ins_FTOs = aux_FTOs p_FiTOs i_FiTOs ||2n aux_FTOs p_FsTOi i_FsTOi.
+
+aux_FTOd = fld2 instr num num f_fs2 f_fd.
+
+ins_FTOd = aux_FTOd p_FiTOd i_FiTOd ||2n aux_FTOd p_FsTOd i_FsTOd.
+
+aux_FTOq = fld2 instr num num f_fs2 f_fd.
+
+ins_FTOq = aux_FTOq p_FiTOq i_FiTOq ||2n aux_FTOq p_FsTOq i_FsTOq.
+
+aux_FdTO = fld2 instr num num f_fs2 f_fd.
+
+ins_FdTO = aux_FdTO p_FdTOi i_FdTOi ||2n aux_FdTO p_FdTOs i_FdTOs.
+
+aux_FqTO = fld2 instr num num f_fs2 f_fd.
+
+ins_FqTO = aux_FqTO p_FqTOs i_FqTOs ||2n aux_FqTO p_FqTOi i_FqTOi.
+
+ins_FqTOd = fld2 instr num num f_fs2 f_fd p_FqTOd i_FqTOd.
+
+ins_FdTOq = fld2 instr num num f_fs2 f_fd p_FdTOq i_FdTOq.
+
+aux_float3s = fld3 instr num num num f_fs1 f_fs2 f_fd.
+
+ins_float3s =
+  aux_float3s p_FADDs i_FADDs ||2n aux_float3s p_FSUBs i_FSUBs ||2n
+  aux_float3s p_FMULs i_FMULs ||2n aux_float3s p_FDIVs i_FDIVs.
+
+aux_float3d = fld3 instr num num num f_fs1 f_fs2 f_fd.
+
+ins_float3d =
+  aux_float3d p_FADDd i_FADDd ||2n aux_float3d p_FSUBd i_FSUBd ||2n
+  aux_float3d p_FMULd i_FMULd ||2n aux_float3d p_FDIVd i_FDIVd.
+
+aux_float3q = fld3 instr num num num f_fs1 f_fs2 f_fd.
+
+ins_float3q =
+  aux_float3q p_FADDq i_FADDq ||2n aux_float3q p_FSUBq i_FSUBq ||2n
+  aux_float3q p_FMULq i_FMULq ||2n aux_float3q p_FDIVq i_FDIVq.
+
+ins_FsMULd = fld3 instr num num num f_fs1 f_fs2 f_fd p_FsMULd i_FsMULd.
+
+ins_FdMULq = fld3 instr num num num f_fs1 f_fs2 f_fd p_FdMULq i_FdMULq.
+
+aux_fcompares = fld2 instr num num f_fs1 f_fs2.
+
+ins_fcompares =
+  aux_fcompares p_FCMPs i_FCMPs ||2n aux_fcompares p_FCMPEs i_FCMPEs.
+
+aux_fcompared = fld2 instr num num f_fs1 f_fs2.
+
+ins_fcompared =
+  aux_fcompared p_FCMPd i_FCMPd ||2n aux_fcompared p_FCMPEd i_FCMPEd.
+
+aux_fcompareq = fld2 instr num num f_fs1 f_fs2.
+
+ins_fcompareq =
+  aux_fcompareq p_FCMPq i_FCMPq ||2n aux_fcompareq p_FCMPEq i_FCMPEq.
+
+ins_FLUSH = fld1 instr address_ oper_address_ p_FLUSH i_FLUSH.
+
+ins_JMPL = fld2 instr address_ num oper_address_ f_rd p_JMPL i_JMPL.
+
+ins_RETT = fld1 instr address_ oper_address_ p_RETT i_RETT.
+
+aux_trap = fld1 instr address_ oper_address_.
+
+ins_trap =
+  aux_trap p_TN i_TN ||2n aux_trap p_TE i_TE ||2n
+  aux_trap p_TLE i_TLE ||2n aux_trap p_TL i_TL ||2n
+  aux_trap p_TLEU i_TLEU ||2n aux_trap p_TCS i_TCS ||2n
+  aux_trap p_TNEG i_TNEG ||2n aux_trap p_TVS i_TVS ||2n
+  aux_trap p_TA i_TA ||2n aux_trap p_TNE i_TNE ||2n
+  aux_trap p_TG i_TG ||2n aux_trap p_TGE i_TGE ||2n
+  aux_trap p_TGU i_TGU ||2n aux_trap p_TCC i_TCC ||2n
+  aux_trap p_TPOS i_TPOS ||2n aux_trap p_TVC i_TVC.
+
+ins_UNIMP = fld1 instr num f_imm22 p_UNIMP i_UNIMP.
+
+ins_SETHI = fld2 instr num num f_rd f_imm22 p_SETHI i_SETHI.
+
+instruction =
+ ins_loadg ||2n ins_LDD ||2n ins_LDF ||2n ins_LDDF ||2n ins_LDC ||2n
+ ins_LDDC ||2n ins_storeg ||2n ins_STD ||2n ins_STF ||2n ins_STDF ||2n
+ ins_STC ||2n ins_STDC ||2n ins_loada ||2n ins_LDDA ||2n ins_storea ||2n
+ ins_STDA ||2n ins_RDY ||2n ins_RDPSR ||2n ins_RDWIM ||2n
+ ins_RDTBR ||2n ins_WRY ||2n ins_WRPSR ||2n ins_WRWIM ||2n ins_WRTBR ||2n
+% ins_RDASR ||2n ins_WRASR ||2n
+ ins_STBAR ||2n ins_alu ||2n ins_branch ||2n
+ ins_CALL ||2n ins_float2s ||2n ins_FSQRTd ||2n ins_FSQRTq ||2n ins_FTOs ||2n
+ ins_FTOd ||2n ins_FTOq ||2n ins_FdTO ||2n ins_FqTO ||2n ins_FqTOd ||2n
+ ins_FdTOq ||2n ins_float3s ||2n ins_float3d ||2n ins_float3q ||2n
+ ins_FsMULd ||2n ins_FdMULq ||2n ins_fcompares ||2n ins_fcompared ||2n
+ ins_fcompareq ||2n
+ ins_FLUSH ||2n ins_JMPL ||2n ins_RETT ||2n
+ ins_trap ||2n ins_UNIMP ||2n ins_SETHI.
+% Copyright (c) 2004 Princeton University
+%	$Id: step.elf,v 1.25 2004/04/22 10:49:21 appel Exp $
+
+% Instruction Semantics for the sparc V8 machine.
+
+genpc = tuple4 num num num num.                 % opc, pc, npc, icnt
+
+_mk_gen_pc = _mktuple4 num num num num.
+_get_opc   : tm genpc -> tnum = _get1of4 num num num num.
+_get_pc    : tm genpc -> tnum = _get2of4 num num num num.
+_get_npc   : tm genpc -> tnum = _get3of4 num num num num.
+_get_icnt  : tm genpc -> tnum = _get4of4 num num num num.
+
+% Change the genpc as if a nonjump instruction of size "num" executes
+_nextpc : tnum -> tm genpc -> tm genpc =
+ [n : tnum][g : tm genpc] _mk_gen_pc (_get_pc g) (_get_npc g)
+                           (plus (_get_npc g) n) (succ (_get_icnt g)).
+
+% Change the program counter as if a jump to "n" instruction executes
+_nextpc_jmp = [n: tnum][g: tm genpc]
+  _mk_gen_pc (_get_opc g) (_get_pc g) n (_get_icnt g).
+
+% Some genpc's will continue
+% execution in a straight line as long as no branch occurs.
+% These relate to some location via the "normalpc" relation.
+% Other genpc's have a latent branch about to occur; these
+% relate to no single location.
+_normalpc = [g : tm genpc][n : tnum]
+  _exists num  [n+4:tm num]
+    _is_word n and _modulo n word_size zero
+    and _plus_mod32 n word_size n+4
+    and eqn (_get_pc g) n and eqn (_get_npc g) n+4.
+
+% The next location to fetch an instruction.
+_nextinstr : tm genpc -> tnum = _get_pc.
+
+% A generalized version of control_at.
+_gen_control_at : tm genpc -> tregs -> tform =
+ [g : tm genpc][r : tregs]
+ eqn (get_reg r opc) (_get_opc g) and eqn (get_reg r pc) (_get_pc g) and
+ eqn (get_reg r npc) (_get_npc g) and eqn (get_reg r icnt) (_get_icnt g).
+
+% Modify the state r,m by setting the program counter to genpc
+_setpc : tm genpc -> tm instr =
+ [g : tm genpc] instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+  _upd4 num num r opc (_get_opc g) pc (_get_pc g) npc (_get_npc g)
+                  icnt (_get_icnt g) r' and _eq_mem m m'.
+
+% Modify the state r,m by setting program counter to genpc
+% and also update the count of the number of instructions executed
+_updatepc : tm (registers arrow registers arrow form) =
+ _lam2 registers registers form [r : tregs][r' : tregs]
+   _exists num [new_npc: tm num]
+      _plus_mod32 (get_reg r npc) four new_npc and
+      _upd4 num num r opc (get_reg r pc) pc (get_reg r npc)
+                      npc new_npc icnt (succ (get_reg r icnt)) r'.
+
+% The decode relation specifying machine instruction syntax
+_decode : tmem -> tnum -> tm instr -> tnum -> tform =
+ [m : tmem][w : tnum][instr : tm instr][size : tnum]
+  eqn size four and instruction instr (get_mem m w).
+% Copyright (c) 2004 Princeton University
+%	$Id: policy.elf,v 1.15 2005/05/31 15:22:30 gtan Exp $
+
+
+% This file contains the machine-dependent parts of the conventions
+% about register usage for proof-carrying code.
+% It is loosely based on Standard ML of New Jersey 110.34.
+% See, for example, src/runtime/mach-dep/SPARC.prim.asm  in
+% the  SML/NJ 110.34 source distribution.
+
+% 
+% R#  REG   Convention
+% 
+%  0  %g0   always 0
+%  1  %g1   
+% ...
+%  7  %g7   
+%  8  %o0   standard link
+%  9  %o1   alloc pointer  (boundary between allocated and available heap)
+% 10  %o2   limit pointer  (end of available heap, minus 4096)
+% 11  %o3   standard arg
+% 12  %o4
+% 13  %o5
+% 14  %sp   stack pointer
+% 15  %o7   return address (set by call instruction)
+% 16  %l0
+%  ...
+% 23  %l7
+% 24  %i0   
+% ...
+% 29  %i5   
+% 30  %fp   frame pointer (don't touch)
+% 31  %i7   saved pc (don't touch)
+% 32  %pc   program counter
+% 33  %npc  next program counter
+% 34   icc   integer condition codes
+% 35   fcc   floating-point condition codes
+% 36  %y   high-order result of multiply instruction
+% 37   icnt   number of instructions executed, including current instr
+% 128 %f0  floating-point register 0
+% 191 %f63 floating-point register 63
+% 
+% In our logical specifications, the register bank is a single array
+% of integers.  The actual SPARC has several different register banks.
+% The numbers in the R# column indicate where in our specification's
+% register bank we put the corresponding SPARC register.  This is
+% documented in logic/pccTCB/machines/sparc/instr_sem.elf.
+% 
+% The stack pointer points to a block of memory like this:
+%  *	%fp = %sp+4096
+%  *                    +-------------------+
+%  *                    |                   |	
+%  *                    .                   .
+%  *			|                   |
+%  *	%sp+116:	|  spill area       |
+%  *			+-------------------+
+%  *	%sp+112:	|        	    |
+%  *			|   various uses    |
+%  *	%sp:		|                   |
+%  *			+-------------------+
+% 
+% Thus, the memory-resident temps are m[%sp+116],m[%sp+120],...,m[%sp+4092]
+% 
+% 
+
+reg_stdarg    = const 8.
+reg_stdlink   = const 9.
+reg_allocptr  = const 10.
+reg_limitptr  = const 11.
+reg_storeptr  = const 5.
+reg_sp        = const 14.
+reg_stdcont   = const 15.
+reg_fp        = const 30.
+reg_savedpc   = const 31. 
+ml_framesize  = const 4096.
+ml_spillarea  = const 116.
+
+% A heap-limit check consists of a comparison (limitptr minus allocptr)
+% and a conditional branch.  When a standard SML/NJ function is called, 
+% the comparison is done before the call, so as to make good use
+% of the delay slot, and the conditional branch is done afterwards, inside
+% the called function.  Thus, the carry flag is zero if and only if
+% there is at least 4k of heap space left.  This relation between
+% the condition codes, the limitptr, and the allocptr, is "limit_test".
+%abbrev
+_initial_machine_state =
+[r : tregs][m : tmem]
+   eqn (get_reg r zero) zero and eqn (get_reg r icnt) zero and
+   mult4? (get_reg r reg_allocptr) and mult4? (get_reg r reg_limitptr).
+
+_limit_test: tregs -> tform =
+  [r : tregs] (not (icc_c (get_reg r icc)))
+       equiv  (geq (get_reg r reg_limitptr) (get_reg r reg_allocptr)).
+
+_return_address: tnum -> tregs -> tform =
+  [x : tnum][r : tregs] eqn (plus (get_reg r reg_stdcont) (const 8)) x.
+
+_reserved_regs : tnum -> tform =
+  [x : tnum] eqn x reg_sp or eqn x reg_fp or eqn x reg_savedpc.
+% Copyright (c) 2004 Princeton University
+%	$Id: safety.elf,v 1.24 2004/06/19 20:30:07 gtan Exp $
+
+_control_at = [x : tnum][r : tregs]
+  _exists genpc [g : tm genpc]
+     _gen_control_at g r and _normalpc g x
+     and (gt (get_reg r icnt) (get_reg r last_cbr)).
+
+_eq_reserved_regs : tregs -> tregs -> tform =
+  [r : tregs][r0 : tregs]
+   _frl_n [x : tnum] _reserved_regs x imp eqn (get_reg r x) (get_reg r0 x).
+
+specified_step : tm instr =
+ instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+  _exists3 instr num num [i : tm instr][l : tnum][size : tnum]
+  _exists2 genpc registers [g : tm genpc][r'' : tregs]
+   _gen_control_at g r  and
+   eqn (_nextinstr g) l  and
+   _executable r m l and
+   _decode m l i size and
+   _eq_reserved_regs r r' and
+   _@2 registers registers form _updatepc r r'' and
+   app_instr i r'' m r' m'.
+
+step : tm instr = instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+  app_instr specified_step r m r' m'   or  app_instr api_step r m r' m'.
+
+state = pair registers memory.
+_mkstate = _mktuple2 registers memory.
+fst_st = _get1of2 registers memory.
+snd_st = _get2of2 registers memory.
+
+_stepx: tm state -> tm state -> tform = [x : tm state][y : tm state]
+   app_instr step (fst_st x) (snd_st x) (fst_st y) (snd_st y).
+
+_step* : tm instr =
+ instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
+  _kleene_star state _stepx (_mkstate r m) (_mkstate r' m').
+
+_safe : tregs -> tmem -> tform =
+ [r : tregs][m : tmem]
+  _forall2 registers memory [r' : tregs][m' : tmem]
+    app_instr _step* r m r' m' imp
+    _exists2 registers memory [r'' : tregs][m'' : tmem]
+      app_instr step r' m' r'' m''.
+
+prog_lam = _lam2 num num form.
+prog_app = _@2 num num form.
+
+_next_word : tm num -> tm program -> tm program =
+ [n : tm num][f : tm program] prog_lam [i : tnum][j : tnum]
+  (eqn i zero imp eqn j n) and
+  (not (eqn i zero) imp prog_app f (pred i) j).
+
+%infix right 15 _next_word.
+
+next_word : rep_type -> tm program -> tm program =
+ [w : rep_type][ws : tm program]
+ (const w) _next_word ws.
+
+%infix right 15 next_word.
+
+no_more_words : tm program = prog_lam [_ : tnum][_ : tnum] false.
+
+_prog_loaded_at : tm program -> tnum -> tregs -> tmem -> tform =
+ [prog : tm program][start : tnum][r :tregs][m : tmem]
+   _forall3 num num num [l : tnum][w : tnum][start+4l : tnum]
+    prog_app prog l w imp
+    _plus_mod32 start (times four l) start+4l imp
+      eqn (get_mem m start+4l) w
+      and _readable r m start+4l and _executable r m start+4l.
+% Copyright (c) 2004 Princeton University
+%	$Id: initial.elf,v 1.27 2004/05/26 12:06:54 appel Exp $
+
+% Things that are supposed to be true, 
+% not by hardware but by convention, about the 
+% registers and memory at the beginning of execution.
+
+% When the SML/NJ compiler generates code for a function, it uses
+% one of several kinds of calling conventions:
+% 
+% ESCAPING FUNCTION:  A function that can be called from another module.
+%   Any two escaping functions with the same (ML) type must have the
+%   same calling convention.  The convention is,
+% 
+% reg_stdlink         the address of the function
+% reg_limitptr         end of heap, minus 4096
+% reg_storeptr         (used by generational g.c.)
+% reg_allocptr         beginning of unallocated (available) heap
+% reg_exncont      
+% reg_sp              (access memory-resident temps through this)
+% reg_stdarg          (number of arguments is determined by function's type)
+% reg_stdcont         "return address"
+% reg_stdclos         (access free variables through this)
+% reg_varptr          (leave this alone)
+% reg_fp               (leave this alone)
+% program counter     (address of function being called)
+% limit_test          (machine-dependent predicate)
+% other registers are used to pass arguments as determined by
+% the function's (ML) type.
+
+% ESCAPING CONTINUATION:
+% reg_limitptr         end of heap, minus 4096
+% reg_storeptr         (used by generational g.c.)
+% reg_allocptr         beginning of unallocated (available) heap
+% reg_exncont     
+% reg_sp              (access memory-resident temps through this)
+% reg_stdarg          (number of arguments is determined by function's type)
+% reg_stdcont         address of the function
+% reg_varptr          (leave this alone)
+% reg_fp              (leave this alone)
+% program counter     (address of function being called)
+% limit_test          (machine-dependent predicate)
+% other registers are used to pass arguments as determined by
+% the function's (ML) type.
+% 
+% KNOWN FUNCTION:  
+%  The convention here is up to the compiler, but usually includes:
+% reg_limitptr         end of heap, minus 4096
+% reg_storeptr         (used by generational g.c.)
+% reg_allocptr         beginning of unallocated (available) heap
+% reg_exncont      
+% reg_sp               (access memory-resident temps through this)
+% base pointer	       (address of beginning of compilation unit + 4096)
+% reg_fp               (leave this alone)
+% program counter      (address of function being called)
+% other registers are used to pass arguments as the compiler wishes.
+
+% For our proof-carrying code prototype, let us assume that
+% the initial entry point, address 0 of the compilation unit,
+% is a function that takes one integer argument and returns one integer
+% result.  Then we have, 
+
+
+_block : (tnum -> tform) -> tnum -> tnum -> tform =
+ [f : tnum -> tform][start : tnum][end : tnum] 
+   _frl_n [x : tnum] leq start x imp lt x end imp f x.
+
+_spill_area_rw : tregs -> tmem -> tform =
+ [r : tregs][m : tmem] _block (_readable r m &&n _writable r m) 
+                              (plus (get_reg r reg_sp) ml_spillarea)
+                              (plus (get_reg r reg_sp) ml_framesize).
+
+_heap_area_rw : tregs -> tmem -> tform =
+ [r : tregs][m : tmem] _block (_readable r m &&n _writable r m) 
+         (get_reg r reg_allocptr) (plus (get_reg r reg_limitptr) (const 4096)).
+
+_spill_area : tregs -> tnum -> tform =
+  [r : tregs]
+    _inrange2 (plus (get_reg r reg_sp) ml_spillarea)
+       (plus (get_reg r reg_sp) ml_framesize).
+
+_heap_area : tregs -> tnum -> tform =
+  [r : tregs]
+    _inrange2 (get_reg r reg_allocptr)
+       (plus (get_reg r reg_limitptr) (const 4096)).
+
+_prog_area:  tm program -> tnum -> tnum -> tform =
+  [prog: tm program][start: tnum][i: tnum]
+    _exists2 num num [l: tnum][w: tnum]
+    prog_app prog l w and _plus_mod32 start (times four l) i.
+
+_all_fixnums : tregs -> tmem -> tform =
+  [r : tregs][m : tmem]
+    _frl_n [x : tnum] _is_word (get_mem m x) and _is_word (get_reg r x).
+
+_return_type : tnum -> tregs -> tform =
+  [x : tnum][r0 : tregs]
+   _modulo x four zero and _is_word x and
+   _forall2 registers memory [r : tregs][m : tmem]
+     _eq_reserved_regs r r0 imp
+     _control_at x r imp 
+     _safe r m.
+
+_initial_state : tm program -> tnum -> tregs -> tmem -> tform =
+  [prog: tm program][start: tnum][r : tregs][m : tmem]
+  _initial_machine_state r m  and
+  _all_fixnums r m  and
+  _spill_area_rw r m  and
+  _heap_area_rw r m  and
+  _set_disjoint num (_spill_area r) (_heap_area r)  and
+  _set_disjoint num (_heap_area r) (_prog_area prog start)  and
+  _set_disjoint num (_prog_area prog start) (_spill_area r)  and
+  eqn (get_reg r reg_stdlink) start and
+  _is_word (plus (get_reg r reg_limitptr) (const 4096)) and
+  _return_type (plus (get_reg r reg_stdcont) (const 8)) r   and
+  geq (plus (get_reg r reg_limitptr) (const 4096)) (get_reg r reg_allocptr) and
+  _prog_loaded_at prog start r m   and
+  _control_at start r.
+
+_exists_initial_state:
+  pf (_exists2 program num [prog: tm program][start: tnum]
+      _exists2 registers memory [r: tregs][m: tmem]
+      _initial_state prog start r m).% Copyright (c) 2004 Princeton University
+%	$Id: policy.elf,v 1.14 2004/04/30 20:59:52 appel Exp $
+
+safe_program: tm program -> tform =
+ [prog : tm program]
+  _forall3 num registers memory [start : tnum][r : tregs][m : tmem] 
+   _initial_state prog start r m imp
+   _safe r m.
+
+%
+% Example of a safety theorem:
+%
+% my_prog_is_safe: pf (safe_program (
+% 81329 next_word
+% 293765 next_word
+% 93 next_word
+% 29387 next_word
+% 92387895 next_word
+% 129872 next_word
+% 938275 next_word
+% no_more_words)).
+% 
+
+__safe__ : __program__ -> type = [prog: __program__] pf (safe_program prog).
+% Copyright (c) 2004 Princeton University
+
+hole: {A: tm form} pf A.
+_termhole: {T: tp} tm T.
+tphole: rep_type -> tp.
+_predhole: {T1: tp}{T2: tp}{T: tp} (tm T1 -> tm T2 -> tm form) -> tm T =  
+   [T1: tp][T2: tp][T: tp]
+   [f: tm T1 -> tm T2 -> tm form]
+   _@ (T1 arrow T2 arrow form) T
+   (_termhole ((T1 arrow T2 arrow form) arrow T))
+   (_lam2 T1 T2 form f).

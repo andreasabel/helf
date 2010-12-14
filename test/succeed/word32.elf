@@ -1,0 +1,376 @@
+%{ Another supported domain are 32-bit integers. This domain is used
+mainly in Proof Carrying Code applications, and because of this, it
+has fairly different structure and features than the extension for
+(unrestricted) integers (see section 6.4 Integer Constraints). First
+of all, the algorithms used were kept short and simple, so that they
+can be easily read and verified to be correct. Secondly, the set of
+arithmetic operators provided has been kept to a minimum. Also, each
+of these is implemented as a type family instead of a function symbol,
+so that unification of arithmetic expressions follows the same rule as
+that of regular terms. Finally, for each arithmetic operator, we also
+provide a type family which, in addition to carry out the computation,
+also provides a proof object for it.
+
+Declaring
+
+%uses word32.
+causes the following signature to be loaded into the system:
+}%
+
+word32 : type.
++ : word32 -> word32 -> word32 -> type.
+* : word32 -> word32 -> word32 -> type.
+/ : word32 -> word32 -> word32 -> type.
+prove+ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} type.
+proof+ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove+ X Y Z P.
+prove* : {X:word32} {Y:word32} {Z:word32} {P:* X Y Z} type.
+proof* : {X:word32} {Y:word32} {Z:word32} {P:* X Y Z} prove* X Y Z P.
+prove/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} type.
+proof/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove/ X Y Z P.
+
+%% Not mentioned in the documentation:
+
+0 : word32.
+1 : word32.
+2 : word32.
+3 : word32.
+4 : word32.
+5 : word32.
+6 : word32.
+7 : word32.
+8 : word32.
+9 : word32.
+10 : word32.
+11 : word32.
+12 : word32.
+13 : word32.
+14 : word32.
+15 : word32.
+16 : word32.
+17 : word32.
+18 : word32.
+19 : word32.
+20 : word32.
+21 : word32.
+22 : word32.
+23 : word32.
+24 : word32.
+25 : word32.
+26 : word32.
+27 : word32.
+28 : word32.
+29 : word32.
+30 : word32.
+31 : word32.
+32 : word32.
+33 : word32.
+34 : word32.
+35 : word32.
+36 : word32.
+37 : word32.
+38 : word32.
+39 : word32.
+40 : word32.
+41 : word32.
+42 : word32.
+43 : word32.
+44 : word32.
+45 : word32.
+46 : word32.
+47 : word32.
+48 : word32.
+49 : word32.
+50 : word32.
+51 : word32.
+52 : word32.
+53 : word32.
+54 : word32.
+55 : word32.
+56 : word32.
+57 : word32.
+58 : word32.
+59 : word32.
+60 : word32.
+61 : word32.
+62 : word32.
+63 : word32.
+64 : word32.
+65 : word32.
+66 : word32.
+67 : word32.
+68 : word32.
+69 : word32.
+70 : word32.
+71 : word32.
+72 : word32.
+73 : word32.
+74 : word32.
+75 : word32.
+76 : word32.
+77 : word32.
+78 : word32.
+79 : word32.
+80 : word32.
+81 : word32.
+82 : word32.
+83 : word32.
+84 : word32.
+85 : word32.
+86 : word32.
+87 : word32.
+88 : word32.
+89 : word32.
+90 : word32.
+91 : word32.
+92 : word32.
+93 : word32.
+94 : word32.
+95 : word32.
+96 : word32.
+97 : word32.
+98 : word32.
+99 : word32.
+100 : word32.
+101 : word32.
+102 : word32.
+103 : word32.
+104 : word32.
+105 : word32.
+106 : word32.
+107 : word32.
+108 : word32.
+109 : word32.
+110 : word32.
+111 : word32.
+112 : word32.
+113 : word32.
+114 : word32.
+115 : word32.
+116 : word32.
+117 : word32.
+118 : word32.
+119 : word32.
+120 : word32.
+121 : word32.
+122 : word32.
+123 : word32.
+124 : word32.
+125 : word32.
+126 : word32.
+127 : word32.
+128 : word32.
+129 : word32.
+130 : word32.
+131 : word32.
+132 : word32.
+133 : word32.
+134 : word32.
+135 : word32.
+136 : word32.
+137 : word32.
+138 : word32.
+139 : word32.
+140 : word32.
+141 : word32.
+142 : word32.
+143 : word32.
+144 : word32.
+145 : word32.
+146 : word32.
+147 : word32.
+148 : word32.
+149 : word32.
+150 : word32.
+151 : word32.
+152 : word32.
+153 : word32.
+154 : word32.
+155 : word32.
+156 : word32.
+157 : word32.
+158 : word32.
+159 : word32.
+160 : word32.
+161 : word32.
+162 : word32.
+163 : word32.
+164 : word32.
+165 : word32.
+166 : word32.
+167 : word32.
+168 : word32.
+169 : word32.
+170 : word32.
+171 : word32.
+172 : word32.
+173 : word32.
+174 : word32.
+175 : word32.
+176 : word32.
+177 : word32.
+178 : word32.
+179 : word32.
+180 : word32.
+181 : word32.
+182 : word32.
+183 : word32.
+184 : word32.
+185 : word32.
+186 : word32.
+187 : word32.
+188 : word32.
+189 : word32.
+190 : word32.
+191 : word32.
+192 : word32.
+193 : word32.
+194 : word32.
+195 : word32.
+196 : word32.
+197 : word32.
+198 : word32.
+199 : word32.
+200 : word32.
+201 : word32.
+202 : word32.
+203 : word32.
+204 : word32.
+205 : word32.
+206 : word32.
+207 : word32.
+208 : word32.
+209 : word32.
+210 : word32.
+211 : word32.
+212 : word32.
+213 : word32.
+214 : word32.
+215 : word32.
+216 : word32.
+217 : word32.
+218 : word32.
+219 : word32.
+220 : word32.
+221 : word32.
+222 : word32.
+223 : word32.
+224 : word32.
+225 : word32.
+226 : word32.
+227 : word32.
+228 : word32.
+229 : word32.
+230 : word32.
+231 : word32.
+232 : word32.
+233 : word32.
+234 : word32.
+235 : word32.
+236 : word32.
+237 : word32.
+238 : word32.
+239 : word32.
+240 : word32.
+241 : word32.
+242 : word32.
+243 : word32.
+244 : word32.
+245 : word32.
+246 : word32.
+247 : word32.
+248 : word32.
+249 : word32.
+250 : word32.
+251 : word32.
+252 : word32.
+253 : word32.
+254 : word32.
+255 : word32.
+256 : word32.
+257 : word32.
+258 : word32.
+259 : word32.
+260 : word32.
+261 : word32.
+262 : word32.
+263 : word32.
+264 : word32.
+265 : word32.
+266 : word32.
+267 : word32.
+268 : word32.
+269 : word32.
+270 : word32.
+271 : word32.
+272 : word32.
+273 : word32.
+274 : word32.
+275 : word32.
+276 : word32.
+277 : word32.
+278 : word32.
+279 : word32.
+280 : word32.
+281 : word32.
+282 : word32.
+283 : word32.
+284 : word32.
+285 : word32.
+286 : word32.
+287 : word32.
+288 : word32.
+289 : word32.
+290 : word32.
+291 : word32.
+292 : word32.
+293 : word32.
+294 : word32.
+295 : word32.
+296 : word32.
+297 : word32.
+298 : word32.
+299 : word32.
+
+1000 : word32.
+
+512   : word32.
+1024  : word32.
+2048  : word32.
+4096  : word32.
+8192  : word32.
+16384 : word32.
+32768 : word32.
+65536 : word32.
+2147483648 : word32.
+4294967295 : word32.
+%{ 
+Goals involving + and * are immediately solved if at least two of
+the arguments are ground objects (i.e. numbers), and delayed as
+constraints otherwise. In particular
+
+?- + 3 X 9.
+
+is solved immediately and can be used to compute 9-3. Goals involving
+/ are delayed unless both the first and the second argument are
+known. The type families prove+, prove*, prove/ can be used to obtain
+proof object for the arithmetic operation, and use them in the
+remaining part of the computation:
+
+?- P : + 3 X 9.
+Solving...
+X = 6.
+P = 3+6.
+More? n
+?- prove+ 3 X 9 P.
+Solving...
+P = 3+6;
+X = 6.
+More? n
+
+It is important to stress that the domain modeled here is not the ring
+of integers modulo 32 but rather the restriction of the integer ring
+to the interval 0...4294967295, so that for example the query:
+
+?- + 1 X 0.
+will not admit a solution.
+}%
