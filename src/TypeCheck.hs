@@ -2,7 +2,7 @@
 
 module TypeCheck where
 
-import Abstract
+import Abstract -- as A
 import Context
 import PrettyM
 import Scoping (prettyM)
@@ -47,11 +47,11 @@ class (Monad m, -- Scoping.Scope m,
   app f v       = doEval $ apply f v
   eval         :: Expr -> m val
   eval e        = getEnv >>= \ rho -> doEval $ evaluate e rho
-  abstrPi      :: val -> (A.Name, val) -> val -> m val  -- ^ pi a x b
+  abstrPi      :: val -> (Name, val) -> val -> m val  -- ^ pi a x b
   abstrPi a x b = doEval $ abstractPi a x b
 {-
   doCxt        :: mx a -> m a
-  addLocal     :: A.Name -> val -> (val -> m a) -> m a
+  addLocal     :: Name -> val -> (val -> m a) -> m a
   addLocal x t  = doCxt . addBind x t cont
 -}
   addLocal'    :: val -> val -> (val -> m a) -> m a
