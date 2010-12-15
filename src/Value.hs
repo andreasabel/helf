@@ -31,7 +31,7 @@ class MonadEval val env m | m -> val, m -> env where
   evaluate  :: Expr -> env -> m val  
   evaluate' :: Expr -> m val        -- ^ evaluate a closed expression
   abstractPi:: val -> (Name, val) -> val -> m val -- ^ abstractPi a x b = pi x:a.b
---  reify   :: val -> m Expr   -- this will need the local context
+  reify     :: val -> m Expr        -- ^ quote value as expression
 
 
   

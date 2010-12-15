@@ -59,7 +59,7 @@ mainFile fileName = do
 
 doTypeCheck :: Scoping.ScopeState -> A.Declarations -> IO ()
 doTypeCheck st decls = do
-  res <- runCheckDecls st decls 
+  res <- runCheckDecls decls 
   case res of
     Left err -> do 
       putStrLn $ "error during typechecking:\n" ++ show err

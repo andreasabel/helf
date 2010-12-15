@@ -20,8 +20,8 @@ import Data.Traversable
 
 import qualified Abstract as A
 import Context
-import Scoping
-import ScopeMonad
+-- import Scoping
+-- import ScopeMonad
 import Signature
 import TypeCheck hiding (app)
 import Util
@@ -32,12 +32,17 @@ import Data.Char -- testing
 
 -- Values
 
-type Var = Int
 
+type Var = Int
+{-
 data Head 
   = HVar Var      -- (typed) variable 
   | HCon A.Name   -- (typed) constructor
   deriving (Eq,Ord,Show)
+-}
+
+-- | Heads are identifiers excluding @A.Def@.
+type Head = A.Ident 
 
 data Val 
   = Ne   Head Val [Val]              -- ^ @x^a vs^-1 | c^a vs^-1@   
@@ -45,7 +50,7 @@ data Val
   | Sort Sort                        -- ^ @s@
   | CLam A.Name A.Expr Env           -- ^ @(\xe) rho@
   | K    Val                         -- ^ constant function
-  | Abs  (A.Name, Var) Val Subst     -- ^ abstraction
+  | Abs  A.Name Val Subst            -- ^ abstraction
   | Fun  Val  Val                    -- ^ @Pi a ((\xe)rho)@
 
 instance Value Head Val where
@@ -65,13 +70,13 @@ instance Value Head Val where
       _         -> VVal
 
 con :: A.Name -> Val -> Val
-con x t = Ne (HCon x) t []
+con x t = Ne (A.Con x) t []
 
 -- Environments (Values for expression (=bound) variables)
 
-type Env = Map A.Name Val
+type Env = Map Var Val
 
-update :: Env -> A.Name -> Val -> Env
+update :: Env -> Var -> Val -> Env
 update rho x e = Map.insert x e rho 
 
 -- Substitutions (Values for value (=free) variables)
@@ -104,7 +109,7 @@ substFree w x = subst where
 -}
 substs :: Subst -> Val -> EvalM Val
 substs sigma = subst where
-  subst (Ne h@(HVar y) a vs) | Just w <- lookupSubst y sigma =
+  subst (Ne h@(A.Var y) a vs) | Just w <- lookupSubst (A.uid y) sigma =
     appsR w =<< mapM subst vs
   subst (Ne h a vs)    = Ne h <$> subst a <*> mapM subst vs
   subst (Sort s)       = return (Sort s)
@@ -126,14 +131,14 @@ instance MonadEval Val Env EvalM where
     case f of
       K w               -> return $ w
       Ne h t vs         -> return $ Ne h t (v:vs)
-      CLam x e rho      -> evaluate e (update rho x v)
-      Abs (n,x) w sigma -> substs (updateSubst sigma x v) w
+      CLam x e rho      -> evaluate e (update rho (A.uid x) v)
+      Abs x w sigma     -> substs (updateSubst sigma (A.uid x) v) w
   
   evaluate e rho =
     case e of
       A.Ident (A.Con x) -> con x . symbType . sigLookup' x <$> ask
       A.Ident (A.Def x) -> symbDef . sigLookup' x  <$> ask
-      A.Ident (A.Var x) -> return $ lookupSafe x rho
+      A.Ident (A.Var x) -> return $ lookupSafe (A.uid x) rho
       A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)
       A.Lam x mt e -> return $ CLam x e rho
       A.Pi mx e e' -> Fun <$> (evaluate e rho) <*> case mx of
@@ -143,7 +148,27 @@ instance MonadEval Val Env EvalM where
 
   evaluate' e = evaluate e Map.empty
 
-  abstractPi a (n, Ne (HVar x) _ []) b = return $ Fun a $ Abs (n,x) b emptySubst
+  abstractPi a (n, Ne (A.Var x) _ []) b = return $ Fun a $ Abs x b emptySubst
+
+  reify v = return $ quote v A.initSysNameCounter 
+
+-- * Reification
+
+quote :: Val -> A.SysNameCounter -> A.Expr
+quote v =
+  case v of
+    Ne h a vs    -> foldl A.App (A.Ident h) <$> mapM quote vs
+    Sort Type    -> return A.Typ
+    Sort Kind    -> error "cannot quote sort kind"
+    Fun a (K b)  -> A.Pi Nothing <$> quote a <*> quote b
+    Fun a (Abs n b theta) -> do
+      u <- quote a
+      i <- ask
+      let (x,i') = A.nextSysName i n
+      t <- local (const i') $ quote b -- TODO!! 
+      return $ A.Pi (Just x) u t
+    CLam x e rho -> return $ A.Lam x Nothing e -- TODO!!
+    K v          -> error "K" -- TODO!!
 
 -- * Context monad
 
@@ -160,16 +185,16 @@ type ContextM = Reader Context
 
 instance MonadCxt Val Env ContextM where
 
-  addLocal x t cont = do
+  addLocal n@(A.Name x _) t cont = do
     l <- asks level
-    let xv = Ne (HVar l) t []
+    let xv = Ne (A.Var $ n { A.uid = l }) t []
     local (\ (Context l gamma rho) -> 
              Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho)) 
           (cont xv)
 
   lookupLocal x = do 
     gamma <- asks tyEnv
-    return $ lookupSafe x gamma
+    return $ lookupSafe (A.uid x) gamma
 
   getEnv = asks valEnv
 
@@ -182,13 +207,13 @@ type CheckExprM = ReaderT SigCxt Err
 
 instance MonadCxt Val Env CheckExprM where
 
-  addLocal x t cont = do
+  addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
-    let xv  = Ne (HVar l) t []
+    let xv  = Ne (A.Var $ n { A.uid = l }) t []
     let cxt = Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho) 
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
-  lookupLocal x = do 
+  lookupLocal n@(A.Name x _) = do 
     gamma <- asks $ tyEnv . locals
     return $ lookupSafe x gamma
 
@@ -235,7 +260,8 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
 -- * Declarations
 
-type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
+-- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
+type CheckDeclM = StateT (MapSig Val) (ErrorT String IO)
 
 instance Field (MapSig v) (MapSig v) where
   getF = id
@@ -258,14 +284,19 @@ instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
-  liftIO . putStrLn . show =<< unparse d
+--  liftIO . putStrLn . show =<< unparse d
   checkDecl d
 
 checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations
 
+runCheckDecls :: A.Declarations -> IO (Err ())
+runCheckDecls ds = runErrorT $ evalStateT (checkDeclarations ds) Map.empty
+
+{-
 runCheckDecls :: ScopeState -> A.Declarations -> IO (Err ())
 runCheckDecls st ds = runErrorT $ runReaderT (evalStateT (checkDeclarations ds) Map.empty) st
+-}
 
 -- * Testing
 
@@ -273,11 +304,14 @@ runCheckDecls st ds = runErrorT $ runReaderT (evalStateT (checkDeclarations ds) 
 hashString = fromIntegral . foldr f 0
       where f c m = ord c + (m * 128) `rem` 1500007
 
-var x   = A.Ident $ A.Var $ hashString x
-abs x e = A.Lam (hashString x) Nothing e
+hash :: String -> A.Name 
+hash s = A.Name (hashString s) s
+
+var x   = A.Ident $ A.Var $ hash x
+abs x e = A.Lam (hash x) Nothing e
 app     = A.App
 ty = A.Typ
-pi x = A.Pi (Just $ hashString x)
+pi x = A.Pi (Just $ hash x)
 
 eid = abs "A" $ abs "x" $ var "x"
 tid = pi "A" ty $ pi "x" (var "A") $ var "A"

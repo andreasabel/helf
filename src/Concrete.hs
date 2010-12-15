@@ -7,6 +7,7 @@ import OperatorPrecedenceParser (Associativity(..))
 import qualified OperatorPrecedenceParser as OPP
 
 type Name = String
+noName = ""
 
 newtype Declarations = Declarations { declarations :: [Declaration] }
 

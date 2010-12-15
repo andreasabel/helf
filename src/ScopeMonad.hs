@@ -48,10 +48,10 @@ import Util
 -- * scope reader
 
 data ScopeState = ScopeState
-  { counter   :: A.Name
+  { counter   :: A.UID
   , fixities  :: Map C.Name C.Fixity  -- assuming there are few fix.decls.
   , renaming  :: Map C.Name A.Ident
-  , naming    :: Map A.Name C.Name    -- name suggestion
+  , naming    :: Map A.UID C.Name    -- name suggestion
   }
 
 initScopeState = ScopeState
@@ -79,7 +79,7 @@ instance ( Applicative m
          , MonadReader st m    ) => ScopeReader m where
 
   askName x = maybe (internalError ["unbound abstract identifier", show x]) id .
-                Map.lookup x . naming   . getF <$> ask
+                Map.lookup (A.uid x) . naming   . getF <$> ask
 
   askFixity x = Map.lookup x . fixities . getF <$> ask
 
@@ -111,11 +111,12 @@ instance ( Applicative m
          , MonadError  ParseError   m ) => Scope m where
 
   addGlobal ident n = do
-    st@ScopeState { counter = x, renaming = ren, naming = nam } <- get
+    st@ScopeState { counter = i, renaming = ren, naming = nam } <- get
     let mx   = Map.lookup n ren -- TODO: shadowing!!
+        x    = A.Name i n
         ren' = Map.insert n (ident x) ren
-        nam' = Map.insert x n nam -- TODO: shadowing!
-    put $ st { counter = (x + 1), renaming = ren', naming = nam' }
+        nam' = Map.insert i n nam -- TODO: shadowing!
+    put $ st { counter = (i + 1), renaming = ren', naming = nam' }
     return x
 {-
   addCon n = do
@@ -136,8 +137,9 @@ instance ( Applicative m
 
   addVar n cont = do
     st <- get
-    let x = counter st
-    put $ st { counter = x + 1 , naming = Map.insert x n (naming st) }
+    let i = counter st
+    let x = A.Name i n
+    put $ st { counter = i + 1 , naming = Map.insert i n (naming st) }
     local (\ cxt -> cxt 
       { localRen = Map.insert n (A.Var x) (localRen cxt)
 --      , localNam = Map.insert x n (localNam cxt) -- TODO: shadowing!
@@ -162,7 +164,7 @@ instance ( Applicative m
       Nothing -> do
 -}
         nam <- gets naming
-        case Map.lookup x nam of
+        case Map.lookup (A.uid x) nam of
           Just n -> return n
           Nothing -> fail $ "internal error: unbound abstract identifier " ++ show x
 
