@@ -240,7 +240,7 @@ prop_joinSplitNaivePretty = forAll (listOf (elements ['a'..'z'])) $ \ l ->
 
 
 test = quickCheck prop_joinSplit
---testv = verboseCheck prop_joinSplit
+testv = verboseCheck prop_joinSplit
 testn = quickCheck prop_joinSplitNaive
 --testnv = verboseCheck prop_joinSplitNaive
 --testnvp = verboseCheck prop_joinSplitNaivePretty
