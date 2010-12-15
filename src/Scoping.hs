@@ -164,3 +164,35 @@ instance Unparse C.Name A.Ident where
 
 unparseApplication :: ScopeReader m => A.Expr -> m [C.Expr] 
 unparseApplication (A.App f a) = mapM unparse [f,a] -- TODO!
+
+{- How to print an expression
+
+We distinguish 3 kinds of abstract names
+- global names (Con,Def)
+- user-generated local names 
+- system-generated local names (e.g., from quote)
+
+We can print an expression from left-to-right, bottom-up as follows:
+
+a) never shadow a global name
+- state: 
+   * used concrete names, initially the set of all global names
+   * map from abstract names to concrete names
+- when encountering a global id, just look up its name
+- when encountering a local id, check whether it is already in the map
+   * if yes, print its name
+   * if no, assign it a name and add it
+- when abstracting a name, check whether it is in the map
+   * if yes, print its name, delete it
+   * if no, we have a void abstraction, then choose an unused version of it
+
+b) shadowing of global names allowed
+- first compute the used global names
+- proceed as above, but start with the set of computed global names
+
+In case of b, we do not need to maintain a set of global names after
+scope checking.  We can store name suggestions locally with it each
+abstract name as in Agda.  Note that there will be sharing, so it is
+not more memory intensive.
+
+-}
