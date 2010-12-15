@@ -2,7 +2,8 @@
 -- * values as explicit closures and 
 -- * environments as finite maps
 
-{-# LANGUAGE OverlappingInstances, IncoherentInstances, PatternGuards #-}
+{-# LANGUAGE OverlappingInstances, IncoherentInstances, 
+    PatternGuards, TupleSections #-}
 
 module Closures where
 
@@ -30,10 +31,9 @@ import Value
 import Data.Char -- testing
 -- import Text.PrettyPrint
 
--- Values
+-- * Values
 
-
-type Var = Int
+type Var = A.UID
 {-
 data Head 
   = HVar Var      -- (typed) variable 
@@ -52,6 +52,7 @@ data Val
   | K    Val                         -- ^ constant function
   | Abs  A.Name Val Subst            -- ^ abstraction
   | Fun  Val  Val                    -- ^ @Pi a ((\xe)rho)@
+  | DontCare
 
 instance Value Head Val where
   typ  = Sort Type 
@@ -69,17 +70,32 @@ instance Value Head Val where
       Ne h t vs -> VNe h t (reverse vs)
       _         -> VVal
 
+-- * smart constructors
+
+var :: A.Name -> Val -> Val
+var x t = Ne (A.Var x) t []
+
+var_ :: A.Name -> Val
+var_ x = var x DontCare
+
 con :: A.Name -> Val -> Val
 con x t = Ne (A.Con x) t []
 
--- Environments (Values for expression (=bound) variables)
+-- * projections
+
+boundName :: Val -> A.Name
+boundName (CLam n _ _) = n
+boundName (Abs n _ _) = n
+boundName _ = A.noName
+
+-- * Environments (Values for expression (=bound) variables)
 
 type Env = Map Var Val
 
 update :: Env -> Var -> Val -> Env
 update rho x e = Map.insert x e rho 
 
--- Substitutions (Values for value (=free) variables)
+-- * Substitutions (Values for value (=free) variables)
 
 type Subst = Map Var Val
 
@@ -89,7 +105,7 @@ updateSubst sigma x v = Map.insert x v sigma
 lookupSubst = Map.lookup
 -- updateSubsts = 
 
--- Evaluation
+-- * Evaluation
 
 type EvalM = Reader (MapSig Val)
 
@@ -150,25 +166,34 @@ instance MonadEval Val Env EvalM where
 
   abstractPi a (n, Ne (A.Var x) _ []) b = return $ Fun a $ Abs x b emptySubst
 
-  reify v = return $ quote v A.initSysNameCounter 
+  reify v = quote v A.initSysNameCounter 
 
 -- * Reification
 
-quote :: Val -> A.SysNameCounter -> A.Expr
-quote v =
+quote :: Val -> A.SysNameCounter -> EvalM A.Expr
+quote v i =
   case v of
-    Ne h a vs    -> foldl A.App (A.Ident h) <$> mapM quote vs
+    Ne h a vs    -> foldl A.App (A.Ident h) <$> mapM (flip quote i) vs
     Sort Type    -> return A.Typ
     Sort Kind    -> error "cannot quote sort kind"
-    Fun a (K b)  -> A.Pi Nothing <$> quote a <*> quote b
-    Fun a (Abs n b theta) -> do
-      u <- quote a
-      i <- ask
-      let (x,i') = A.nextSysName i n
-      t <- local (const i') $ quote b -- TODO!! 
+    DontCare     -> error "cannot quote the dontcare value"
+    Fun a (K b)  -> A.Pi Nothing <$> quote a i <*> quote b i
+    Fun a f      -> do
+      u     <- quote a i
+      (x,t) <- quoteFun f i
       return $ A.Pi (Just x) u t
-    CLam x e rho -> return $ A.Lam x Nothing e -- TODO!!
-    K v          -> error "K" -- TODO!!
+    f            -> do
+      (x,e) <- quoteFun f i
+      return $ A.Lam x Nothing e
+
+-- | @quoteFun n v@ expects @v@ to be a function and returns and its
+--   body as an expression.
+quoteFun :: Val -> A.SysNameCounter -> EvalM (A.Name, A.Expr)
+quoteFun f i = do
+  let n = boundName f
+  let (x, i') = A.nextSysName i n
+  v <- f `apply` (var_ x)
+  (x,) <$> quote v i'
 
 -- * Context monad
 
@@ -307,29 +332,29 @@ hashString = fromIntegral . foldr f 0
 hash :: String -> A.Name 
 hash s = A.Name (hashString s) s
 
-var x   = A.Ident $ A.Var $ hash x
+var' x   = A.Ident $ A.Var $ hash x
 abs x e = A.Lam (hash x) Nothing e
 app     = A.App
 ty = A.Typ
 pi x = A.Pi (Just $ hash x)
 
-eid = abs "A" $ abs "x" $ var "x"
-tid = pi "A" ty $ pi "x" (var "A") $ var "A"
+eid = abs "A" $ abs "x" $ var' "x"
+tid = pi "A" ty $ pi "x" (var' "A") $ var' "A"
 
 arrow a b = A.Pi Nothing a b
 
 tnat = pi "A" ty $ 
-         pi "zero" (var "A") $ 
-         pi "suc"  (var "A" `arrow` var "A") $
-           var "A" 
+         pi "zero" (var' "A") $ 
+         pi "suc"  (var' "A" `arrow` var' "A") $
+           var' "A" 
 
-ezero  = abs "A" $ abs "zero" $ abs "suc" $ var "zero"
+ezero  = abs "A" $ abs "zero" $ abs "suc" $ var' "zero"
 -- problem: esuc is not a nf
-esuc n = abs "A" $ abs "zero" $ abs "suc" $ var "suc" `app` 
-          (n `app` var "A" `app` var "zero" `app` var "suc")  
+esuc n = abs "A" $ abs "zero" $ abs "suc" $ var' "suc" `app` 
+          (n `app` var' "A" `app` var' "zero" `app` var' "suc")  
 
 enat e =  abs "A" $ abs "zero" $ abs "suc" $ e
-enats = map enat $ iterate (app (var "suc")) (var "zero")
+enats = map enat $ iterate (app (var' "suc")) (var' "zero")
 e2 = enats !! 2
 
 rid = runCheck eid tid
