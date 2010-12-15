@@ -24,6 +24,17 @@ data Expr
     deriving (Eq,Ord,Show)
 -}
 
+-- * Type errors
+
+data TypeError val 
+  = NotFunType val       -- ^ not a function type
+  | NotInferable Expr    -- ^ cannot infer type
+  | NotSort val          -- ^ neither "type" nor "kind"
+  | NotType val          -- ^ not "type"
+  | UnequalTypes val val -- ^ types unequal
+  | UnequalHeads val val -- ^ neutral terms unequal
+  | UnequalSpine [val] [val] -- ^ spines differ in length
+
 -- * Typechecking expressions.
 
 class (Monad m, -- Scoping.Scope m, 
@@ -36,7 +47,7 @@ class (Monad m, -- Scoping.Scope m,
   app f v       = doEval $ apply f v
   eval         :: Expr -> m val
   eval e        = getEnv >>= \ rho -> doEval $ evaluate e rho
-  abstrPi      :: val -> val -> val -> m val  -- ^ pi a x b
+  abstrPi      :: val -> (A.Name, val) -> val -> m val  -- ^ pi a x b
   abstrPi a x b = doEval $ abstractPi a x b
 {-
   doCxt        :: mx a -> m a
@@ -50,6 +61,8 @@ class (Monad m, -- Scoping.Scope m,
   lookupIdent  :: Ident -> m val 
   lookupIdent (Var x) = lookupLocal x
   lookupIdent id      = lookupGlobal $ name id
+
+  typeError    :: TypeError val -> m a
 
 
 {-
@@ -82,7 +95,7 @@ check e t =
         equalType t =<< eval te
       case tyView t of
         VPi a b -> addLocal x a $ \ xv -> check e =<< (b `app` xv) 
-        _       -> fail $ "not a function type"
+        _       -> typeError $ NotFunType t
     e -> equalType t =<< infer e
 
 {-  Type inference   Gamma |- e :=> t 
@@ -105,14 +118,14 @@ infer e =
       a <- eval t
       addLocal x a $ \ xv -> do
         bx <- infer e
-        abstrPi a xv bx        
+        abstrPi a (x,xv) bx        
     App f e -> do
       t <- infer f
       case tyView t of
         VPi a b -> do
           check e a
           app b =<< eval e
-        _ -> fail $ "not a function type"
+        _ -> typeError $ NotFunType t
     Typ -> return $ kind
 {-
     Sort Type -> return $ kind
@@ -124,7 +137,7 @@ infer e =
       case mx of 
         Nothing -> infer e'
         Just x  -> addLocal x a $ \ xv -> infer e'
-    _ -> fail $ "cannot infer type"
+    _ -> typeError $ NotInferable e
 --    _ -> failDoc $ text "cannot infer type of" <+> prettyM e
         
 checkType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m ()
@@ -135,13 +148,13 @@ inferType e = do
   t <- infer e
   case tyView t of
     VSort s -> return s
-    _       -> fail "neither a type nor a kind"
+    _       -> typeError $ NotSort t
 
 isType :: (Value fvar val, MonadCheckExpr val env me m) => val -> m ()
 isType t = 
   case tyView t of
     VSort Type -> return ()
-    _          -> fail $ "not a type"
+    _          -> typeError $ NotType t
  
 equalType ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
 equalType t1 t2 = 
@@ -149,40 +162,33 @@ equalType t1 t2 =
     (VSort s1, VSort s2) | s1 == s2 -> return ()
     (VPi a1 b1, VPi a2 b2) -> do
       equalType a1 a2
-      addLocal' b1 a1 $ \ xv -> do
-        b1' <- app b1 xv
-        b2' <- app b2 xv
-        equalType b1' b2' 
+      addLocal' b1 a1 $ \ xv -> appM2 equalType (b1 `app` xv) (b2 `app` xv)
     (VBase, VBase) -> equalBase t1 t2 
-    _ -> fail $ "types unequal"
+    _ -> typeError $ UnequalTypes t1 t2
 
 equalBase :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
 equalBase v1 v2 = 
   case (tmView v1, tmView v2) of
     (VNe x1 t1 vs1, VNe x2 t2 vs2) -> 
-      if x1 == x2 then equalApp t1 vs1 vs2 >> return ()
-       else fail $ "head mismatch"
+      if x1 == x2 then equalApp vs1 vs2 t1 >> return ()
+       else typeError $ UnequalHeads v1 v2
 
-equalApp :: (Value fvar val, MonadCheckExpr val env me m) => val -> [val] -> [val] -> m val
-equalApp t vs1 vs2 =
+equalApp :: (Value fvar val, MonadCheckExpr val env me m) => [val] -> [val] -> val -> m val
+equalApp vs1 vs2 t =
   case (vs1, vs2) of
     ([], []) -> return t
     (v1:vs1, v2:vs2) -> case tyView t of
       VPi a b -> do
-        equalTm a v1 v2
-        b' <- app b v1
-        equalApp b' vs1 vs2
-    _ -> fail $ "unequal length of argument vector"
+        equalTm v1 v2 a
+        equalApp vs1 vs2 =<< app b v1
+    _ -> typeError $ UnequalSpine vs1 vs2
 
 equalTm :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> val -> m ()
-equalTm t v1 v2 =
+equalTm v1 v2 t =
   case tyView t of
-    VPi a b -> addLocal' b a $ \ xv -> do
-      v1' <- app v1 xv
-      v2' <- app v2 xv
-      b'  <- app b  xv
-      equalTm b' v1' v2'
-    _ -> equalBase v1 v2 >> return ()
+    VPi a b -> addLocal' b a $ \ xv -> 
+      appM3 equalTm (v1 `app` xv) (v2 `app` xv) (b `app` xv)
+    _ -> equalBase v1 v2 
 
 -- * Typechecking declarations.
 

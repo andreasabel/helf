@@ -40,12 +40,13 @@ data Head
   deriving (Eq,Ord,Show)
 
 data Val 
-  = Ne   Head Val [Val]     -- x^a vs^-1 | c^a vs^-1   last argument first in list!
-  | Sort Sort               -- s
-  | CLam A.Name A.Expr Env  -- (\xe) rho
-  | K    Val                -- constant function
-  | Abs  Var  Val Subst     -- abstraction
-  | Fun  Val  Val           -- Pi a ((\xe)rho)
+  = Ne   Head Val [Val]              -- ^ @x^a vs^-1 | c^a vs^-1@   
+                                     --   last argument first in list!
+  | Sort Sort                        -- ^ @s@
+  | CLam A.Name A.Expr Env           -- ^ @(\xe) rho@
+  | K    Val                         -- ^ constant function
+  | Abs  (A.Name, Var) Val Subst     -- ^ abstraction
+  | Fun  Val  Val                    -- ^ @Pi a ((\xe)rho)@
 
 instance Value Head Val where
   typ  = Sort Type 
@@ -123,10 +124,10 @@ instance MonadEval Val Env EvalM where
 
   apply f v =
     case f of
-      K w           -> return $ w
-      Ne h t vs     -> return $ Ne h t (v:vs)
-      CLam x e rho  -> evaluate e (update rho x v)
-      Abs x w sigma -> substs (updateSubst sigma x v) w
+      K w               -> return $ w
+      Ne h t vs         -> return $ Ne h t (v:vs)
+      CLam x e rho      -> evaluate e (update rho x v)
+      Abs (n,x) w sigma -> substs (updateSubst sigma x v) w
   
   evaluate e rho =
     case e of
@@ -142,7 +143,7 @@ instance MonadEval Val Env EvalM where
 
   evaluate' e = evaluate e Map.empty
 
-  abstractPi a (Ne (HVar x) _ []) b = return $ Fun a $ Abs x b emptySubst
+  abstractPi a (n, Ne (HVar x) _ []) b = return $ Fun a $ Abs (n,x) b emptySubst
 
 -- * Context monad
 
