@@ -70,6 +70,12 @@ internalError = error . unwords . ("internal error:" :)
 fails :: Monad m => [String] -> m a
 fails = fail . unwords
 
+{-
+-- see PrettyM
+failDoc :: Monad m => Doc -> m a
+failDoc = fail . render
+-}
+
 -- * maps
 
 lookupSafe :: (Ord k, Show k) => k -> Map k v -> v

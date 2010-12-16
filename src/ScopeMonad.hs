@@ -74,6 +74,7 @@ instance Field ScopeState ScopeState where
   setF = const
   modF = id
 
+{-
 instance ( Applicative m
          , Field ScopeState st
          , MonadReader st m    ) => ScopeReader m where
@@ -82,6 +83,7 @@ instance ( Applicative m
                 Map.lookup (A.uid x) . naming   . getF <$> ask
 
   askFixity x = Map.lookup x . fixities . getF <$> ask
+-}
 
 {-
 instance ( Applicative m

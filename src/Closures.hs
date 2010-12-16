@@ -10,6 +10,7 @@ module Closures where
 import Prelude hiding (pi,abs,mapM)
 
 import Control.Applicative
+import Control.Monad ((<=<))
 import Control.Monad.Error  hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State  hiding (mapM)
@@ -21,6 +22,7 @@ import Data.Traversable
 
 import qualified Abstract as A
 import Context
+import PrettyM
 -- import Scoping
 -- import ScopeMonad
 import Signature
@@ -195,6 +197,9 @@ quoteFun f i = do
   v <- f `apply` (var_ x)
   (x,) <$> quote v i'
 
+instance PrettyM EvalM Val where
+  prettyM = prettyM <=< reify
+
 -- * Context monad
 
 data Context = Context
@@ -247,6 +252,8 @@ instance MonadCxt Val Env CheckExprM where
 instance MonadCheckExpr Val Env EvalM CheckExprM where  
 
   doEval comp = runReader comp <$> asks globals
+
+  typeError err = failDoc $ doEval $ prettyM err 
 
   lookupGlobal x = symbType . sigLookup' x <$> asks globals
 
@@ -309,7 +316,7 @@ instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
---  liftIO . putStrLn . show =<< unparse d
+  liftIO . putStrLn =<< showM d
   checkDecl d
 
 checkDeclarations :: A.Declarations -> CheckDeclM ()

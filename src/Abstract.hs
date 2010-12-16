@@ -1,4 +1,14 @@
+{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable #-}
+
 module Abstract where
+
+import Prelude hiding (foldr)
+
+import Data.Set (Set)
+import qualified Data.Set as Set 
+
+import Data.Foldable
+import Data.Traversable
 
 import qualified Concrete as C 
 
@@ -29,6 +39,10 @@ data Ident
   | Def { name :: Name }          -- ^ defined identifier
   deriving (Eq,Ord,Show)
 
+isGlobalIdent :: Ident -> Bool
+isGlobalIdent (Var{}) = False
+isGlobalIdent _       = True
+
 -- * Generating local names
 
 systemGeneratedName :: Name
@@ -58,10 +72,24 @@ data Declaration
   | Defn Name (Maybe Type) Expr  -- ^ @d : A = e.@ or @d = e.@
 
 type Type = Expr
-data Expr
-  = Ident Ident                   -- ^ @x@ or @c@ or @d@
-  | Typ                           -- ^ @type@
-  | Pi    (Maybe Name) Type Type  -- ^ @A -> B@ or @{x:A} B@
-  | Lam   Name (Maybe Type) Expr  -- ^ @[x:A] E@ or @[x]E@
-  | App   Expr Expr               -- ^ @E1 E2@ 
-  deriving (Show)
+type Expr = Expression Ident
+
+type TypeExpr id = Expression id
+data Expression id
+  = Ident id                                        -- ^ @x@ or @c@ or @d@
+  | Typ                                             -- ^ @type@
+  | Pi   (Maybe Name) (TypeExpr id) (TypeExpr id)   -- ^ @A -> B@ or @{x:A} B@
+  | Lam  Name (Maybe (TypeExpr id)) (Expression id) -- ^ @[x:A] E@ or @[x]E@
+  | App  (Expression id) (Expression id)            -- ^ @E1 E2@ 
+  deriving (Show,Functor,Foldable,Traversable)
+
+-- * Queries
+
+globalIds :: Expr -> Set Ident
+globalIds = foldr (\ n ns -> if isGlobalIdent n then Set.insert n ns else ns)
+                  Set.empty
+
+globalCNames :: Expr -> Set C.Name
+globalCNames = 
+  foldr (\ n ns -> if isGlobalIdent n then Set.insert (suggestion $ name n) ns else ns)
+        Set.empty

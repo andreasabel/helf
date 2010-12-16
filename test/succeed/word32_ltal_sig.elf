@@ -756,13 +756,24 @@ high5 : type = {t1:tp}{t2:tp}{t3:tp}{t4:tp}{t5:tp}
 %abbrev mkhigh2 : high0 -> high2 =
  [op:high0][t1:tp][t2:tp][h1:pred2 t1 t2][h2:pred2 t1 t2][x1:tm t1][x2:tm t2]
  op (app2 t1 t2 form h1 x1 x2) (app2 t1 t2 form h2 x1 x2).
-
+ 
 %abbrev mkhigh4 : high0 -> high4 =
  [op:high0][t1:tp][t2:tp][t3:tp][t4:tp]
  [h1:pred4 t1 t2 t3 t4][h2:pred4 t1 t2 t3 t4]
  [x1:tm t1][x2:tm t2][x3:tm t3][x4:tm t4]
  op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4)
     (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4).
+
+%{
+mkhigh4 : high0 -> high4 = 
+  [op : high0] [t1 : tp] [t2 : tp] [t3 : tp] [t4 : tp] 
+  [h1 : pred4 t1 t2 t3 t4] [h2 : pred4 t1 t2 t3 t4] 
+  [x1 : tm t1] [x2 : tm t2] [x3 : tm t3] [x4 : tm t4] 
+  op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4) 
+     (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4).
+
+helf: head mismatch t2 != t3
+}%
 
 %abbrev mkhigh5 : high0 -> high5 =
  [op:high0][t1:tp][t2:tp][t3:tp][t4:tp][t5:tp]
