@@ -46,6 +46,19 @@ instance PrettyM m val => PrettyM m (TypeError val) where
       UnequalHeads v v' -> text "head mismatch" <+> prettyM v <+> text "!=" <+> prettyM v'
       UnequalSpines vs vs' -> text "value mismatch, spines differ in length"
 
+-- * Traces 
+
+data TypeTrace val
+  = Check Expr val
+  | Infer Expr
+  | EqualType val val
+
+instance PrettyM m val => PrettyM m (TypeTrace val) where
+  prettyM tr = 
+    case tr of
+      Check e t -> text "checking" <+> prettyM e <+> text "against" <+> prettyM t
+      Infer e   -> text "inferring type of" <+> prettyM e
+      EqualType t1 t2 -> text "checking wether" <+> prettyM t1 <+> text "equals" <+> prettyM t2
 
 -- * Typechecking expressions.
 
@@ -75,6 +88,7 @@ class (Monad m, -- Scoping.Scope m,
   lookupIdent id      = lookupGlobal $ name id
 
   typeError    :: TypeError val -> m a
+  typeTrace    :: TypeTrace val -> m a -> m a
 
 
 {-
@@ -98,7 +112,7 @@ class (Monad m, Scoping.Scope m) => TypeCheck val m | m -> val where
    Gamma |- \xe <=: Pi a b    Gamma |- e <=: t
 -}
 check :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> tyVal -> m ()  
-check e t =
+check e t = typeTrace (Check e t) $
   case e of
 --    Abs x e -> 
     Lam x mt e ->
@@ -109,7 +123,7 @@ check e t =
             equalType a =<< eval t
           addLocal x a $ \ xv -> check e =<< (b `app` xv) 
         _       -> typeError $ NotFunType t
-    e -> equalType t =<< infer e
+    e -> flip equalType t =<< infer e
 
 {-  Type inference   Gamma |- e :=> t 
 
@@ -122,7 +136,7 @@ check e t =
    Gamma |- type :=> kind     Gamma |- Pi x:e. e' :=> s  
 -}
 infer :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m tyVal
-infer e =
+infer e = typeTrace (Infer e) $ 
   case e of
 --    Var x -> lookupVar x
     Ident x -> lookupIdent x
@@ -170,7 +184,7 @@ isType t =
     _          -> typeError $ NotType t
  
 equalType ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
-equalType t1 t2 = 
+equalType t1 t2 = typeTrace (EqualType t1 t2) $
   case (tyView t1, tyView t2) of
     (VSort s1, VSort s2) | s1 == s2 -> return ()
     (VPi a1 b1, VPi a2 b2) -> do

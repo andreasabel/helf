@@ -15,7 +15,8 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 
 import qualified Abstract as A
-import qualified Scoping -- for printing abstract names
+-- import qualified Scoping -- for printing abstract names
+import PrettyM
 import Util
 
 -- * Abstract signature 
@@ -27,6 +28,12 @@ data SigEntry val
   = SigCon { symbType :: val }
   | SigDef { symbType :: val
            , symbDef  :: val }
+
+instance PrettyM m val => PrettyM m (SigEntry val) where
+  prettyM it = 
+    case it of
+      SigCon t   -> prettyM t
+      SigDef t v -> prettyM t <+> equals <+> prettyM v
 
 class Signature val sig | sig -> val where
   -- sigEmpty   :: sig
@@ -99,12 +106,14 @@ class (Applicative m) => MonadSig val m where
 
 instance ( Applicative m
          -- , Scoping.Scope m
+         , PrettyM m val     -- for debugging
          , Signature val sig
          -- , HasSig sig st
          , Field sig st
          , MonadState st m ) => MonadSig val m where
 
-  addGlobal n it = modify $ modF $ sigAdd n it
+  addGlobal n it = --  traceM (((A.suggestion n ++ " : ") ++) <$> showM it) $
+    modify $ modF $ sigAdd n it
   
   lookupName n = sigLookup' n . getF <$> get
 

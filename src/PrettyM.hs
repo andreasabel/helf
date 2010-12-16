@@ -22,11 +22,12 @@ import qualified Util
 
 type Doc = P.Doc
 
-empty, comma, colon :: Monad m => m Doc
+empty, comma, colon, equals :: Monad m => m Doc
 
 empty	   = return P.empty
 comma	   = return P.comma
 colon      = text ":"
+equals     = text "="
 pretty x   = return $ Util.pretty x
 -- prettyA x  = P.prettyA x
 text s	   = return $ P.text s
@@ -50,9 +51,6 @@ punctuate _ [] = []
 punctuate d ds = zipWith (<>) ds (replicate n d ++ [empty])
     where
 	n = length ds - 1
-
-failDoc :: Monad m => m Doc -> m a
-failDoc d = fail . P.render =<< d
 
 
 {-

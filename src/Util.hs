@@ -1,7 +1,11 @@
 module Util where
 
+import Control.Monad.Error
+
 import Data.Map (Map)
 import qualified Data.Map as Map
+
+import Debug.Trace
 
 -- * pretty printing
 
@@ -70,11 +74,24 @@ internalError = error . unwords . ("internal error:" :)
 fails :: Monad m => [String] -> m a
 fails = fail . unwords
 
-{-
--- see PrettyM
-failDoc :: Monad m => Doc -> m a
-failDoc = fail . render
--}
+failDoc :: MonadError String m => m Doc -> m a
+failDoc d = throwError . render =<< d
+
+enter :: MonadError String m => String -> m a -> m a
+enter s' cont = cont `catchError` \ s -> throwError (s ++ "\n  " ++ s)
+
+
+enterDoc :: MonadError String m => m Doc -> m a -> m a
+enterDoc md cont = cont `catchError` \ s -> do
+   d <- md
+   throwError (render d ++ "\n  " ++ s)
+
+-- * debugging
+
+traceM :: Monad m => m String -> m b -> m b
+traceM mmsg cont = do
+  msg <- mmsg
+  trace msg cont
 
 -- * maps
 

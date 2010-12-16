@@ -37,7 +37,12 @@ data Ident
   = Var { name :: Name }          -- ^ locally bound identifier
   | Con { name :: Name }          -- ^ declared constant
   | Def { name :: Name }          -- ^ defined identifier
-  deriving (Eq,Ord,Show)
+  deriving (Eq,Ord)
+
+instance Show Ident where
+  show (Var n) = "Var " ++ show n
+  show (Con n) = "Con " ++ show n
+  show (Def n) = "Def " ++ show n
 
 isGlobalIdent :: Ident -> Bool
 isGlobalIdent (Var{}) = False
@@ -70,6 +75,7 @@ newtype Declarations = Declarations { declarations :: [Declaration] }
 data Declaration
   = TypeSig Name Type            -- ^ @c : A.@
   | Defn Name (Maybe Type) Expr  -- ^ @d : A = e.@ or @d = e.@
+    deriving (Show)
 
 type Type = Expr
 type Expr = Expression Ident

@@ -451,7 +451,10 @@ _lam4 = [T1 : tp] [T2 : tp] [T3 : tp] [T4 : tp] [T5 : tp]
 _@2 = [T1 : tp][T2 : tp][T3 : tp][f : tm (T1 arrow T2 arrow T3)]
  [x1 : tm T1] _@ T2 T3 (_@ T1 (T2 arrow T3) f x1).
 
-_@3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+_@3 : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}
+  tm (T1 arrow T2 arrow T3 arrow T4) -> 
+  tm T1 -> tm T2 -> tm T3 -> tm T4 
+    = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
  [f : tm (T1 arrow T2 arrow T3 arrow T4)][x1 : tm T1]
   _@2 T2 T3 T4 (_@ T1 (T2 arrow T3 arrow T4) f x1).
 
@@ -493,11 +496,17 @@ app1 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2][x1 : tm T1]
 app2 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
   _@2 T1 T2 T3 (_lam2 T1 T2 T3 f).
 
-app3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+app3  : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}
+  (tm T1 -> tm T2 -> tm T3 -> tm T4) -> 
+  tm T1 -> tm T2 -> tm T3 -> tm T4
+  = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
   [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
   _@3 T1 T2 T3 T4 (_lam3 T1 T2 T3 T4 f).
 
-app4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+app4 : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}{T5 : tp}
+  (tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5) -> 
+  tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5
+  = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
    _@4 T1 T2 T3 T4 T5 (_lam4 T1 T2 T3 T4 T5 f).
 
@@ -772,7 +781,36 @@ mkhigh4 : high0 -> high4 =
   op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4) 
      (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4).
 
+  inferring type of op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4) (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4)
+  inferring type of op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4)
+  checking app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4 against tm form
+  inferring type of app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4
+  inferring type of app4 t1 t2 t3 t4 form h1 x1 x2 x3
+  checking x3 against tm t2
+  checking wether tm t3 equals tm t2
+ 
 helf: head mismatch t2 != t3
+
+app4 = [T1 : tp] [T2 : tp] [T3 : tp] [T4 : tp] [T5 : tp] [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5] _@4 T1 T2 T3 T4 T5 (_lam4 T1 T2 T3 T4 T5 f).
+app4 : {T1 : tp} {T2 : tp} {T3 : tp} {T4 : tp} {T5 : tp} {f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5} {x1 : tm T1} {x1 : tm T2} {x1 : tm T2} tm T2 -> tm T3
+ = [T1] [T2] [T3] [T4] [T5] [f] [x1] [x1'] [x1''] _@ T4 T5 (_@ T3 (arrow T4 T5) (_@ T2 (arrow T3 (arrow T4 T5)) (_@ T1 (arrow T2 (arrow T3 (arrow T4 T5))) (_lam T1 (arrow T2 (arrow T3 (arrow T4 T5))) ([x] _lam T2 (arrow T3 (arrow T4 T5)) ([x'] _lam T3 (arrow T4 T5) ([x''] _lam T4 T5 (f x x' x''))))) x1) x1') x1'')
+
+Defn mkhigh4:823 
+  (Just (Pi Nothing (Ident Def high0:792) (Ident Def high4:798))) 
+  (Lam op:824 (Just (Ident Def high0:792)) 
+  (Lam t1:825 (Just (Ident Con tp:345)) 
+  (Lam t2:826 (Just (Ident Con tp:345)) 
+  (Lam t3:827 (Just (Ident Con tp:345))
+  (Lam t4:828 (Just (Ident Con tp:345))
+  (Lam h1:829 (Just (App (App (App (App (Ident Def pred4:781) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)))
+  (Lam h2:830 (Just (App (App (App (App (Ident Def pred4:781) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)))
+  (Lam x1:831 (Just (App (Ident Con tm:346) (Ident Var t1:825)))
+  (Lam x2:832 (Just (App (Ident Con tm:346) (Ident Var t2:826)))
+  (Lam x3:833 (Just (App (Ident Con tm:346) (Ident Var t3:827)))
+  (Lam x4:834 (Just (App (Ident Con tm:346) (Ident Var t4:828))) 
+  (App (App (Ident Var op:824) 
+  (App (App (App (App (App (App (App (App (App (App (Ident Def app4:537) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)) (Ident Con form:347)) (Ident Var h1:829)) (Ident Var x1:831)) (Ident Var x2:832)) (Ident Var x3:833)) (Ident Var x4:834))) 
+  (App (App (App (App (App (App (App (App (App (App (Ident Def app4:537) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)) (Ident Con form:347)) (Ident Var h2:830)) (Ident Var x1:831)) (Ident Var x2:832)) (Ident Var x3:833)) (Ident Var x4:834))))))))))))))
 }%
 
 %abbrev mkhigh5 : high0 -> high5 =

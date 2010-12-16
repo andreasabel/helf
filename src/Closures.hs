@@ -133,7 +133,11 @@ substs sigma = subst where
   subst (Sort s)       = return (Sort s)
   subst (CLam y e rho) = CLam y e <$> mapM subst rho
   subst (K v)          = K <$> subst v
-  subst (Abs x v tau)  = Abs x v . Map.union sigma <$> mapM subst tau
+  subst (Abs x v tau)  = Abs x v . flip Map.union sigma <$> mapM subst tau
+    -- composing two substitutions (first tau, then sigma) :
+    --   apply sigma to tau
+    --   add all bindings from sigma that are not yet present
+    --   thus, we can take sigma and overwrite it with [sigma]tau
   subst (Fun a b)      = Fun <$> subst a <*> subst b
 
 {-
@@ -175,7 +179,7 @@ instance MonadEval Val Env EvalM where
 quote :: Val -> A.SysNameCounter -> EvalM A.Expr
 quote v i =
   case v of
-    Ne h a vs    -> foldl A.App (A.Ident h) <$> mapM (flip quote i) vs
+    Ne h a vs    -> foldr (flip A.App) (A.Ident h) <$> mapM (flip quote i) vs
     Sort Type    -> return A.Typ
     Sort Kind    -> error "cannot quote sort kind"
     DontCare     -> error "cannot quote the dontcare value"
@@ -253,7 +257,9 @@ instance MonadCheckExpr Val Env EvalM CheckExprM where
 
   doEval comp = runReader comp <$> asks globals
 
-  typeError err = failDoc $ doEval $ prettyM err 
+  typeError err = failDoc $ prettyM err 
+  typeTrace tr  = -- traceM (showM tr) .
+    (enterDoc $ prettyM tr)
 
   lookupGlobal x = symbType . sigLookup' x <$> asks globals
 
@@ -280,6 +286,9 @@ instance MonadCheckExpr Val Env EvalM CheckExprM where
       Just t  -> return t
       Nothing -> fail $ "unbound variable " ++ x 
 -}
+
+instance PrettyM CheckExprM Val where
+  prettyM = doEval . prettyM 
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
@@ -309,14 +318,19 @@ instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
       Right a  -> return a
 -}
 
-  doCheckExpr cont = either fail return . runReaderT cont . sigCxt =<< get where
+  doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get where
      sigCxt sig = SigCxt sig emptyContext
 
 --  doCheckExpr cont = (\ sig -> runReaderT cont $ SigCxt sig emptyContext) <$> get
 
+instance PrettyM CheckDeclM Val where
+  prettyM = doCheckExpr . prettyM 
+
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
   liftIO . putStrLn =<< showM d
+  -- liftIO . putStrLn . show $ d -- debugging
+  -- enter (show d) $  -- debugging
   checkDecl d
 
 checkDeclarations :: A.Declarations -> CheckDeclM ()

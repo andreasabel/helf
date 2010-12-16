@@ -3,7 +3,7 @@
 # Authors: Andreas Abel, Ulf Norell
 # Created: 2004-12-03, 2008-09-03, 2010-11-19
 
-helf = helf
+helf = helf +RTS -K16M -RTS
 # ../../bin/helf
 # put helf in your path!
 

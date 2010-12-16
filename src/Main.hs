@@ -62,7 +62,7 @@ doTypeCheck st decls = do
   res <- runCheckDecls decls 
   case res of
     Left err -> do 
-      putStrLn $ "error during typechecking:\n" ++ show err
+      putStrLn $ "error during typechecking:\n" ++  err
       exitFailure
     Right () -> return ()
 {-

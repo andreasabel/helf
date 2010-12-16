@@ -1,13 +1,15 @@
 # Makefile for helf
 # see src/Makefile
 
+helf = helf +RTS -K16M -RTS
+
 .PHONY : test examples current default
 
 default : 
 	make -C src
 
 current : helf
-	helf test/succeed/comments.elf
+	$(helf) test/succeed/word32_ltal_sig.elf
 
 helf : 
 	make -C src helf
