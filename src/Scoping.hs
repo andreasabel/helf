@@ -2,11 +2,18 @@
 
 {-# LANGUAGE UndecidableInstances #-}
 
-module Scoping where
+module Scoping (Scope(..),Parse(..),ParseError,Print(..)) where
 
 import Prelude hiding (mapM,print)
 
 import Control.Applicative
+import Control.Monad.State hiding (mapM)
+
+import Data.Map (Map)
+import qualified Data.Map as Map 
+import Data.Set (Set)
+import qualified Data.Set as Set 
+
 import Data.Traversable
 
 import qualified Concrete as C
@@ -20,9 +27,11 @@ import Text.PrettyPrint
 
 type ParseError = O.ParseError
 
+{-
 class (Applicative m, Monad m) => ScopeReader m where
   askName    :: A.Name -> m C.Name
   askFixity  :: C.Name -> m (Maybe C.Fixity)
+-}
 
 class (Applicative m, Monad m) => Scope m where
   addGlobal  :: (A.Name -> A.Ident) -> C.Name -> m A.Name
@@ -130,6 +139,7 @@ parseApplication is =
 
 -- * unparsing
 
+{-
 class Pretty c => Unparse c a | a -> c where
   unparse :: ScopeReader m => a -> m c 
   prettyM :: ScopeReader m => a -> m Doc
@@ -164,6 +174,7 @@ instance Unparse C.Name A.Ident where
 
 unparseApplication :: ScopeReader m => A.Expr -> m [C.Expr] 
 unparseApplication (A.App f a) = mapM unparse [f,a] -- TODO!
+-}
 
 {- How to print an expression
 
@@ -174,7 +185,7 @@ We distinguish 3 kinds of abstract names
 
 We can print an expression from left-to-right, bottom-up as follows:
 
-a) never shadow a global name
+a) never shadow a global name by a local name
 - state: 
    * used concrete names, initially the set of all global names
    * map from abstract names to concrete names
@@ -186,7 +197,7 @@ a) never shadow a global name
    * if yes, print its name, delete it
    * if no, we have a void abstraction, then choose an unused version of it
 
-b) shadowing of global names allowed
+b) shadowing of unused global names by local names allowed
 - first compute the used global names
 - proceed as above, but start with the set of computed global names
 
@@ -196,3 +207,112 @@ abstract name as in Agda.  Note that there will be sharing, so it is
 not more memory intensive.
 
 -}
+
+class Print a c where
+  print :: a -> c
+
+instance Print A.Declarations C.Declarations where
+  print (A.Declarations adecls) = C.Declarations $ map print adecls
+
+instance Print A.Declaration C.Declaration where
+  print adecl =  
+    case adecl of
+      A.TypeSig n t -> C.TypeSig (A.suggestion n) $ print t
+      A.Defn n mt e -> C.Defn (A.suggestion n) (fmap print mt) $ print e
+
+instance Print A.Expr C.Expr where
+  print e = evalState (printExpr e) $ nameSet $ A.globalCNames e 
+--   print e = fst $ printExpr e $ nameSet $ A.globalCNames e 
+     
+printIdent :: A.Ident -> NameM C.Name
+printIdent id = 
+  case id of
+    A.Var n -> askName n                   -- locals are potentially renamed
+    _ -> return $ A.suggestion $ A.name id -- globals have unique concrete name
+
+printExpr :: A.Expr -> NameM C.Expr
+printExpr e = 
+  case e of
+    A.Ident a           -> C.Ident <$> printIdent a
+    A.Typ               -> return $ C.Typ
+    A.Pi Nothing  t1 t2 -> C.Fun <$> printExpr t1 <*> printExpr t2
+    A.Pi (Just x) t1 t2 -> do
+      t1 <- printExpr t1
+      t2 <- printExpr t2
+      x  <- bindName x
+      return $ C.Pi x t1 t2
+-- C.Pi <$> bindName x <*> printExpr t1 <*> printExpr t2
+    A.Lam x mt e        -> do
+      mt <- mapM printExpr mt
+      e  <- printExpr e
+      x  <- bindName x
+      return $ C.Lam x mt e
+-- C.Lam <$> bindName x <*> mapM printExpr mt <*> printExpr e
+    A.App f e           -> C.Apps <$> printApp f [e]
+
+printApp :: A.Expr -> [A.Expr] -> NameM [C.Expr]
+printApp f es = 
+  case f of
+    A.App f e -> printApp f (e : es)
+    -- put extra parentheses around lambda if it is in the head:
+    A.Lam{}   -> printExpr f >>= \ f -> (C.Apps [f] :) <$> mapM printExpr es
+    _         -> mapM printExpr (f : es)
+
+data NameSet = NameSet 
+  { usedNames :: Set C.Name
+  , naming    :: Map A.UID C.Name
+  }
+
+-- | Create a name set from an initial set of used global names.
+nameSet :: Set C.Name -> NameSet
+nameSet ns = NameSet ns Map.empty
+
+type NameM = State NameSet
+-- type NameM a = NameSet -> (a, NameSet)
+
+-- | Retrieve and delete name.
+bindName :: A.Name -> NameM C.Name
+bindName (A.Name x n) = do
+  ns <- get
+  let nam = naming ns
+  case Map.lookup x nam of
+    Just n' -> do
+      put $ NameSet (Set.delete n' (usedNames ns)) (Map.delete x nam)
+      return n'
+    Nothing -> nextVariant n
+ 
+-- | Retrieve or insert name.
+askName :: A.Name -> NameM C.Name
+askName n = do
+  nam <- gets naming
+--  maybe (internalError ["Scoping.askName: not in map", show n]) return $ 
+  maybe (nextName n) return $ 
+    Map.lookup (A.uid n) nam
+ 
+nextName :: A.Name -> NameM C.Name
+nextName (A.Name x n) = do
+  n' <- nextVariant n
+  modify $ \ (NameSet ns nam) -> NameSet (Set.insert n' ns) (Map.insert x n' nam)
+  return n'
+
+-- | Returns an unused variant of a concrete name.
+nextVariant :: C.Name -> NameM C.Name
+nextVariant n = do
+  ns <- gets usedNames
+  let loop i = do
+      let n' = variant n i
+      if Set.member n' ns then loop (i+1)
+       else return n'
+  loop 0 
+
+variant :: C.Name -> Int -> C.Name
+variant n i = 
+  case i of
+    0 -> n
+    1 -> n ++ "'"
+    2 -> n ++ "''"
+    3 -> n ++ "'''"
+    _ -> n ++ "'" ++ show i
+
+
+ 

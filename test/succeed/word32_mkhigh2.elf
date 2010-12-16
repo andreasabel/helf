@@ -1,0 +1,759 @@
+%{ Another supported domain are 32-bit integers. This domain is used
+mainly in Proof Carrying Code applications, and because of this, it
+has fairly different structure and features than the extension for
+(unrestricted) integers (see section 6.4 Integer Constraints). First
+of all, the algorithms used were kept short and simple, so that they
+can be easily read and verified to be correct. Secondly, the set of
+arithmetic operators provided has been kept to a minimum. Also, each
+of these is implemented as a type family instead of a function symbol,
+so that unification of arithmetic expressions follows the same rule as
+that of regular terms. Finally, for each arithmetic operator, we also
+provide a type family which, in addition to carry out the computation,
+also provides a proof object for it.
+
+Declaring
+
+%uses word32.
+causes the following signature to be loaded into the system:
+}%
+
+word32 : type.
++ : word32 -> word32 -> word32 -> type.
+* : word32 -> word32 -> word32 -> type.
+/ : word32 -> word32 -> word32 -> type.
+prove+ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} type.
+proof+ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove+ X Y Z P.
+prove* : {X:word32} {Y:word32} {Z:word32} {P:* X Y Z} type.
+proof* : {X:word32} {Y:word32} {Z:word32} {P:* X Y Z} prove* X Y Z P.
+prove/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} type.
+proof/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove/ X Y Z P.
+
+%% Not mentioned in the documentation:
+
+0 : word32.
+1 : word32.
+2 : word32.
+3 : word32.
+4 : word32.
+5 : word32.
+6 : word32.
+7 : word32.
+8 : word32.
+9 : word32.
+10 : word32.
+11 : word32.
+12 : word32.
+13 : word32.
+14 : word32.
+15 : word32.
+16 : word32.
+17 : word32.
+18 : word32.
+19 : word32.
+20 : word32.
+21 : word32.
+22 : word32.
+23 : word32.
+24 : word32.
+25 : word32.
+26 : word32.
+27 : word32.
+28 : word32.
+29 : word32.
+30 : word32.
+31 : word32.
+32 : word32.
+33 : word32.
+34 : word32.
+35 : word32.
+36 : word32.
+37 : word32.
+38 : word32.
+39 : word32.
+40 : word32.
+41 : word32.
+42 : word32.
+43 : word32.
+44 : word32.
+45 : word32.
+46 : word32.
+47 : word32.
+48 : word32.
+49 : word32.
+50 : word32.
+51 : word32.
+52 : word32.
+53 : word32.
+54 : word32.
+55 : word32.
+56 : word32.
+57 : word32.
+58 : word32.
+59 : word32.
+60 : word32.
+61 : word32.
+62 : word32.
+63 : word32.
+64 : word32.
+65 : word32.
+66 : word32.
+67 : word32.
+68 : word32.
+69 : word32.
+70 : word32.
+71 : word32.
+72 : word32.
+73 : word32.
+74 : word32.
+75 : word32.
+76 : word32.
+77 : word32.
+78 : word32.
+79 : word32.
+80 : word32.
+81 : word32.
+82 : word32.
+83 : word32.
+84 : word32.
+85 : word32.
+86 : word32.
+87 : word32.
+88 : word32.
+89 : word32.
+90 : word32.
+91 : word32.
+92 : word32.
+93 : word32.
+94 : word32.
+95 : word32.
+96 : word32.
+97 : word32.
+98 : word32.
+99 : word32.
+100 : word32.
+101 : word32.
+102 : word32.
+103 : word32.
+104 : word32.
+105 : word32.
+106 : word32.
+107 : word32.
+108 : word32.
+109 : word32.
+110 : word32.
+111 : word32.
+112 : word32.
+113 : word32.
+114 : word32.
+115 : word32.
+116 : word32.
+117 : word32.
+118 : word32.
+119 : word32.
+120 : word32.
+121 : word32.
+122 : word32.
+123 : word32.
+124 : word32.
+125 : word32.
+126 : word32.
+127 : word32.
+128 : word32.
+129 : word32.
+130 : word32.
+131 : word32.
+132 : word32.
+133 : word32.
+134 : word32.
+135 : word32.
+136 : word32.
+137 : word32.
+138 : word32.
+139 : word32.
+140 : word32.
+141 : word32.
+142 : word32.
+143 : word32.
+144 : word32.
+145 : word32.
+146 : word32.
+147 : word32.
+148 : word32.
+149 : word32.
+150 : word32.
+151 : word32.
+152 : word32.
+153 : word32.
+154 : word32.
+155 : word32.
+156 : word32.
+157 : word32.
+158 : word32.
+159 : word32.
+160 : word32.
+161 : word32.
+162 : word32.
+163 : word32.
+164 : word32.
+165 : word32.
+166 : word32.
+167 : word32.
+168 : word32.
+169 : word32.
+170 : word32.
+171 : word32.
+172 : word32.
+173 : word32.
+174 : word32.
+175 : word32.
+176 : word32.
+177 : word32.
+178 : word32.
+179 : word32.
+180 : word32.
+181 : word32.
+182 : word32.
+183 : word32.
+184 : word32.
+185 : word32.
+186 : word32.
+187 : word32.
+188 : word32.
+189 : word32.
+190 : word32.
+191 : word32.
+192 : word32.
+193 : word32.
+194 : word32.
+195 : word32.
+196 : word32.
+197 : word32.
+198 : word32.
+199 : word32.
+200 : word32.
+201 : word32.
+202 : word32.
+203 : word32.
+204 : word32.
+205 : word32.
+206 : word32.
+207 : word32.
+208 : word32.
+209 : word32.
+210 : word32.
+211 : word32.
+212 : word32.
+213 : word32.
+214 : word32.
+215 : word32.
+216 : word32.
+217 : word32.
+218 : word32.
+219 : word32.
+220 : word32.
+221 : word32.
+222 : word32.
+223 : word32.
+224 : word32.
+225 : word32.
+226 : word32.
+227 : word32.
+228 : word32.
+229 : word32.
+230 : word32.
+231 : word32.
+232 : word32.
+233 : word32.
+234 : word32.
+235 : word32.
+236 : word32.
+237 : word32.
+238 : word32.
+239 : word32.
+240 : word32.
+241 : word32.
+242 : word32.
+243 : word32.
+244 : word32.
+245 : word32.
+246 : word32.
+247 : word32.
+248 : word32.
+249 : word32.
+250 : word32.
+251 : word32.
+252 : word32.
+253 : word32.
+254 : word32.
+255 : word32.
+256 : word32.
+257 : word32.
+258 : word32.
+259 : word32.
+260 : word32.
+261 : word32.
+262 : word32.
+263 : word32.
+264 : word32.
+265 : word32.
+266 : word32.
+267 : word32.
+268 : word32.
+269 : word32.
+270 : word32.
+271 : word32.
+272 : word32.
+273 : word32.
+274 : word32.
+275 : word32.
+276 : word32.
+277 : word32.
+278 : word32.
+279 : word32.
+280 : word32.
+281 : word32.
+282 : word32.
+283 : word32.
+284 : word32.
+285 : word32.
+286 : word32.
+287 : word32.
+288 : word32.
+289 : word32.
+290 : word32.
+291 : word32.
+292 : word32.
+293 : word32.
+294 : word32.
+295 : word32.
+296 : word32.
+297 : word32.
+298 : word32.
+299 : word32.
+
+1000 : word32.
+
+512   : word32.
+1024  : word32.
+2048  : word32.
+4096  : word32.
+8192  : word32.
+16384 : word32.
+32768 : word32.
+65536 : word32.
+2147483648 : word32.
+4294967295 : word32.
+%{ 
+Goals involving + and * are immediately solved if at least two of
+the arguments are ground objects (i.e. numbers), and delayed as
+constraints otherwise. In particular
+
+?- + 3 X 9.
+
+is solved immediately and can be used to compute 9-3. Goals involving
+/ are delayed unless both the first and the second argument are
+known. The type families prove+, prove*, prove/ can be used to obtain
+proof object for the arithmetic operation, and use them in the
+remaining part of the computation:
+
+?- P : + 3 X 9.
+Solving...
+X = 6.
+P = 3+6.
+More? n
+?- prove+ 3 X 9 P.
+Solving...
+P = 3+6;
+X = 6.
+More? n
+
+It is important to stress that the domain modeled here is not the ring
+of integers modulo 32 but rather the restriction of the integer ring
+to the interval 0...4294967295, so that for example the query:
+
+?- + 1 X 0.
+will not admit a solution.
+}%% Copyright (c) 2004 Princeton University
+%	$Id: logic.elf,v 1.17 2005/02/10 15:21:23 richards Exp $
+
+tp     : type.
+tm     : tp -> type.
+form   : tp.
+tform  : type = tm form. 
+arrow  : tp -> tp -> tp.  %infix right 14 arrow.
+pf     : tform -> type.
+
+_lam    : {T1 : tp} {T2 : tp} (tm T1 -> tm T2) -> tm (T1 arrow T2).
+_@      : {T1 : tp} {T2 : tp} tm (T1 arrow T2) -> tm T1 -> tm T2.
+_forall : {T : tp} (tm T -> tform) -> tform.
+imp     : tform -> tform -> tform.   %infix right 10 imp.
+
+_beta_e  : {T1 : tp} {T2 : tp} {F : tm T1 -> tm T2} {X : tm T1}
+  {P : tm T2 -> tform} pf (P (_@ T1 T2 (_lam T1 T2 F) X)) ->  pf (P (F X)).
+
+_imp_i   : {A : tform} {B : tform} (pf A -> pf B) -> pf (A imp B).
+_imp_e   : {A : tform} {B : tform} pf (A imp B) -> pf A -> pf B.
+
+_forall_i:{T: tp} {A : tm T -> tform}({X : tm T} pf (A X)) -> pf (_forall T A).
+_forall_e:{T: tp} {A : tm T -> tform} pf (_forall T A) -> {X : tm T} pf (A X).
+
+pair     : tp -> tp -> tp.
+_mkpair  : {T1 : tp} {T2 : tp} tm (T1 arrow T2 arrow pair T1 T2).
+_fst     : {T1 : tp} {T2 : tp} tm (pair T1 T2 arrow T1).
+_snd     : {T1 : tp} {T2 : tp} tm (pair T1 T2 arrow T2).
+
+_fstpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
+ pf (_forall (T1 arrow form) [f : tm (T1 arrow form)]
+    (_@ T1 form f X) imp (_@ T1 form f (_@ (pair T1 T2) T1 (_fst T1 T2)
+     (_@ T2 (pair T1 T2) (_@ T1 (T2 arrow pair T1 T2) (_mkpair T1 T2) X) Y)))).
+
+_sndpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
+ pf (_forall (T2 arrow form) [f : tm (T2 arrow form)]
+    (_@ T2 form f Y) imp (_@ T2 form f (_@ (pair T1 T2) T2 (_snd T1 T2)
+     (_@ T2 (pair T1 T2) (_@ T1 (T2 arrow pair T1 T2) (_mkpair T1 T2) X) Y)))).
+% Copyright (c) 2004 Princeton University
+%	$Id: coredefs.elf,v 1.49 2004/07/29 00:30:38 rsimmons Exp $
+
+_frl_frm : (tform -> tform) -> tform = _forall form.
+
+_@_f : {T : tp} tm (T arrow form) -> tm T -> tform = [T : tp] _@ T form.
+
+_eq : {T : tp} tm T -> tm T -> tform =
+ [T : tp][A : tm T][B : tm T]
+  _forall (T arrow form) [P : tm (T arrow form)] _@_f T P B imp _@_f T P A.
+
+and : tform -> tform -> tform =
+ [A : tform][B : tform] _frl_frm [C : tform] (A imp B imp C) imp C.
+%infix right 12 and.
+
+or : tform -> tform -> tform =
+ [A : tform][B : tform] _frl_frm [C : tform] (A imp C) imp (B imp C) imp C.
+%infix right 11 or.
+
+false : tform = _frl_frm [A : tform] A.
+
+not : tform -> tform = [A : tform] A imp false.
+
+equiv : tform -> tform -> tform =
+ [A : tform][B : tform] (A imp B) and (B imp A).    %infix right 10 equiv.
+
+_lam2  = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
+  _lam T1 (T2 arrow T3) [x : tm T1] _lam T2 T3 (f x).
+
+_lam3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+        [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
+  _lam T1 (T2 arrow T3 arrow T4) [x : tm T1] _lam2 T2 T3 T4 (f x).
+
+_lam4 = [T1 : tp] [T2 : tp] [T3 : tp] [T4 : tp] [T5 : tp]
+        [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
+  _lam T1 (T2 arrow T3 arrow T4 arrow T5) [x : tm T1] _lam3 T2 T3 T4 T5 (f x).
+
+_@2 = [T1 : tp][T2 : tp][T3 : tp][f : tm (T1 arrow T2 arrow T3)]
+ [x1 : tm T1] _@ T2 T3 (_@ T1 (T2 arrow T3) f x1).
+
+_@3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+ [f : tm (T1 arrow T2 arrow T3 arrow T4)][x1 : tm T1]
+  _@2 T2 T3 T4 (_@ T1 (T2 arrow T3 arrow T4) f x1).
+
+_@4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+ [f : tm (T1 arrow T2 arrow T3 arrow T4 arrow T5)][x1 : tm T1]
+  _@3 T2 T3 T4 T5 (_@ T1 (T2 arrow T3 arrow T4 arrow T5) f x1).
+
+_forall2 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2 -> tform]
+  _forall T1 [x : tm T1] _forall T2 (f x).
+
+_forall3 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3 -> tform]
+  _forall T1 [x : tm T1] _forall2 T2 T3 (f x).
+
+_forall4 = [T1 : tp][T2 : tp][T3 : tp][T4: tp]
+           [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tform]
+  _forall T1 [x : tm T1] _forall3 T2 T3 T4 (f x).
+
+_forall5 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+	   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tform]
+  _forall T1 [x : tm T1] _forall4 T2 T3 T4 T5 (f x).
+
+_forall6 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp][T6 : tp]
+	   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6 -> tform]
+  _forall T1 [x : tm T1] _forall5 T2 T3 T4 T5 T6 (f x).
+
+_exists : {T : tp} (tm T -> tform) -> tform =
+ [T : tp][F : tm T -> tform]
+  _frl_frm [B : tform] (_forall T [X : tm T] F X imp B) imp B.
+
+_exists2 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2 -> tform]
+  _exists T1 [x : tm T1] _exists T2 (f x).
+
+_exists3 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3 -> tform]
+  _exists T1 [x : tm T1] _exists2 T2 T3 (f x).
+
+app1 = [T1 : tp][T2 : tp][f : tm T1 -> tm T2][x1 : tm T1]
+ _@ T1 T2 (_lam T1 T2 f) x1.
+
+app2 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
+  _@2 T1 T2 T3 (_lam2 T1 T2 T3 f).
+
+app3 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
+  [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
+  _@3 T1 T2 T3 T4 (_lam3 T1 T2 T3 T4 f).
+
+app4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
+  [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
+   _@4 T1 T2 T3 T4 T5 (_lam4 T1 T2 T3 T4 T5 f).
+
+app5 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5: tp][T6 : tp]
+ [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6][x1 : tm T1]
+  _@4 T2 T3 T4 T5 T6
+    ((app1 T1 (T2 arrow T3 arrow T4 arrow T5 arrow T6)
+     [x : tm T1] _lam4 T2 T3 T4 T5 T6 (f x)) x1).
+
+app6 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5: tp][T6 : tp][T7 : tp]
+ [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5 -> tm T6 -> tm T7]
+ [x1 : tm T1][x2 : tm T2]
+  _@4 T3 T4 T5 T6 T7
+    ((app2 T1 T2 (T3 arrow T4 arrow T5 arrow T6 arrow T7)
+     [x : tm T1][y : tm T2] _lam4 T3 T4 T5 T6 T7 (f x y)) x1 x2).
+
+if : tform -> tform -> tform -> tform =
+ [E : tform][A : tform][B : tform] (E imp A) and (not E imp B).
+
+true : tform = not false.
+
+xor : tform -> tform -> tform =
+ [A : tform][B : tform] (A and (not B)) or ((not A) and B).
+%infix right 11 xor.
+
+_kleene_star : {T : tp} (tm T -> tm T -> tform) -> tm T -> tm T -> tform =
+  [T : tp][R : tm T -> tm T -> tform][V : tm T][W : tm T] 
+   _forall  (T arrow T arrow form) [S : tm (T arrow T arrow form)]
+   (_forall T [Z : tm T] _@2 T T form S Z Z) imp
+   (_forall3 T T T [X : tm T][Y : tm T][Z : tm T]
+    (app2 T T form R X Y) imp (_@2 T T form S Y Z)
+      imp (_@2 T T form S X Z)) imp
+   (_@2 T T form S V W).
+
+% Pairs out of pairs.
+% Object vs Meta logic.
+tuple2 : tp -> tp -> tp = pair.
+_mktuple2 : {T1 : tp}{T2 : tp} tm T1 -> tm T2 -> tm (tuple2 T1 T2) =
+ [T1 : tp][T2 : tp][x1 : tm T1][x2 : tm T2]
+  _@2 T1 T2 (pair T1 T2) (_mkpair T1 T2) x1 x2.
+_get1of2 = [T1 : tp][T2 : tp][p : tm (tuple2 T1 T2)]
+ _@ (pair T1 T2) T1 (_fst T1 T2) p.
+_get2of2 = [T1 : tp][T2 : tp][p : tm (tuple2 T1 T2)]
+ _@ (pair T1 T2) T2 (_snd T1 T2) p.
+
+% Quadruples out of pairs.
+tuple4 : tp -> tp -> tp -> tp -> tp =
+ [T1 : tp][T2 : tp][T3 : tp ][T4 : tp] pair (pair T1 T2) (pair T3 T4).
+_mktuple4 : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}
+           tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm (tuple4 T1 T2 T3 T4) =
+ [T1 : tp][T2 : tp][T3 : tp][T4 : tp][x1 : tm T1][x2 : tm T2][x3 : tm T3]
+ [x4 : tm T4] _@2 (pair T1 T2) (pair T3 T4) (tuple4 T1 T2 T3 T4)
+                  (_mkpair (pair T1 T2) (pair T3 T4))
+                  (_@2 T1 T2 (pair T1 T2) (_mkpair T1 T2) x1 x2)
+                  (_@2 T3 T4 (pair T3 T4) (_mkpair T3 T4) x3 x4).
+
+_get1of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T1 T2) T1 (_fst T1 T2)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T1 T2) (_fst (pair T1 T2) (pair T3 T4)) p).
+
+_get2of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T1 T2) T2 (_snd T1 T2)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T1 T2) (_fst (pair T1 T2) (pair T3 T4)) p).
+
+_get3of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T3 T4) T3 (_fst T3 T4)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T3 T4) (_snd (pair T1 T2) (pair T3 T4)) p).
+
+_get4of4 = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][p : tm (tuple4 T1 T2 T3 T4)]
+  _@ (pair T3 T4) T4 (_snd T3 T4)
+    (_@ (tuple4 T1 T2 T3 T4) (pair T3 T4) (_snd (pair T1 T2) (pair T3 T4)) p).
+% Copyright (c) 2004 Princeton University
+%	$Id: arith-fix-checker.elf,v 1.7 2004/04/22 10:47:38 appel Exp $
+
+%use word32.
+
+rep_type = word32.
+rep_plus = +.
+rep_times = *.
+rep_div = /.
+% Copyright (c) 2004 Princeton University
+%	$Id: arith.elf,v 1.16 2004/04/22 10:47:38 appel Exp $
+
+% Author : Neophytos Michael
+%
+
+num : tp.
+tnum = tm num.
+
+const : rep_type -> tnum.
+
+isInt : tnum -> tform.
+
+zero = const 0.
+one  = const 1.
+
+p_one  : pf (isInt one).
+
+neg : tnum -> tnum.
+eqn : tnum -> tnum -> tform = _eq num.
+
+%
+% The existece of negatives is an axiom.
+%
+_neg_exists : {N : tnum} pf (isInt N) -> pf (isInt (neg N)).
+
+%
+% The integers with addition (Z, +) form an abelian group.
+%
+plus : tnum -> tnum -> tnum.
+
+_closure_add :
+ {N : tnum}{M : tnum}pf (isInt N) -> pf (isInt M) -> pf (isInt (plus N M)).
+
+_assoc_add : {A : tnum}{B : tnum}{C : tnum}
+             pf (eqn (plus (plus A B) C) (plus A (plus B C))).
+
+_comm_add : {A : tnum}{B : tnum} pf (eqn (plus A B) (plus B A)).
+
+_zero_add : {A : tnum} pf (eqn (plus A zero) A).
+
+_inv_add : {A : tnum} pf (eqn (plus A (neg A)) zero).
+
+%
+% The integers with multiplication (Z, *) form a monoid.
+%
+times : tnum -> tnum -> tnum.
+
+_closure_mult : {N : tnum}{M : tnum}
+                pf (isInt N) -> pf (isInt M) -> pf (isInt (times N M)).
+
+_assoc_mult : {A : tnum}{B : tnum}{C : tnum}
+              pf (eqn (times (times A B) C) (times A (times B C))).
+
+_zero_mult : {A : tnum} pf (eqn (times A one) A).
+
+_comm_mult : {A : tnum}{B : tnum} pf (eqn (times A B) (times B A)).
+
+% The 1 != 0 rule. This rules out the trivial structure of the single
+% element Ring.
+one_neq_zero : pf ((eqn one zero) imp false).
+
+%
+% The distributive law of multiplication over addition.
+%
+_distrib : {A : tnum}{B : tnum}{C : tnum}
+           pf (eqn (times A (plus B C)) (plus (times A B) (times A C))).
+
+%
+% The order relation on integers.
+%
+geq : tnum -> tnum -> tform.
+
+_ord_reflexivity : {A : tnum} pf (geq A A).
+
+_ord_transitivity : {A : tnum}{B : tnum}{C : tnum}
+                    pf (geq A B) -> pf (geq B C) -> pf (geq A C).
+
+_ord_dichotomy : {A : tnum}{B : tnum} pf ((geq A B) or (geq B A)).
+
+_ord_add_closure : {A : tnum}{B : tnum}{C : tnum}
+                   pf (geq A C) -> pf (geq (plus A B) (plus C B)).
+
+_ord_mult_closure : {A : tnum}{B : tnum} pf (geq A zero) -> pf (geq B zero)
+                     -> pf (geq (times A B) zero).
+
+_ord_antisymmetry : {A : tnum}{B : tnum}
+                    pf (geq A B) -> pf (geq B A) -> pf (eqn A B).
+
+_ord_excluded_middle : {A : tnum}{B : tnum} pf ((geq A B) or not (geq A B)).
+
+%
+% The cancelation Axiom
+%
+_cancelation : {A : tnum}{B : tnum}
+               pf (eqn (times A B) zero) -> pf ((eqn A zero) or (eqn B zero)).
+
+%
+% Finally the induction principle on the integers.
+%
+isNat = [n : tnum] (isInt n) and (geq n zero).
+
+induction : {A : tnum -> tform}
+            pf (A zero) ->
+            ({n : tnum}pf (isNat n) -> pf (A n) -> pf (A (plus n one))) ->
+            pf (_forall num [n : tnum] (isNat n) imp A n).
+
+sign  : tnum -> tnum.
+_sign0 : {N : tnum} pf (geq N zero) -> pf (eqn (sign N) zero).
+_sign1 : {N : tnum} pf (geq N zero imp false) -> pf (eqn (sign N) one).
+
+_eval_plus : {A : rep_type}{B : rep_type}{C : rep_type}
+             rep_plus A B C -> pf (eqn (plus (const A) (const B)) (const C)).
+
+_eval_times : {A : rep_type}{B : rep_type}{C : rep_type}
+             rep_times A B C -> pf (eqn (times (const A) (const B)) (const C)).
+
+_eval_div : {M : rep_type}{N : rep_type}{Q : rep_type} rep_div M N Q
+           -> pf (geq (const M) (times (const N) (const Q)) and
+                 (not (geq (const M) (times (const N) (plus one (const Q)))))).
+% Copyright (c) 2004 Princeton University
+%	$Id: arithdefs.elf,v 1.43 2004/10/07 22:39:18 gtan Exp $
+
+
+_frl_n  : (tnum -> tform) -> tform = _forall num.
+_exs_n  : (tnum -> tform) -> tform = _exists num.
+_exs_n2 : (tnum -> tnum -> tform) -> tform = _exists2 num num.
+_exs_n3 : (tnum -> tnum -> tnum -> tform) -> tform = _exists3 num num num.
+
+minus : tnum -> tnum -> tnum = [x : tnum][y : tnum] plus x (neg y).
+
+lt : tnum -> tnum -> tform = [x : tnum][y : tnum] not (geq x y).
+
+gt : tnum -> tnum -> tform = [x : tnum][y : tnum] lt y x.
+
+leq : tnum -> tnum -> tform = [x : tnum][y : tnum] geq y x.
+
+if1: tnum -> tnum -> tnum -> tnum = 
+ [A : tnum][B : tnum][C : tnum] plus (times A B) (times (minus one A) C).
+
+ifgtz : tnum -> tnum -> tnum -> tnum = [x : tnum] if1 (sign (neg x)).
+
+ifeq : tnum -> tnum -> tnum -> tnum -> tnum =
+ [I : tnum][J : tnum][A : tnum][B : tnum]
+  ifgtz (minus I J) B (ifgtz (minus J I) B A).
+
+% Some symbolic constants.
+two     : tnum = const 2.
+three   : tnum = const 3.
+four    : tnum = const 4.
+seven   : tnum = const 7.
+eight   : tnum = const 8.
+ten     : tnum = const 10.
+fifteen : tnum = const 15.
+sixteen : tnum = const 16.
+
+pred1 : tp -> type = [t1:tp] tm t1 -> tform.
+pred2 : tp -> tp -> type = [t1:tp][t2:tp] tm t1 -> pred1 t2.
+pred4 : tp -> tp -> tp -> tp -> type
+  = [t1:tp][t2:tp][t3:tp][t4:tp] tm t1 -> tm t2 -> pred2 t3 t4.
+pred5 : tp -> tp -> tp -> tp -> tp -> type
+  = [t1:tp][t2:tp][t3:tp][t4:tp][t5:tp] tm t1 -> pred4 t2 t3 t4 t5.
+
+high0 : type = pred2 form form.
+high1 : type = {t1:tp} pred1 t1 -> pred1 t1 -> pred1 t1.
+high2 : type = {t1:tp}{t2:tp} pred2 t1 t2 -> pred2 t1 t2 -> pred2 t1 t2.
+high4 : type = {t1:tp}{t2:tp}{t3:tp}{t4:tp}
+  pred4 t1 t2 t3 t4 -> pred4 t1 t2 t3 t4 -> pred4 t1 t2 t3 t4.
+high5 : type = {t1:tp}{t2:tp}{t3:tp}{t4:tp}{t5:tp}
+  pred5 t1 t2 t3 t4 t5 -> pred5 t1 t2 t3 t4 t5 -> pred5 t1 t2 t3 t4 t5.
+
+%abbrev mkhigh1 : high0 -> high1 =
+ [op:high0][t1:tp][h1:pred1 t1][h2:pred1 t1][x1:tm t1]
+ op (app1 t1 form h1 x1) (app1 t1 form h2 x1).
+
+%abbrev mkhigh2 : high0 -> high2 =
+ [op:high0][t1:tp][t2:tp][h1:pred2 t1 t2][h2:pred2 t1 t2][x1:tm t1][x2:tm t2]
+ op (app2 t1 t2 form h1 x1 x2) (app2 t1 t2 form h2 x1 x2).
+ 

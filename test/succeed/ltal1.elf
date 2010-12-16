@@ -31,7 +31,14 @@ _fstpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
  pf (_forall (T1 arrow form) [f : tm (T1 arrow form)]
     (_@ T1 form f X) imp (_@ T1 form f (_@ (pair T1 T2) T1 (_fst T1 T2)
      (_@ T2 (pair T1 T2) (_@ T1 (T2 arrow pair T1 T2) (_mkpair T1 T2) X) Y)))).
+%{
+  forall f : T1 -> form. f X => f (fst (mkpair X Y)) 
 
+_fstpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2} 
+ pf (_forall (arrow T1 form) ([f : tm (arrow T1 form)] 
+    imp (_@ T1 form f X) (_@ T1 form f (_@ (pair T1 T2) T1 (_fst T1 T2) 
+     (_@ T2 (pair T1 T2) (_@ T1 (arrow T2 (pair T1 T2)) (_mkpair T1 T2) X) Y))))).
+}%
 _sndpair : {T1 : tp} {T2 : tp} {X : tm T1} {Y : tm T2}
  pf (_forall (T2 arrow form) [f : tm (T2 arrow form)]
     (_@ T2 form f Y) imp (_@ T2 form f (_@ (pair T1 T2) T2 (_snd T1 T2)

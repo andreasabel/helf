@@ -1,15 +1,21 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 module PrettyM where
 
-import Prelude hiding (sequence, mapM)
-
-import Abstract
-import Scoping
-import qualified Util 
+import Prelude hiding (sequence, mapM, print)
 
 import Control.Applicative hiding (empty)
+import Control.Monad ((<=<))
+
 import Data.Traversable
 
 import qualified Text.PrettyPrint as P
+
+import qualified Abstract as A
+import qualified Concrete as C
+import Scoping
+import Value
+import qualified Util 
 
 
 -- from Agda.TypeChecking.Pretty
@@ -60,15 +66,33 @@ instance ToExpr Expr where
 
 instance ToExpr Val where
   toExpression = toExpr
+-}
 
+class (Applicative m, Monad m) => PrettyM m a where
+  prettyM :: a -> m Doc
+  showM   :: a -> m String
+  showM a = P.render <$> prettyM a
 
-class PrettyTCM a where
-  prettyTCM :: a -> TypeCheck Doc 
+instance (Applicative m, Monad m) => PrettyM m C.Expr where
+  prettyM c = return d where 
+    d :: Doc
+    d = Util.pretty c
 
-instance PrettyTCM Expr where
-  prettyTCM = pretty
+instance (Applicative m, Monad m) => PrettyM m C.Declaration where
+  prettyM = pretty
 
-instance PrettyTCM Val where
-  prettyTCM v = pretty =<< toExpr v
+instance (Applicative m, Monad m) => PrettyM m A.Expr where
+  prettyM a = prettyM c where
+    c :: C.Expr
+    c = print a
+
+instance (Applicative m, Monad m) => PrettyM m A.Declaration where
+  prettyM a = prettyM c where
+    c :: C.Declaration
+    c = print a
+
+{-
+instance MonadEval val env m => PrettyM m val where
+  prettyM = prettyM <=< reify 
 -}
   

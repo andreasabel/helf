@@ -5,7 +5,7 @@ module TypeCheck where
 import Abstract -- as A
 import Context
 import PrettyM
-import Scoping (prettyM)
+-- import Scoping (prettyM)
 import qualified Scoping
 import Signature 
 import Value
@@ -33,7 +33,19 @@ data TypeError val
   | NotType val          -- ^ not "type"
   | UnequalTypes val val -- ^ types unequal
   | UnequalHeads val val -- ^ neutral terms unequal
-  | UnequalSpine [val] [val] -- ^ spines differ in length
+  | UnequalSpines [val] [val] -- ^ spines differ in length
+
+instance PrettyM m val => PrettyM m (TypeError val) where
+  prettyM err = 
+    case err of
+      NotFunType t      -> prettyM t <+> text "is not a function type"
+      NotInferable e    -> text "cannot infer type of" <+> prettyM e
+      NotSort s         -> prettyM s <+> text "is not a valid sort"
+      NotType s         -> text "expected" <+> prettyM s <+> text "to be 'type'"
+      UnequalTypes t t' -> text "type mismatch" <+> prettyM t <+> text "!=" <+> prettyM t'
+      UnequalHeads v v' -> text "head mismatch" <+> prettyM v <+> text "!=" <+> prettyM v'
+      UnequalSpines vs vs' -> text "value mismatch, spines differ in length"
+
 
 -- * Typechecking expressions.
 
@@ -89,12 +101,13 @@ check :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> tyVal -> m
 check e t =
   case e of
 --    Abs x e -> 
-    Lam x mt e -> do
-      whenMaybe mt $ \ te -> do
-        checkType te
-        equalType t =<< eval te
+    Lam x mt e ->
       case tyView t of
-        VPi a b -> addLocal x a $ \ xv -> check e =<< (b `app` xv) 
+        VPi a b -> do
+          whenMaybe mt $ \ t -> do
+            checkType t
+            equalType a =<< eval t
+          addLocal x a $ \ xv -> check e =<< (b `app` xv) 
         _       -> typeError $ NotFunType t
     e -> equalType t =<< infer e
 
@@ -181,7 +194,7 @@ equalApp vs1 vs2 t =
       VPi a b -> do
         equalTm v1 v2 a
         equalApp vs1 vs2 =<< app b v1
-    _ -> typeError $ UnequalSpine vs1 vs2
+    _ -> typeError $ UnequalSpines vs1 vs2
 
 equalTm :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> val -> m ()
 equalTm v1 v2 t =
