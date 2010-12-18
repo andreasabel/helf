@@ -267,6 +267,16 @@ prop_join_is_balanced f g =
   let a1 = f l1; a2 = g l2
   in check_balancing (a1 `join` a2)
 
+prop_join_is_balanced' :: ([A] -> DynArray a) -> Property
+prop_join_is_balanced' f =
+  forAll (listOf (listOf (elements ['a'..'z']))) $ \ l ->
+  let 
+  arrList = map f l
+  bigJoin = foldl join empty arrList
+  in
+  check_balancing bigJoin
+  
+  
 -- concrete tests
 
 test = quickCheck prop_joinSplit
@@ -277,6 +287,9 @@ testnvp = verboseCheck prop_joinSplitNaivePretty
 
 testSplitBalanced = verboseCheck $ prop_split_is_balanced fromList
 testJoinBalanced = verboseCheck $ prop_join_is_balanced naiveFromList fromList
+
+testMultiJoinBalanced = verboseCheck $ prop_join_is_balanced' fromList
+
 
 {-
 failed before bugfix (using naiveFromList):
