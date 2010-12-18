@@ -105,10 +105,14 @@ evaluate e osubst = case e of
                       -- okay, this also does not work:
                       -- (return $ Sort Type)               >>= ((OrderedSubst.evaluate ty2 osubst2) >>= ( \a -> \b -> return (Fun a b) )  )
                       -- finally, this works:
+                      
                       do
                       mty1 <- OrderedSubst.evaluate ty1 osubst1
                       mty2 <- OrderedSubst.evaluate ty2 osubst2
                       return $ Fun mty1 mty2
+                      
+                      -- (OrderedSubst.evaluate ty1 osubst1) >>= (\ a -> (OrderedSubst.evaluate ty2 osubst2) >>= (\ b ->  return $ Fun a b))
+                      --Util.appM2 (return Fun) (OrderedSubst.evaluate ty1 osubst1) (OrderedSubst.evaluate ty2 osubst2)
                       
     OType          -> return $ typ
     -- OKind       -> kind
@@ -123,7 +127,8 @@ instance MonadEval Val OSubst EvalM where
   evaluate' e = OrderedSubst.evaluate (transform e) DS.empty
   
   -- Here we get a problem: In this file, values are always closed. As b is a value, we can only form a "fake"-dependent type (which is not really dependent).
-  abstractPi a (Ne (HVar x) _ []) b = do
+  -- TODO !!
+  abstractPi a _ b = do
                                       b' <- OrderedSubst.apply (Clos (OAbs [0] O) DS.empty) b
                                       return $ Fun a b'
   
