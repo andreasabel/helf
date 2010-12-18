@@ -1,6 +1,6 @@
 -- a simplified version of DynArray. get, insert, split, join are all O(log n).
 
-module DatastrucImplementations.DS_SimpleDynArray where
+module DatastrucImpl.SimpleDynArray where
 
 import Prelude hiding (repeat)
 import qualified Data.List as List
@@ -16,12 +16,12 @@ import DataStructure
 
 instance DataStruc DynArray a where
   -- show = render . pretty
-  empty             = DatastrucImplementations.DS_SimpleDynArray.empty
-  insert            = DatastrucImplementations.DS_SimpleDynArray.insert
-  multiinsert       = DatastrucImplementations.DS_SimpleDynArray.multiinsert
-  get               = DatastrucImplementations.DS_SimpleDynArray.get
-  split i datastruc = DatastrucImplementations.DS_SimpleDynArray.split datastruc i
-  join              = DatastrucImplementations.DS_SimpleDynArray.join
+  empty             = DatastrucImpl.SimpleDynArray.empty
+  insert            = DatastrucImpl.SimpleDynArray.insert
+  multiinsert       = DatastrucImpl.SimpleDynArray.multiinsert
+  get               = DatastrucImpl.SimpleDynArray.get
+  split i datastruc = DatastrucImpl.SimpleDynArray.split datastruc i
+  join              = DatastrucImpl.SimpleDynArray.join
   size              = len
 -}
 
@@ -74,8 +74,8 @@ get' (Leaf a) _ = error "Leaf cannot contain more than one element"
 -- | Splitting the array. O(log n).
 split :: DynArray a -> Int -> (DynArray a, DynArray a)
 split arr i 
-  | i <= 0 = (DatastrucImplementations.DS_SimpleDynArray.empty, arr)
-  | i >= len arr = (arr, DatastrucImplementations.DS_SimpleDynArray.empty)
+  | i <= 0 = (DatastrucImpl.SimpleDynArray.empty, arr)
+  | i >= len arr = (arr, DatastrucImpl.SimpleDynArray.empty)
   | otherwise = split' arr i
 
 -- Note that with Leaves holding no more than one information, we never have to split a Leaf. We would never try to split empty Arrays as well.
@@ -86,10 +86,10 @@ split' (DynArray len (Node llen left right)) i =
     else if i < llen
       then
         let (left', right') = split' (DynArray llen left) i
-        in (left', right' `DatastrucImplementations.DS_SimpleDynArray.join` (DynArray (len-llen) right))
+        in (left', right' `DatastrucImpl.SimpleDynArray.join` (DynArray (len-llen) right))
       else
         let (left', right') = split' (DynArray (len-llen) right) (i-llen)
-        in ((DynArray llen left) `DatastrucImplementations.DS_SimpleDynArray.join` left', right')
+        in ((DynArray llen left) `DatastrucImpl.SimpleDynArray.join` left', right')
 
 
 
@@ -108,7 +108,7 @@ join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = -- trace ("join " ++ Prelude.sh
     LeftTooBig n11 a11 a12 ->
       -- a_1 >> a_2 , a11+a12 = a_1 , a11 ~ a12
       -- recursively join middle and right part
-      let DynArray _ a2'@(Node n21' a21' a22') = DynArray (n1 - n11) a12 `DatastrucImplementations.DS_SimpleDynArray.join` a_2
+      let DynArray _ a2'@(Node n21' a21' a22') = DynArray (n1 - n11) a12 `DatastrucImpl.SimpleDynArray.join` a_2
       -- a21'+a22' = a12+a_2 , a21' ~ a22'
       in  if balanced n11 (n - n11) 
           then DynArray n (Node n11 a11 a2')
@@ -124,7 +124,7 @@ join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = -- trace ("join " ++ Prelude.sh
                     Node n211' a211' a212' -> join4 n11 a11 n211' a211' (n21' - n211') a212' a22'
                     -- a21' cannot be a Leaf
     RightTooBig n21 a21 a22 ->
-      let DynArray _ a1'@(Node n11' a11' a12') = a_1 `DatastrucImplementations.DS_SimpleDynArray.join` DynArray n21 a21
+      let DynArray _ a1'@(Node n11' a11' a12') = a_1 `DatastrucImpl.SimpleDynArray.join` DynArray n21 a21
       in  if balanced (n1 + n21) (n2 - n21) 
            then DynArray n (Node (n1 + n21) a1' a22)
            else
@@ -166,10 +166,10 @@ insert x i a                           = insert' x i a
 insert' :: a -> Int -> DynArray a -> DynArray a
 insert' x i a@(DynArray k arr) =
   let
-  (left, right) = DatastrucImplementations.DS_SimpleDynArray.split a i
-  left' = left `DatastrucImplementations.DS_SimpleDynArray.join` (DynArray 1 (Leaf x))
+  (left, right) = DatastrucImpl.SimpleDynArray.split a i
+  left' = left `DatastrucImpl.SimpleDynArray.join` (DynArray 1 (Leaf x))
   in
-  left' `DatastrucImplementations.DS_SimpleDynArray.join` right
+  left' `DatastrucImpl.SimpleDynArray.join` right
 
 
 -- injects a given value at the given places
@@ -178,11 +178,11 @@ multiinsert:: a -> [Int] -> DynArray a -> DynArray a
 multiinsert _ [] dyn = dyn
 multiinsert x (k:klist) dyn = 
   let
-  (left, right) = DatastrucImplementations.DS_SimpleDynArray.split dyn k
-  left' = left `DatastrucImplementations.DS_SimpleDynArray.join` (DynArray 1 (Leaf x))
-  dyn' = DatastrucImplementations.DS_SimpleDynArray.multiinsert x klist right
+  (left, right) = DatastrucImpl.SimpleDynArray.split dyn k
+  left' = left `DatastrucImpl.SimpleDynArray.join` (DynArray 1 (Leaf x))
+  dyn' = DatastrucImpl.SimpleDynArray.multiinsert x klist right
   in
-  left' `DatastrucImplementations.DS_SimpleDynArray.join` dyn'
+  left' `DatastrucImpl.SimpleDynArray.join` dyn'
 
 
 

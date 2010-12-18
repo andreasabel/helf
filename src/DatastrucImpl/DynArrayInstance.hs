@@ -1,7 +1,7 @@
-module DatastrucImplementations.DynArrayInstance where
+module DatastrucImpl.DynArrayInstance where
 
 import DataStructure
-import qualified DatastrucImplementations.DS_SimpleDynArray as DA
+import qualified DatastrucImpl.SimpleDynArray as DA
 
 instance DataStruc DA.DynArray a where
   -- show = render . pretty
