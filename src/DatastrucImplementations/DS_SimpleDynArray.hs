@@ -102,7 +102,7 @@ join a_1@(DynArray n1 _)     (DynArray 0  _) = a_1
 join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = -- trace ("join " ++ Prelude.show n1 ++ " " ++ Prelude.show n2) $
   let n = n1 + n2 
       join4 n11 a11 n12 a12 n21 a21 a22 = DynArray n $ Node (n11 + n12) 
-        (Node n1 a11 a12) (Node n21 a21 a22) in
+        (Node n11 a11 a12) (Node n21 a21 a22) in 
   case joinable a_1 a_2 of
     Ok -> DynArray n (Node n1 a1 a2)
     LeftTooBig n11 a11 a12 ->
@@ -190,6 +190,7 @@ multiinsert x (k:klist) dyn =
 -------------------------------------------------------------
 -- Testing
 
+-- construction and deconstruction
 
 toList :: DynArray a -> [a]
 toList (DynArray n arr) = map (get' arr) [0..n-1]
@@ -216,6 +217,8 @@ fromList' n l =
 prop_equal :: Eq a => DynArray a -> DynArray a -> Bool
 prop_equal a1 a2 = toList a1 == toList a2
 
+-- properties
+
 type A = Char
 
 prop_joinSplit' :: Int -> [A] -> Property
@@ -239,8 +242,47 @@ prop_joinSplitNaivePretty = forAll (listOf (elements ['a'..'z'])) $ \ l ->
   forAll (choose (0,length l)) $ \ i -> prop_equal a $ uncurry join (split a i) 
 
 
+check_balancing :: DynArray a -> Bool
+check_balancing d =
+  let
+  prop_b' :: DynArr a -> Int -> Bool
+  prop_b' _ 0 = True
+  prop_b' (Leaf _) _ = True
+  prop_b' (Node llen l r) i = (balanced llen (i-llen)) && (prop_b' l llen) && (prop_b' r (i-llen))
+  in
+  prop_b' (array d) (len d)
+
+prop_split_is_balanced :: ([A] -> DynArray a) -> Property
+prop_split_is_balanced f = forAll (listOf (elements ['a'..'z'])) $ \ l ->
+  forAll (choose (0, length l)) $ \ i ->  
+  let 
+  a = f l 
+  (a1, a2) = split a i
+  in check_balancing a1 && check_balancing a2
+
+prop_join_is_balanced :: ([A] -> DynArray a) -> ([A] -> DynArray a) -> Property
+prop_join_is_balanced f g = 
+  forAll (listOf (elements ['a'..'z'])) $ \ l1 ->
+  forAll (listOf (elements ['a'..'z'])) $ \ l2 ->
+  let a1 = f l1; a2 = g l2
+  in check_balancing (a1 `join` a2)
+
+-- concrete tests
+
 test = quickCheck prop_joinSplit
 testv = verboseCheck prop_joinSplit
 testn = quickCheck prop_joinSplitNaive
---testnv = verboseCheck prop_joinSplitNaive
---testnvp = verboseCheck prop_joinSplitNaivePretty
+testnv = verboseCheck prop_joinSplitNaive
+testnvp = verboseCheck prop_joinSplitNaivePretty
+
+testSplitBalanced = verboseCheck $ prop_split_is_balanced fromList
+testJoinBalanced = verboseCheck $ prop_join_is_balanced naiveFromList fromList
+
+{-
+failed before bugfix (using naiveFromList):
+join 10, 3
+-}
+array10 = naiveFromList ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+array3  = naiveFromList ['X', 'Y', 'Z']
+
+
