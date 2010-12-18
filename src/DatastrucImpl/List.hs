@@ -1,4 +1,4 @@
-module DatastrucImplementations.DS_List where
+module DatastrucImpl.List where
 
 import Data.List
 

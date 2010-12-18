@@ -20,9 +20,9 @@ import Signature
 import Util
 
 import DataStructure as DS
-import DatastrucImplementations.DS_SimpleDynArray (DynArray)
-import DatastrucImplementations.DS_List (List)
-import DatastrucImplementations.DynArrayInstance
+import DatastrucImpl.SimpleDynArray (DynArray)
+import DatastrucImpl.List (List)
+import DatastrucImpl.DynArrayInstance
 
 -- "ordered" Expressions
 
