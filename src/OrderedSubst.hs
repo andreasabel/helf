@@ -13,6 +13,7 @@ import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
 import Abstract as A
+--import Concrete (Name as CName)
 import Value
 import TypeCheck
 -- import Context
@@ -27,8 +28,8 @@ import DatastrucImpl.DynArrayInstance
 -- "ordered" Expressions
 
 -- type OName = String
+type Var = A.UID
 type OType = OExpr
-
 
 data OExpr
   = OCon Name
@@ -43,19 +44,26 @@ data OExpr
 
 -- Values
 
-type Var = Int
 
+type Head = A.Ident -- Def not allowed
+
+{-
+type Var = Int
 
 data Head 
   = HVar Var      -- (typed) variable 
-  | HCon A.Name   -- (typed) constructor
+  | HCon Name   -- (typed) constructor
   deriving (Eq,Ord,Show)
+-}
 
 data Val 
-  = Ne   Head Val [Val]     -- x^a vs^-1 | c^a vs^-1   last argument first in list!
-  | Sort Sort               -- s
-  | Clos OExpr OSubst       -- (\xe) rho
-  | Fun  Val  Val           -- Pi a ((\xe)rho)
+  = Ne   Head Val [Val]     -- x^a vs^-1 | c^a vs^-1
+  | Sort Sort               -- type or kind
+  | Clos OExpr OSubst       -- (\x e) osubst
+  | Fun  Val  Val           -- Pi a ((\x e) osubst)
+
+-- ordered substitution
+type OSubst = DynArray Val
 
 
 instance Value Head Val where
@@ -67,58 +75,81 @@ instance Value Head Val where
   tyView (Sort s)  = VSort s
   tyView _         = VBase
  
-  tmView (Ne h t vs) = VNe h t (reverse vs) -- see above: last argument first in list!
+  tmView (Ne h t vs) = VNe h t (reverse vs)
   tmView _           = VVal
   
+-- * smart constructors
 
----------------
+var :: Name -> Val -> Val
+var x t = Ne (A.Var x) t []
 
--- ordered substitution
-
-type OSubst = DynArray Val
+con :: A.Name -> Val -> Val
+con x t = Ne (A.Con x) t []
 
 type EvalM = Reader (MapSig Val)
 
+-- * Evaluation
 
--- Evaluation
 apply :: Val -> Val -> EvalM Val
--- apply (K w) _ _ = w
 apply (Ne head t vs) v = return $ Ne head t (v:vs)
 apply (Clos (OAbs klist oe) osubst) v = OrderedSubst.evaluate oe (multiinsert v klist osubst)
+-- apply (Fun a clos) v = apply clos v ???
 
 evaluate :: OExpr -> OSubst -> EvalM Val
 evaluate e osubst = case e of
-    OCon x         -> symbType . sigLookup' x <$> ask
+    OCon x         -> con x . symbType . sigLookup' x <$> ask
     ODef x         -> symbDef  . sigLookup' x <$> ask
     O              -> return $ DS.get osubst 0
     OApp oe1 k oe2 -> let (osubst1, osubst2) = split ((DS.size osubst) - k) osubst 
                       in Util.appM2 OrderedSubst.apply (OrderedSubst.evaluate oe1 osubst1) (OrderedSubst.evaluate oe2 osubst2)
     OAbs _ _       -> return $ Clos e osubst
-    -- OPi ty1 ty2    -> Fun (OrderedSubst.evaluate ty1 osubst) (Clos ty2 osubst) -- wrong.
     OPi ty1 k ty2  -> --return $ Sort Type
                       let (osubst1, osubst2) = split ((DS.size osubst) - k) osubst
                       in 
-                      -- this is not correct - but at least, it can be compiled:
-                      -- (OrderedSubst.evaluate ty2 osubst2) >>= ((return $ Sort Type)               >>= ( \a -> \b -> return (Fun a b) )  )
-                      -- this is correct but cannot be compiled:
-                      -- (OrderedSubst.evaluate ty2 osubst2) >>= ((OrderedSubst.evaluate ty1 osubst1) >>= ( \a -> \b -> return (Fun a b) )  )
-                      -- okay, this also does not work:
-                      -- (return $ Sort Type)               >>= ((OrderedSubst.evaluate ty2 osubst2) >>= ( \a -> \b -> return (Fun a b) )  )
-                      -- finally, this works:
-                      
                       do
                       mty1 <- OrderedSubst.evaluate ty1 osubst1
                       mty2 <- OrderedSubst.evaluate ty2 osubst2
                       return $ Fun mty1 mty2
-                      
                       -- (OrderedSubst.evaluate ty1 osubst1) >>= (\ a -> (OrderedSubst.evaluate ty2 osubst2) >>= (\ b ->  return $ Fun a b))
-                      --Util.appM2 (return Fun) (OrderedSubst.evaluate ty1 osubst1) (OrderedSubst.evaluate ty2 osubst2)
                       
     OType          -> return $ typ
-    -- OKind       -> kind
 
 
 
+
+
+-- * Reification
+--   reify     :: val -> m Expr        -- ^ quote value as expression
+
+{- foldr' :: (Monad m) => (a -> b -> b) -> b -> [m a] -> m b
+foldr' f z [] = return z
+foldr' f z (x:xs) = (\y -> return $ f x y) =<< (foldr' f z xs) -}
+
+quote :: Val -> A.SysNameCounter -> EvalM A.Expr
+quote v i = case v of
+  Ne h a vs -> foldr (flip A.App) (A.Ident h) <$> mapM (flip quote i) vs
+  Sort Type    -> return A.Typ
+  Sort Kind    -> error "cannot quote sort kind"
+  -- Fun a (Clos (OAbs [] b) osubst) -> A.Pi Nothing <$> quote a i <$> quote (OrderedSubst.evaluate b osubst) i
+  Fun a f@(Clos (OAbs klist b) osubst) -> do
+    u     <- quote a i
+    (x,t) <- quoteFun f i
+    case klist of
+      [] -> return $ A.Pi Nothing u t
+      _  -> return $ A.Pi (Just x) u t
+  f            -> do
+    (x,e) <- quoteFun f i
+    return $ A.Lam x Nothing e
+
+-- nameSugg :: A.SysNameCounter -> String
+-- nameSugg i = 'x' : show i
+
+quoteFun :: Val -> A.SysNameCounter -> EvalM (A.Name, A.Expr)
+quoteFun f i = do
+  let (x, i') = A.nextSysName' i
+  v <- f `OrderedSubst.apply` (var x (Sort Type)) -- TODO of course, Type is not correct.
+  (quote v i') >>= (\t -> return (x,t))
+  -- or: (x,) <$> quote v i'
 
 
 instance MonadEval Val OSubst EvalM where
@@ -129,9 +160,9 @@ instance MonadEval Val OSubst EvalM where
   -- Here we get a problem: In this file, values are always closed. As b is a value, we can only form a "fake"-dependent type (which is not really dependent).
   -- TODO !!
   abstractPi a _ b = do
-                                      b' <- OrderedSubst.apply (Clos (OAbs [0] O) DS.empty) b
-                                      return $ Fun a b'
-  
+                      b' <- OrderedSubst.apply (Clos (OAbs [0] O) DS.empty) b
+                      return $ Fun a b'
+  reify v = quote v A.initSysNameCounter
   
 
 -- hConst x = Ne (HConst x) []
