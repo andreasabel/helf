@@ -1,0 +1,12 @@
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "TypeExpected.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking %%%
+N : type.
+0 : N.
+bla = [x : 0] x.
+error during typechecking:
+inferring type of [x : 0] x
+  expected 0 to be a type

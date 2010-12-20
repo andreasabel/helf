@@ -3,7 +3,7 @@
 
 helf = helf +RTS -K16M -RTS
 
-.PHONY : test examples current default
+.PHONY : test examples current default helf
 
 default : 
 	make -C src

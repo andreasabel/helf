@@ -1,11 +1,11 @@
 # Makefile for helf
 
-files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping TypeCheck TheMonad Closures
+files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping ScopeMonad TypeCheck TheMonad Closures
 # Warshall Util TreeShapedOrder TraceError Extract HsSyntax ToHaskell PrettyTCM
 hsfiles=$(foreach file,$(files),$(file).hs)
 ghcflags=-fglasgow-exts -ignore-package monads-fd
 
-.PHONY : test examples current default
+.PHONY : test examples current default helf
 
 default : helf test
 
