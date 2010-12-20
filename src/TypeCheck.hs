@@ -31,6 +31,7 @@ data TypeError val
   | NotInferable Expr    -- ^ cannot infer type
   | NotSort val          -- ^ neither "type" nor "kind"
   | NotType val          -- ^ not "type"
+  | NotAType Expr        -- ^ not a type
   | UnequalTypes val val -- ^ types unequal
   | UnequalHeads val val -- ^ neutral terms unequal
   | UnequalSpines [val] [val] -- ^ spines differ in length
@@ -42,6 +43,7 @@ instance PrettyM m val => PrettyM m (TypeError val) where
       NotInferable e    -> text "cannot infer type of" <+> prettyM e
       NotSort s         -> prettyM s <+> text "is not a valid sort"
       NotType s         -> text "expected" <+> prettyM s <+> text "to be 'type'"
+      NotAType e        -> text "expected" <+> prettyM e <+> text "to be a type"
       UnequalTypes t t' -> text "type mismatch" <+> prettyM t <+> text "!=" <+> prettyM t'
       UnequalHeads v v' -> text "head mismatch" <+> prettyM v <+> text "!=" <+> prettyM v'
       UnequalSpines vs vs' -> text "value mismatch, spines differ in length"
@@ -88,6 +90,7 @@ class (Monad m, -- Scoping.Scope m,
   lookupIdent id      = lookupGlobal $ name id
 
   typeError    :: TypeError val -> m a
+  newError     :: TypeError val -> m a -> m a
   typeTrace    :: TypeTrace val -> m a -> m a
 
 
@@ -168,7 +171,7 @@ infer e = typeTrace (Infer e) $
 --    _ -> failDoc $ text "cannot infer type of" <+> prettyM e
         
 checkType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m ()
-checkType e = isType =<< infer e
+checkType e = newError (NotAType e) $ isType =<< infer e
 
 inferType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m Sort
 inferType e = do

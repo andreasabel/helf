@@ -1,0 +1,14 @@
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "NotAFunctionType.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking %%%
+a : type.
+app : a -> a -> a = [x] [y] x y.
+error during typechecking:
+checking [x] [y] x y against a -> a -> a
+  checking [y] x y against a -> a
+  checking x y against a
+  inferring type of x y
+  a is not a function type

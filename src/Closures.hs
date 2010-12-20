@@ -258,6 +258,8 @@ instance MonadCheckExpr Val Env EvalM CheckExprM where
   doEval comp = runReader comp <$> asks globals
 
   typeError err = failDoc $ prettyM err 
+  newError err k = k `catchError` (const $ typeError err)
+
   typeTrace tr  = -- traceM (showM tr) .
     (enterDoc $ prettyM tr)
 
