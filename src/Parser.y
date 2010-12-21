@@ -16,6 +16,7 @@ import qualified Concrete as C
 
 id         { T.Id $$ _ }
 '%abbrev'  { T.Abbrev _}
+'%clause'  { T.Clause _}
 '%infix'   { T.Infix _}
 '%prefix'  { T.Prefix _}
 '%postfix' { T.Postfix _}
@@ -48,6 +49,7 @@ Declaration
   : TypeSig                       { $1 }
   | Defn                          { $1 }
   | '%abbrev' Defn                { $2 }
+  | '%clause' Defn                { $2 }
   | '%infix' Assoc Prec id        { C.Fixity $4 (C.Infix $3 $2) }
   | '%prefix' Prec id             { C.Fixity $3 (C.Prefix $2) }
   | '%postfix' Prec id            { C.Fixity $3 (C.Postfix $2) }
