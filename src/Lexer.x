@@ -25,7 +25,7 @@ $white+             ;
 "%postfix"          { tok (\p s -> Postfix p) }
 "%name"          .* ;
 "%query"         .* ;
-"%clause"        .* ;
+"%clause"           { tok (\p s -> Clause p) }
 "%tabled"        .* ;
 "%querytabled"   .* ;
 "%deterministic" .* ;
@@ -63,6 +63,7 @@ $idchar +           { tok (\p s -> (Id s p )) }
 
 data Token = Id String AlexPosn
            | Abbrev AlexPosn
+           | Clause AlexPosn
            | Infix AlexPosn
            | Prefix AlexPosn
            | Postfix AlexPosn
@@ -90,6 +91,7 @@ showTok c =
   case c of 
     (Id s p) -> (show s,p)
     Abbrev p -> ("%abbrev",p)
+    Clause p -> ("%clause",p)
     Infix p -> ("%infix",p)
     Prefix p -> ("%prefix",p)
     Postfix p -> ("%postfix",p)
