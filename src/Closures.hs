@@ -306,11 +306,6 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 -- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
 type CheckDeclM = StateT (MapSig Val) (ErrorT String IO)
 
-instance Field (MapSig v) (MapSig v) where
-  getF = id
-  setF = const
-  modF = id
-
 instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
 {-
   doCheckExpr cont = do

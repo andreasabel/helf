@@ -63,6 +63,8 @@ instance PrettyM m val => PrettyM m (TypeTrace val) where
       EqualType t1 t2 -> text "checking wether" <+> prettyM t1 <+> text "equals" <+> prettyM t2
 
 -- * Typechecking expressions.
+--
+-- Needs only read-only access to signature.
 
 class (Monad m, -- Scoping.Scope m, 
        MonadEval val env me, 
@@ -129,10 +131,18 @@ check e t = typeTrace (Check e t) $
     e -> flip equalType t =<< infer e
 
 {-  Type inference   Gamma |- e :=> t 
+                              
+   -----------------------    
+   Gamma |- c :=> Sigma(c)    
 
                               Gamma |- f :=> Pi a b    Gamma |- e <=: a
    -----------------------    -----------------------------------------
    Gamma |- x :=> Gamma(x)    Gamma |- f e :=> b [|e|]
+
+                             
+   Gamma |- e :=> type   a =[|e|]   Gamma, x:a |- e' :=> b   
+   -------------------------------------------------------   
+   Gamma |- \x:e.e' :=> Pi a \x.b   
 
                               Gamma |- e :=> type   Gamma, x:[|e|] |- e' :=> s
    ----------------------     ------------------------------------------------
@@ -221,6 +231,8 @@ equalTm v1 v2 t =
     _ -> equalBase v1 v2 
 
 -- * Typechecking declarations.
+--
+-- Needs read and write access to signature Sigma. 
 
 class (Monad m, -- Scoping.Scope m, 
        MonadSig  val m, 
@@ -228,7 +240,7 @@ class (Monad m, -- Scoping.Scope m,
        MonadCheckExpr val env me mc) => 
   MonadCheckDecl val env me mc m | m -> mc, m -> me where
 
-  doCheckExpr :: mc a -> m a
+  doCheckExpr :: mc a -> m a -- ^ monad lifting
 {-
   checkExpr   :: Value fvar val => Expr -> val -> m ()
   checkExpr e t = doCheckExpr $ check e t
@@ -238,6 +250,21 @@ class (Monad m, -- Scoping.Scope m,
   evalExpr    :: Expr -> m val
   evalExpr     = doCheckExpr . doEval . evaluate' 
 
+{- Rules for checking declarations
+
+  Sigma; . |- t :=> s
+  ------------------------------------
+  Sigma |- (c : t) => (Sigma, c:[|t|])
+
+  Sigma; . |- e :=> a
+  ----------------------------------------------
+  Sigma |- (d = e) => (Sigma, d:a=[|e|])
+
+  Sigma; . |- t :=> s    Sigma; . |- e <=: [|t|]
+  ----------------------------------------------
+  Sigma |- (d : t = e) => (Sigma, d:[|t|]=[|e|])
+
+-}
 checkDecl :: (Value fvar val, MonadCheckDecl val env me mc m) => Declaration -> m ()
 checkDecl d = 
   case d of
