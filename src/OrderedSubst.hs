@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module OrderedSubst where
 
 import Prelude hiding (pi)

@@ -52,6 +52,11 @@ instance Signature val (MapSig val) where
   sigAdd    = Map.insert
   sigLookup = Map.lookup
 
+instance Field (MapSig v) (MapSig v) where
+  getF = id
+  setF = const
+  modF = id
+
 {-
 newtype Signature val = Signature
   { signature :: Map A.Name (SigEntry val)
@@ -106,7 +111,7 @@ class (Applicative m) => MonadSig val m where
 
 instance ( Applicative m
          -- , Scoping.Scope m
-         , PrettyM m val     -- for debugging
+         -- , PrettyM m val     -- for debugging
          , Signature val sig
          -- , HasSig sig st
          , Field sig st

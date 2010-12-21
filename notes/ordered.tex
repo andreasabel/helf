@@ -57,11 +57,15 @@
 \newcommand{\institute}[1]{}
 \input{macros}
 
+%\renewenvironment{gather*}{\begin{displaymath}\begin{array}{c}}{%
+%    \end{array}\end{displaymath}}
+
 \newcommand{\OTm}{\mathsf{OTm}}
 \newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
 \newcommand{\ovar}{\mathord{\bullet}}
 \newcommand{\oapp}[1]{\,\oann{#1}}
 \newcommand{\olam}[1]{\lambda^{#1}.\,}
+\newcommand{\opi}[2]{\Pi\,#1\,^{#2}}
 %\newcommand{\oprint}[1]{\langle#1\rangle}
 %\newcommand{\oparse}[3]{#1 \leadsto \oprint{#2} #3}
 \newcommand{\oprint}[2]{{}^{\lhd}\esubst{#1}{#2}}
@@ -74,7 +78,13 @@
 \newcommand{\esubstp}[2]{\esubst{(#1)}{#2}}
 \renewcommand{\cempty}{\varepsilon}
 \renewcommand{\sempty}{\varepsilon}
-
+\newcommand{\oclos}[2]{#1[#2]}
+\newcommand{\ochk}[4]{#1 \der #2 \jchk \oclos{#4}{#3}}
+\newcommand{\oinf}[4]{#1 \der #2 \jinf \oclos{#4}{#3}}
+\newcommand{\Head}{\mathsf{Head}}
+\newcommand{\vapp}[1]{\mathrel{@^{#1}}}
+\renewcommand{\eval}[2]{\dent{#1}{}[#2]}
+\newcommand{\evalid}[2]{\dent{#1}{}[\ovar^{#2}]}
 
 \title{A Nameless Term Representation Based on Ordered Logic}
 \author{Andreas Abel, Nicolai Kraus}
@@ -208,5 +218,125 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
     \ovar,\sigma_1,\dots,\oann 1 \ovar,\sigma_n}
 \end{array}
 \]
+
+\section{Dependent Types}
+
+\paradot{Ordered syntax}
+\[
+\begin{array}{lllrl@{\qquad}l}
+\Sort & \ni & s & ::= & \ttype \mid \tkind & \mbox{sort} \\[1ex]
+\OTm & \ni & t,u,T,U & ::= & \ovar & \mbox{variable (nameless)} \\
+&&& \mid & t \oapp k u & \mbox{application} \\
+&&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
+&&& \mid & s & \mbox{sort} \\
+&&& \mid & \opi U k T & \mbox{function type} \\
+&&& \mid & \subst t \sigma & \mbox{explicit substitution} \\
+\end{array}
+\]
+
+\paradot{Values}
+\[
+\begin{array}{lllrl@{\qquad}l}
+\Head & \ni & h & ::= & x \mid \ovar & \mbox{head} \\[1ex]
+\Val & \ni & v,w,V,W & ::= & h \oapp {\vec k} {\vec v} & \mbox{neutral
+  value} \\
+&&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
+&&& \mid & \esubst{(\olam {\vec k} t)}{\rho} & \mbox{function closure} \\
+&&& \mid & s & \mbox{sort} \\
+&&& \mid & \opi V n W & \mbox{function type} \\
+\end{array}
+\]
+\paradot{Application and evaluation}
+\[
+\begin{array}{lll}
+  h \oapp {\vec k} {\vec v} \vapp k v 
+    & = & h \oapp{\vec k,k} {(\vec v,v)} \\
+  \esubst{\olam {\vec k} t}{\rho_0^{k_0},\dots,\rho_n^{k_n}} \vapp k v
+    & = & \eval t
+    {\rho_0^{k_0},\oann{k}v,\dots,\oann{k}v,\rho_n^{k_n}}
+\\
+  (\olam {\vec k} t) \vapp k v
+    & = & \eval t
+    {\ovar^{k_0},\oann{k}v,\dots,\oann{k}v,\ovar^{k_n}}
+\\[1ex]
+  \eval \ovar {\oann k v} & = & v \\
+  \eval {\olam{\vec k}t} \rho & = & \esubst {(\olam{\vec k}t)} \rho
+  \\
+  \eval {t \oapp k u} {\oann{l_n}v_n,\dots,\oann{l_{k+1}}v_{k+1},
+                       \oann{l_k}v_k,\dots,\oann{l_1}v_1} 
+    & = & \eval t {v_n,\dots,v_{k+1}} \vapp l \eval u {v_k,\dots,v_1}
+\\ &&      \mbox{ where } l = \sum_{i=1}^k l_i \\
+  \eval s \rho & = & s \\
+  \eval {\opi U k T} {\oann{l_n}v_n,\dots,\oann{l_{k+1}}v_{k+1},
+                       \oann{l_k}v_k,\dots,\oann{l_1}v_1} 
+    & = & \opi {\eval U {v_n,\dots,v_{k+1}}} l {\eval T {v_k,\dots,v_1}}
+\\ &&      \mbox{ where } l = \sum_{i=1}^k l_i \\
+\end{array}
+\]
+
+\paradot{Contexts}
+\[
+\begin{array}{lllrl@{\qquad}l}
+&& \Gamma,\Delta & ::= & \cempty \mid \Delta, x \of \oclos{T}{\vec y} 
+  & \mbox{typing context}
+\\
+&& \vec x &&& \mbox{occurrence context} \\
+\end{array}
+\]
+
+\paradot{Judgements}
+\[
+\begin{array}{ll}
+  \ochk \Delta M {\vec x} W & \mbox{term $M$ checks against type $W$}
+  \\
+  \oinf \Delta M {\vec x} W & \mbox{term $M$ has inferred type $W$}
+  \\
+\end{array}
+\]
+Rules for inference:
+\begin{gather*}
+  \ru{}{\Delta \der x \jinf \Delta(x)}
+\qquad
+  \ru{\oinf \Delta M {\vec x,{\vec y}^n} {(\opi V n W)} \qquad
+      \ochk \Delta N {\vec x} V \qquad
+      \osyn N u {{\vec z}^m}
+    }{\oinf \Delta {M\,N} {\vec y,\vec z} {(W \vapp m u)}} 
+\\[2ex]
+  \rux{\ochk \Delta A {} \ttype \qquad
+      \osyn A U {{\vec y}^m} \qquad
+      \evalid U m = V \\
+      \oinf {\Delta, x \of \oclos V {\vec y}} M 
+            {{\vec x_0}^{k_0},x,\dots,x,{\vec x_n}^{k_n}} W
+    }{\oinf \Delta {\lambda x \of A.\,M} {\vec y,\vec x_0,\dots,\vec x_n} 
+            {(\opi V {k} {\olam {\vec k} W})}
+    }{k = \sum_{i=0}^n k_i}
+\\[2ex]
+  \ru{}{\oinf \Delta \ttype {} \tkind}
+\\[2ex]
+  \ru{\ochk \Delta A {} \ttype \qquad
+      \osyn A U {{\vec y}^m} \qquad
+      \evalid U m = V \qquad
+      \oinf {\Delta, x \of \oclos V {\vec y}} B {} s
+    }{\oinf \Delta {\Pi x \of A.\,B} {} s}
+\end{gather*}
+Rules for checking:
+\begin{gather*}
+  \ru{\oinf \Delta M {\vec x} W \qquad
+      \Delta \der \oclos W {\vec x} = \oclos V {\vec y}
+    }{\ochk \Delta M {\vec y} V}
+\qquad
+  \ru{\ochk {\Delta, x \of \oclos V {\vec y}} M {\vec z,x} {(W \vapp 1 \ovar)}
+    }{\ochk \Delta {\lambda x.M} {\vec y,{\vec z}^n} {(\opi V n W)}}
+%   \ru{\ochk {\Delta, x \of \oclos V {\vec y}} M {}
+%     }{\ochk \Delta {\lambda x.M} {\vec y,{\vec z_i}^{k_i}} {(\opi V n
+%         (\olam{\vec k} W)}
+\end{gather*}
+Rules for equality:
+\begin{gather*}
+  bla
+\end{gather*}
+
+
+
 
 \end{document}

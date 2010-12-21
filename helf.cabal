@@ -35,6 +35,7 @@ executable helf
                     FlexibleInstances
                     FlexibleContexts
                     GeneralizedNewtypeDeriving
+                    TupleSections
   main-is:          Main.hs
   other-modules:    Abstract
                     Closures
