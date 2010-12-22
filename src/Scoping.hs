@@ -62,8 +62,15 @@ instance Parse C.Declarations A.Declarations where
 instance Parse C.Declaration [A.Declaration] where
   parse cdecl = 
     case cdecl of
-      C.TypeSig n t -> return <$> (A.TypeSig <$> addCon n <*> parse t)
-      C.Defn n mt e -> return <$> (A.Defn <$> addDef n <*> parse mt <*> parse e)
+      C.TypeSig n t -> return <$> do
+        t <- parse t
+        n <- addCon n 
+        return $ A.TypeSig n t
+      C.Defn n mt e -> return <$> do
+        mt <- parse mt 
+        e  <- parse e
+        n  <- addDef n
+        return $ A.Defn n mt e 
       C.Fixity n fx -> const [] <$> addFixity n fx
 
 {-
