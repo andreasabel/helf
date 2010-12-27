@@ -47,7 +47,8 @@ data Head
 type Head = A.Ident 
 
 data Val 
-  = Ne   Head Val [Val]              -- ^ @x^a vs^-1 | c^a vs^-1@   
+  = Ne   Head       Val [Val]        -- ^ @x^a vs^-1 | c^a vs^-1@ 
+  | Df   A.Name Val Val [Val]        -- ^ @d=v^a vs^-1@  
                                      --   last argument first in list!
   | Sort Sort                        -- ^ @s@
   | CLam A.Name A.Expr Env           -- ^ @(\xe) rho@
@@ -61,6 +62,15 @@ instance Value Head Val where
   kind = Sort Kind
   freeVar h t = Ne h t []
 
+  valView v =
+    case v of
+      Fun a b -> VPi a b
+      Sort s  -> VSort s
+      Ne h       t vs -> VNe  h t (reverse vs)
+--      Ne h@Def{} t vs -> VDef h t (reverse vs)
+      Df x v t vs     -> VDef (A.Def x) t (reverse vs)
+      _               -> VAbs
+{-
   tyView v =
     case v of
       Fun a b -> VPi a b
@@ -69,8 +79,11 @@ instance Value Head Val where
  
   tmView v =
     case v of
-      Ne h t vs -> VNe h t (reverse vs)
-      _         -> VVal
+      Ne h       t vs -> VNe  h t (reverse vs)
+--      Ne h@Def{} t vs -> VDef h t (reverse vs)
+      Df x v t vs     -> VDef (A.Def x) t (reverse vs)
+      _               -> VVal
+-}
 
 -- * smart constructors
 
@@ -82,6 +95,9 @@ var_ x = var x DontCare
 
 con :: A.Name -> Val -> Val
 con x t = Ne (A.Con x) t []
+
+def :: A.Name -> Val -> Val -> Val
+def x v t = Df x v t []
 
 -- * projections
 
@@ -127,9 +143,11 @@ substFree w x = subst where
 -}
 substs :: Subst -> Val -> EvalM Val
 substs sigma = subst where
-  subst (Ne h@(A.Var y) a vs) | Just w <- lookupSubst (A.uid y) sigma =
-    appsR w =<< mapM subst vs
-  subst (Ne h a vs)    = Ne h <$> subst a <*> mapM subst vs
+  subst (Ne h@(A.Var y) a vs) = case lookupSubst (A.uid y) sigma of
+    Just w  -> appsR w =<< mapM subst vs
+    Nothing -> Ne h <$> subst a <*> mapM subst vs
+  subst (Ne h a vs)    = Ne h a <$> mapM subst vs    -- a is closed
+  subst (Df h v a vs)  = Df h v a <$> mapM subst vs  -- a,v are closed
   subst (Sort s)       = return (Sort s)
   subst (CLam y e rho) = CLam y e <$> mapM subst rho
   subst (K v)          = K <$> subst v
@@ -147,19 +165,37 @@ apps f vs = foldl (\ mf v -> mf >>= \ f -> apply f v) (return f) vs
 appsR :: Val -> [Val] -> EvalM Val
 appsR f vs = foldr (\ v mf -> mf >>= \ f -> apply f v) (return f) vs
 
+-- | Unfold head definitions during applying.
+appsR' :: Val -> [Val] -> EvalM Val
+appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
+
+apply' :: Val -> Val -> EvalM Val 
+apply' f v =
+    case f of
+      K w               -> return $ w
+      Ne h t vs         -> return $ Ne h t (v:vs)
+      Df h w t []       -> apply' w v
+      Df h w t vs       -> appsR' w (v:vs)
+      CLam x e rho      -> evaluate e (update rho (A.uid x) v)
+      Abs x w sigma     -> substs (updateSubst sigma (A.uid x) v) w
+  
 instance MonadEval Val Env EvalM where
 
   apply f v =
     case f of
       K w               -> return $ w
       Ne h t vs         -> return $ Ne h t (v:vs)
+      Df h w t vs       -> return $ Df h w t (v:vs)
       CLam x e rho      -> evaluate e (update rho (A.uid x) v)
       Abs x w sigma     -> substs (updateSubst sigma (A.uid x) v) w
   
   evaluate e rho =
     case e of
       A.Ident (A.Con x) -> con x . symbType . sigLookup' x <$> ask
-      A.Ident (A.Def x) -> symbDef . sigLookup' x  <$> ask
+--      A.Ident (A.Def x) -> symbDef . sigLookup' x  <$> ask
+      A.Ident (A.Def x) -> do 
+        SigDef t v <- sigLookup' x <$> ask
+        return $ def x v t 
       A.Ident (A.Var x) -> return $ lookupSafe (A.uid x) rho
       A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)
       A.Lam x mt e -> return $ CLam x e rho
@@ -169,6 +205,16 @@ instance MonadEval Val Env EvalM where
       A.Typ        -> return typ
 
   evaluate' e = evaluate e Map.empty
+
+  unfold v = 
+    case v of
+      Df x f t vs  -> appsR f vs
+      _            -> return v
+
+  unfolds v = 
+    case v of
+      Df x f t vs  -> unfolds =<< appsR' f vs -- unfolding application
+      _            -> return v
 
   abstractPi a (n, Ne (A.Var x) _ []) b = return $ Fun a $ Abs x b emptySubst
 
@@ -180,6 +226,7 @@ quote :: Val -> A.SysNameCounter -> EvalM A.Expr
 quote v i =
   case v of
     Ne h a vs    -> foldr (flip A.App) (A.Ident h) <$> mapM (flip quote i) vs
+    Df x f a vs  -> foldr (flip A.App) (A.Ident (A.Def x)) <$> mapM (flip quote i) vs
     Sort Type    -> return A.Typ
     Sort Kind    -> error "cannot quote sort kind"
     DontCare     -> error "cannot quote the dontcare value"
@@ -255,12 +302,13 @@ instance MonadCxt Val Env CheckExprM where
 
 instance MonadCheckExpr Val Env EvalM CheckExprM where  
 
-  doEval comp = runReader comp <$> asks globals
+  doEval comp    = runReader comp <$> asks globals
 
-  typeError err = failDoc $ prettyM err 
+  typeError err  = failDoc $ prettyM err 
   newError err k = k `catchError` (const $ typeError err)
+  -- handleError k k' = catchError k (const k')
 
-  typeTrace tr  = -- traceM (showM tr) .
+  typeTrace tr   = -- traceM (showM tr) .
     (enterDoc $ prettyM tr)
 
   lookupGlobal x = symbType . sigLookup' x <$> asks globals

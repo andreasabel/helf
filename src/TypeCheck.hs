@@ -2,6 +2,8 @@
 
 module TypeCheck where
 
+import Control.Applicative
+
 import Abstract -- as A
 import Context
 import PrettyM
@@ -67,15 +69,21 @@ instance PrettyM m val => PrettyM m (TypeTrace val) where
 -- Needs only read-only access to signature.
 
 class (Monad m, -- Scoping.Scope m, 
+       Alternative m, 
        MonadEval val env me, 
        MonadCxt val env m) =>
   MonadCheckExpr val env me m | m -> me where
 
+  -- evaluation stuff
   doEval       :: me a -> m a      -- ^ run evaluation
   app          :: val -> val -> m val
   app f v       = doEval $ apply f v
   eval         :: Expr -> m val
   eval e        = getEnv >>= \ rho -> doEval $ evaluate e rho
+  force        :: val -> m val
+  force v       = doEval $ unfolds v
+  unfold1      :: val -> m val
+  unfold1 v     = doEval $ unfold v
   abstrPi      :: val -> (Name, val) -> val -> m val  -- ^ pi a x b
   abstrPi a x b = doEval $ abstractPi a x b
 {-
@@ -83,6 +91,8 @@ class (Monad m, -- Scoping.Scope m,
   addLocal     :: Name -> val -> (val -> m a) -> m a
   addLocal x t  = doCxt . addBind x t cont
 -}
+
+  -- context and signature
   addLocal'    :: val -> val -> (val -> m a) -> m a
   addLocal' b   = addLocal systemGeneratedName
 
@@ -91,20 +101,11 @@ class (Monad m, -- Scoping.Scope m,
   lookupIdent (Var x) = lookupLocal x
   lookupIdent id      = lookupGlobal $ name id
 
+  -- error and debugging
   typeError    :: TypeError val -> m a
   newError     :: TypeError val -> m a -> m a
+  -- handleError  :: m a -> (TypeError val -> m a) -> m a
   typeTrace    :: TypeTrace val -> m a -> m a
-
-
-{-
-class (Monad m, Scoping.Scope m) => TypeCheck val m | m -> val where
-  app       :: val -> val -> m val
-  eval      :: Expr -> m val  
-  addLocal   :: Name -> val -> (val -> m a) -> m a
-  addLocal'  :: val -> val -> (val -> m a) -> m a
-  lookupIdent :: Ident -> m val
---  lookupVar :: Name -> m val
--}
 
 {-  Type checking   Gamma |- e <=: t
 
@@ -120,8 +121,9 @@ check :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> tyVal -> m
 check e t = typeTrace (Check e t) $
   case e of
 --    Abs x e -> 
-    Lam x mt e ->
-      case tyView t of
+    Lam x mt e -> do
+      t' <- force t       -- if t is a definition unfold it to expose Pi
+      case valView t' of
         VPi a b -> do
           whenMaybe mt $ \ t -> do
             checkType t
@@ -160,8 +162,9 @@ infer e = typeTrace (Infer e) $
         bx <- infer e
         abstrPi a (x,xv) bx        
     App f e -> do
-      t <- infer f
-      case tyView t of
+      t  <- infer f
+      t' <- force t
+      case valView t' of
         VPi a b -> do
           check e a
           app b =<< eval e
@@ -185,50 +188,75 @@ checkType e = newError (NotAType e) $ isType =<< infer e
 
 inferType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m Sort
 inferType e = do
-  t <- infer e
-  case tyView t of
+  t  <- infer e
+  t' <- force t
+  case valView t' of
     VSort s -> return s
     _       -> typeError $ NotSort t
 
 isType :: (Value fvar val, MonadCheckExpr val env me m) => val -> m ()
-isType t = 
-  case tyView t of
+isType t = do
+  t' <- force t
+  case valView t' of
     VSort Type -> return ()
     _          -> typeError $ NotType t
  
 equalType ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
-equalType t1 t2 = typeTrace (EqualType t1 t2) $
-  case (tyView t1, tyView t2) of
+equalType v1 v2 = typeTrace (EqualType v1 v2) $
+  case (valView v1, valView v2) of
     (VSort s1, VSort s2) | s1 == s2 -> return ()
     (VPi a1 b1, VPi a2 b2) -> do
       equalType a1 a2
       addLocal' b1 a1 $ \ xv -> appM2 equalType (b1 `app` xv) (b2 `app` xv)
-    (VBase, VBase) -> equalBase t1 t2 
-    _ -> typeError $ UnequalTypes t1 t2
-
+    (VNe x1 t1 vs1, VNe x2 t2 vs2) -> 
+      if x1 == x2 then equalApp vs1 vs2 t1 >> return ()
+       else typeError $ UnequalHeads v1 v2
+    (VDef x1 t1 vs1, VDef x2 t2 vs2) -> 
+      case compare x1 x2 of
+        EQ -> (equalApp vs1 vs2 t1 >> return ()) 
+              <|> appM2 equalType (unfold1 v1) (unfold1 v2) 
+        -- unfold newer definition first (Coq heuristics)
+        GT -> equalType v1 =<< unfold1 v2
+        LT -> unfold1 v1 >>= \ v1 -> equalType v1 v2     
+    (VDef{}, _) -> unfold1 v1 >>= \ v1 -> equalType v1 v2
+    (_, VDef{}) -> equalType v1 =<< unfold1 v2     
+    _ -> typeError $ UnequalTypes v1 v2
+{-
 equalBase :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
 equalBase v1 v2 = 
   case (tmView v1, tmView v2) of
     (VNe x1 t1 vs1, VNe x2 t2 vs2) -> 
       if x1 == x2 then equalApp vs1 vs2 t1 >> return ()
        else typeError $ UnequalHeads v1 v2
-
+    (VDef x1 t1 vs1, VDef x2 t2 vs2) -> 
+      case compare x1 x2 of
+        EQ -> (equalApp vs1 vs2 t1 >> return ()) 
+              <|> appM2 equalBase (unfold1 v1) (unfold1 v2) 
+        -- unfold newer definition first (Coq heuristics)
+        GT -> equalBase v1 =<< unfold1 v2
+        LT -> unfold1 v1 >>= \ v1 -> equalBase v1 v2     
+    (VDef{}, _) -> unfold1 v1 >>= \ v1 -> equalBase v1 v2
+    (_, VDef{}) -> equalBase v1 =<< unfold1 v2     
+-}
 equalApp :: (Value fvar val, MonadCheckExpr val env me m) => [val] -> [val] -> val -> m val
 equalApp vs1 vs2 t =
   case (vs1, vs2) of
     ([], []) -> return t
-    (v1:vs1, v2:vs2) -> case tyView t of
-      VPi a b -> do
-        equalTm v1 v2 a
-        equalApp vs1 vs2 =<< app b v1
+    (v1:vs1, v2:vs2) -> do
+      t <- force t
+      case valView t of
+        VPi a b -> do
+          equalTm v1 v2 a
+          equalApp vs1 vs2 =<< app b v1
     _ -> typeError $ UnequalSpines vs1 vs2
 
 equalTm :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> val -> m ()
-equalTm v1 v2 t =
-  case tyView t of
+equalTm v1 v2 t = do
+  t <- force t
+  case valView t of
     VPi a b -> addLocal' b a $ \ xv -> 
       appM3 equalTm (v1 `app` xv) (v2 `app` xv) (b `app` xv)
-    _ -> equalBase v1 v2 
+    _ -> equalType v1 v2 
 
 -- * Typechecking declarations.
 --
