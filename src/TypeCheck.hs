@@ -7,35 +7,20 @@ import Control.Applicative
 import Abstract -- as A
 import Context
 import PrettyM
--- import Scoping (prettyM)
-import qualified Scoping
 import Signature 
 import Value
 import Util
 
-{-  
-type Name = String
-type Type = Expr
-
-data Expr 
-  = Var Name
-  | App Expr Expr
-  | Abs Name Expr
-  | Pi  (Maybe Name) Type Type
-  | Sort Sort
-    deriving (Eq,Ord,Show)
--}
-
 -- * Type errors
 
 data TypeError val 
-  = NotFunType val       -- ^ not a function type
-  | NotInferable Expr    -- ^ cannot infer type
-  | NotSort val          -- ^ neither "type" nor "kind"
-  | NotType val          -- ^ not "type"
-  | NotAType Expr        -- ^ not a type
-  | UnequalTypes val val -- ^ types unequal
-  | UnequalHeads val val -- ^ neutral terms unequal
+  = NotFunType val            -- ^ not a function type
+  | NotInferable Expr         -- ^ cannot infer type
+  | NotSort val               -- ^ neither "type" nor "kind"
+  | NotType val               -- ^ not "type"
+  | NotAType Expr             -- ^ not a type
+  | UnequalTypes val val      -- ^ types unequal
+  | UnequalHeads val val      -- ^ neutral terms unequal
   | UnequalSpines [val] [val] -- ^ spines differ in length
 
 instance PrettyM m val => PrettyM m (TypeError val) where
@@ -46,7 +31,7 @@ instance PrettyM m val => PrettyM m (TypeError val) where
       NotSort s         -> prettyM s <+> text "is not a valid sort"
       NotType s         -> text "expected" <+> prettyM s <+> text "to be 'type'"
       NotAType e        -> text "expected" <+> prettyM e <+> text "to be a type"
-      UnequalTypes t t' -> text "type mismatch" <+> prettyM t <+> text "!=" <+> prettyM t'
+      UnequalTypes t t' -> text "mismatch" <+> prettyM t <+> text "!=" <+> prettyM t'
       UnequalHeads v v' -> text "head mismatch" <+> prettyM v <+> text "!=" <+> prettyM v'
       UnequalSpines vs vs' -> text "value mismatch, spines differ in length"
 
@@ -201,30 +186,18 @@ isType t = do
     VSort Type -> return ()
     _          -> typeError $ NotType t
  
+-- | Equality of types.
 equalType ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
-equalType v1 v2 = typeTrace (EqualType v1 v2) $
+equalType t1 t2 = typeTrace (EqualType t1 t2) $ equalBase t1 t2
+
+-- | Equality at base type/sort.
+equalBase ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
+equalBase v1 v2 = 
   case (valView v1, valView v2) of
     (VSort s1, VSort s2) | s1 == s2 -> return ()
     (VPi a1 b1, VPi a2 b2) -> do
-      equalType a1 a2
-      addLocal' b1 a1 $ \ xv -> appM2 equalType (b1 `app` xv) (b2 `app` xv)
-    (VNe x1 t1 vs1, VNe x2 t2 vs2) -> 
-      if x1 == x2 then equalApp vs1 vs2 t1 >> return ()
-       else typeError $ UnequalHeads v1 v2
-    (VDef x1 t1 vs1, VDef x2 t2 vs2) -> 
-      case compare x1 x2 of
-        EQ -> (equalApp vs1 vs2 t1 >> return ()) 
-              <|> appM2 equalType (unfold1 v1) (unfold1 v2) 
-        -- unfold newer definition first (Coq heuristics)
-        GT -> equalType v1 =<< unfold1 v2
-        LT -> unfold1 v1 >>= \ v1 -> equalType v1 v2     
-    (VDef{}, _) -> unfold1 v1 >>= \ v1 -> equalType v1 v2
-    (_, VDef{}) -> equalType v1 =<< unfold1 v2     
-    _ -> typeError $ UnequalTypes v1 v2
-{-
-equalBase :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
-equalBase v1 v2 = 
-  case (tmView v1, tmView v2) of
+      equalBase a1 a2
+      addLocal' b1 a1 $ \ xv -> appM2 equalBase (b1 `app` xv) (b2 `app` xv)
     (VNe x1 t1 vs1, VNe x2 t2 vs2) -> 
       if x1 == x2 then equalApp vs1 vs2 t1 >> return ()
        else typeError $ UnequalHeads v1 v2
@@ -237,7 +210,9 @@ equalBase v1 v2 =
         LT -> unfold1 v1 >>= \ v1 -> equalBase v1 v2     
     (VDef{}, _) -> unfold1 v1 >>= \ v1 -> equalBase v1 v2
     (_, VDef{}) -> equalBase v1 =<< unfold1 v2     
--}
+    _ -> typeError $ UnequalTypes v1 v2
+
+-- | Pointwise equality of spines.
 equalApp :: (Value fvar val, MonadCheckExpr val env me m) => [val] -> [val] -> val -> m val
 equalApp vs1 vs2 t =
   case (vs1, vs2) of
@@ -250,13 +225,14 @@ equalApp vs1 vs2 t =
           equalApp vs1 vs2 =<< app b v1
     _ -> typeError $ UnequalSpines vs1 vs2
 
+-- | Type directed equality of terms.
 equalTm :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> val -> m ()
 equalTm v1 v2 t = do
   t <- force t
   case valView t of
     VPi a b -> addLocal' b a $ \ xv -> 
       appM3 equalTm (v1 `app` xv) (v2 `app` xv) (b `app` xv)
-    _ -> equalType v1 v2 
+    _ -> equalBase v1 v2 
 
 -- * Typechecking declarations.
 --
@@ -269,12 +245,7 @@ class (Monad m, -- Scoping.Scope m,
   MonadCheckDecl val env me mc m | m -> mc, m -> me where
 
   doCheckExpr :: mc a -> m a -- ^ monad lifting
-{-
-  checkExpr   :: Value fvar val => Expr -> val -> m ()
-  checkExpr e t = doCheckExpr $ check e t
---  checkType   :: Expr -> m ()         -- ^ is it a well-formed type or kind?
---  checkType t  = doCheckExpr $ infer t >> return ()
--}
+
   evalExpr    :: Expr -> m val
   evalExpr     = doCheckExpr . doEval . evaluate' 
 
