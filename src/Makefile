@@ -4,7 +4,7 @@ files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping 
 # Warshall Util TreeShapedOrder TraceError Extract HsSyntax ToHaskell PrettyTCM
 hsfiles=$(foreach file,$(files),$(file).hs)
 ghcflags=-fglasgow-exts -ignore-package monads-fd
-
+profflags=-prof -auto-all
 .PHONY : test examples current default helf
 
 default : helf test
@@ -16,6 +16,14 @@ helf : ../bin/helf
 
 ../bin/helf : Main.hs $(hsfiles)
 	ghc $(ghcflags) $< --make -o $@
+
+# profiling binary
+
+helf-prof : ../bin/helf-prof
+
+../bin/helf-prof : Main.hs $(hsfiles)
+	ghc $(ghcflags) $(profflags) $< --make -o $@
+
 
 Lexer.hs : Lexer.x
 	alex $<

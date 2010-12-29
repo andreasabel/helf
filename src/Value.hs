@@ -14,27 +14,11 @@ data ValView head val
   | VDef head val [val]  -- d^A vs
   | VAbs                 -- Abs
 
-{-
-data TyView val
-  = VPi val val
-  | VSort Sort
-  | VBase 
-
-data TmView head val
-  = VNe  head val [val]  -- x^A vs, c^A vs
-  | VDef head val [val]  -- d^A vs
-  | VVal                 -- Abs, Pi, Type, ...
--}
-
 class (Eq head, Ord head) => Value head val | val -> head where
   typ     :: val
   kind    :: val
   freeVar :: head -> val -> val      -- typed free variable
   valView :: val -> ValView head val
-{-
-  tyView  :: val -> TyView val
-  tmView  :: val -> TmView head val
--}
 
 -- | The purpose of @MonadEval@ is read-only access to a global signature
 --   to get the definition of symbols, and potentially IO to have references
