@@ -191,10 +191,10 @@ instance MonadEval Val Env EvalM where
   
   evaluate e rho =
     case e of
-      A.Ident (A.Con x) -> con x . symbType . sigLookup' x <$> ask
+      A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> ask
 --      A.Ident (A.Def x) -> symbDef . sigLookup' x  <$> ask
       A.Ident (A.Def x) -> do 
-        SigDef t v <- sigLookup' x <$> ask
+        SigDef t v <- sigLookup' (A.uid x) <$> ask
         return $ def x v t 
       A.Ident (A.Var x) -> return $ lookupSafe (A.uid x) rho
       A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)
@@ -311,7 +311,7 @@ instance MonadCheckExpr Val Env EvalM CheckExprM where
   typeTrace tr   = -- traceM (showM tr) .
     (enterDoc $ prettyM tr)
 
-  lookupGlobal x = symbType . sigLookup' x <$> asks globals
+  lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
 --  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
     

@@ -3,8 +3,8 @@
 files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping ScopeMonad TypeCheck TheMonad Closures
 # Warshall Util TreeShapedOrder TraceError Extract HsSyntax ToHaskell PrettyTCM
 hsfiles=$(foreach file,$(files),$(file).hs)
-ghcflags=-fglasgow-exts -ignore-package monads-fd
-profflags=-prof -auto-all
+ghcflags=-fglasgow-exts -ignore-package monads-fd -O
+profflags=-prof -auto-all 
 .PHONY : test examples current default helf
 
 default : helf test
@@ -49,8 +49,8 @@ examples : helf
 
 
 clean : 
-	rm *.o *.hi
-	make -C test/fail clean
+	-rm *.o *.hi ../bin/helf	
+#	make -C test/fail clean
 
 
 # EOF
