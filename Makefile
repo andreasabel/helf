@@ -1,7 +1,7 @@
 # Makefile for helf
 # see src/Makefile
 
-helf = helf +RTS -K16M -RTS
+helf = helf +RTS -K16M -sstderr -RTS
 time = gtime -v
 
 .PHONY : test examples current default helf

@@ -110,6 +110,23 @@ class (Applicative m) => MonadSig val m where
   lookupDef   :: A.Name -> m (val, val)
   lookupDef n  = pair symbType symbDef <$> lookupName n
 
+-- * implementation of signature as mutable array
+
+{- duplicate instance
+
+instance ( Applicative m
+         -- , PrettyM m val     -- for debugging
+         , MArray arr (SigEntry val) m 
+         , Field (arr A.UID (SigEntry val)) st
+         , MonadState st m ) => MonadSig val m where
+
+  addGlobal n it = --  traceM (((A.suggestion n ++ " : ") ++) <$> showM it) $
+    modify $ modF $ \ arr -> writeArray arr (A.uid n) it
+  
+  lookupName n = flip readArray (A.uid n) . getF <$> get
+
+-}
+
 -- * implementation of signature as state monad
 
 instance ( Applicative m
