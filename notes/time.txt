@@ -1,0 +1,178 @@
+2010-12-22
+
+paloalto:
+
+	Command being timed: "helf 5200.elf"
+	User time (seconds): 15.88
+	System time (seconds): 10.90
+	Percent of CPU this job got: 88%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:30.37
+	Maximum resident set size (kbytes): 1935556608
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 118214
+	Voluntary context switches: 242
+	Involuntary context switches: 16108
+
+siena:
+
+abel@siena:~/helf/examples/ltal$ /usr/bin/time -v helf 4000.elf > /dev/null
+	Command being timed: "helf 4000.elf"
+	User time (seconds): 6.61
+	System time (seconds): 0.34
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:06.95
+	Maximum resident set size (kbytes): 611968
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 38380
+	Voluntary context switches: 2
+	Involuntary context switches: 192
+
+abel@siena:~/helf/examples/ltal$ /usr/bin/time -v helf 5000.elf > /dev/null
+	Command being timed: "helf 5000.elf"
+	User time (seconds): 24.51
+	System time (seconds): 1.14
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:25.64
+	Maximum resident set size (kbytes): 3697456
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 231223
+	Voluntary context switches: 3
+	Involuntary context switches: 688
+
+abel@siena:~/helf/examples/ltal$ /usr/bin/time -v helf 5500.elf > /dev/null
+	Command being timed: "helf 5500.elf"
+	User time (seconds): 110.03
+	System time (seconds): 4.37
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:54.43
+	Maximum resident set size (kbytes): 14829536
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 926978
+	Voluntary context switches: 17
+	Involuntary context switches: 3142
+
+2010-12-27 siena
+
+Eager definitions (interrupted):
+
+        Command being timed: "../../bin/helf-nodef 5828.elf"
+        User time (seconds): 323.28
+        System time (seconds): 17.31
+        Percent of CPU this job got: 96%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 5:52.37
+        Maximum resident set size (kbytes): 61115824
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 3819863
+        Voluntary context switches: 129
+        Involuntary context switches: 11962
+        Swaps: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+
+Lazy unfolding of definitions:
+
+	Command being timed: "../../bin/helf 5828.elf"
+	User time (seconds): 85.42
+	System time (seconds): 8.87
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:34.29
+	Maximum resident set size (kbytes): 15169536
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 948219
+	Voluntary context switches: 3
+	Involuntary context switches: 5197
+	Swaps: 0
+	File system inputs: 2944
+	Page size (bytes): 4096
+	Exit status: 0
+
+2010-12-29 siena
+
+	Command being timed: "helf 8000.elf"
+	User time (seconds): 177.89
+	System time (seconds): 20.46
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:18.36
+	Maximum resident set size (kbytes): 32561664
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2035236
+	Voluntary context switches: 14
+	Involuntary context switches: 10856
+	Swaps: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+	Command being timed: "helf 10000.elf"
+	User time (seconds): 285.27
+	System time (seconds): 31.47
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:18.99
+	Maximum resident set size (kbytes): 44829568
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2801980
+	Voluntary context switches: 20
+	Involuntary context switches: 18044
+	Swaps: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+	Command being timed: "helf 12000.elf"
+	User time (seconds): 382.96
+	System time (seconds): 44.46
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:07.41
+	Maximum resident set size (kbytes): 61517216
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 3844958
+	Voluntary context switches: 11
+	Involuntary context switches: 23037
+	Swaps: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+	Command being timed: "helf w32_sig_semant.elf"
+	User time (seconds): 445.16
+	System time (seconds): 46.57
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:11.73
+	Maximum resident set size (kbytes): 57961792
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 3622744
+	Voluntary context switches: 16
+	Involuntary context switches: 26626
+	Swaps: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+macbook:
+
+	Command being timed: "twelf-batch ltal_sig2.elf dumpsemant.elf"
+	User time (seconds): 1204.46
+	System time (seconds): 541.32
+	Percent of CPU this job got: 95%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 30:21.33
+	Maximum resident set size (kbytes): 3043065856
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 2
+	Minor (reclaiming a frame) page faults: 115703446
+	Voluntary context switches: 42214
+	Involuntary context switches: 749557
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 11
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 9
+	Page size (bytes): 4096
+	Exit status: 0

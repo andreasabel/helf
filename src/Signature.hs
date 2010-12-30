@@ -11,6 +11,7 @@ import Control.Monad.Error
 -- import Control.Monad.Reader
 import Control.Monad.State
 
+import Data.Array.MArray
 import Data.Map (Map)
 import qualified Data.Map as Map
 
@@ -37,15 +38,15 @@ instance PrettyM m val => PrettyM m (SigEntry val) where
 
 class Signature val sig | sig -> val where
   -- sigEmpty   :: sig
-  sigAdd     :: A.Name -> SigEntry val -> sig -> sig
-  sigLookup  :: A.Name -> sig -> Maybe (SigEntry val)
-  sigLookup' :: A.Name -> sig -> SigEntry val -- ^ throws internal error
+  sigAdd     :: A.UID -> SigEntry val -> sig -> sig
+  sigLookup  :: A.UID -> sig -> Maybe (SigEntry val)
+  sigLookup' :: A.UID -> sig -> SigEntry val -- ^ throws internal error
   sigLookup' x = maybe err id . sigLookup x where
                    err = internalError ["key", show x, "unbound in signature"]
 
 -- * Signature instances
 
-type MapSig val = Map A.Name (SigEntry val)
+type MapSig val = Map A.UID (SigEntry val)
 
 instance Signature val (MapSig val) where
   -- sigEmpty  = Map.empty
@@ -57,9 +58,11 @@ instance Field (MapSig v) (MapSig v) where
   setF = const
   modF = id
 
+-- type ArraySig val = DiffArray A.UID (SigEntry val) -- DiffArrays are slow
+
 {-
 newtype Signature val = Signature
-  { signature :: Map A.Name (SigEntry val)
+  { signature :: Map A.UID (SigEntry val)
   }
 emptySignature = Signature Map.empty
 -}
@@ -118,9 +121,9 @@ instance ( Applicative m
          , MonadState st m ) => MonadSig val m where
 
   addGlobal n it = --  traceM (((A.suggestion n ++ " : ") ++) <$> showM it) $
-    modify $ modF $ sigAdd n it
+    modify $ modF $ sigAdd (A.uid n) it
   
-  lookupName n = sigLookup' n . getF <$> get
+  lookupName n = sigLookup' (A.uid n) . getF <$> get
 
 {-
   lookupName n = do
