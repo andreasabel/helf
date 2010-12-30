@@ -38,6 +38,7 @@ executable helf
                     TupleSections
   main-is:          Main.hs
   other-modules:    Abstract
+                    ClosVal
                     Closures
                     Concrete
                     Context

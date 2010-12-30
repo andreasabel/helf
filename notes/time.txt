@@ -176,3 +176,53 @@ macbook:
 	Signals delivered: 9
 	Page size (bytes): 4096
 	Exit status: 0
+
+hobel: -O
+
+%%% closing "w32_sig_semant.elf" %%%
+ 137,630,342,744 bytes allocated in the heap
+  31,735,797,040 bytes copied during GC
+   3,276,360,568 bytes maximum residency (21 sample(s))
+      59,809,056 bytes maximum slop
+            7793 MB total memory in use (122 MB lost due to fragmentation)
+
+  Generation 0: 257811 collections,     0 parallel, 54.84s, 51.71s elapsed
+  Generation 1:    21 collections,     0 parallel, 39.93s, 44.78s elapsed
+
+  INIT  time    0.00s  (  0.00s elapsed)
+  MUT   time  160.91s  (205.97s elapsed)
+  GC    time   94.77s  ( 96.49s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  255.68s  (302.45s elapsed)
+
+  %GC time      37.1%  (31.9% elapsed)
+
+  Alloc rate    855,324,981 bytes per MUT second
+
+  Productivity  62.9% of total user, 53.2% of total elapsed
+
+profiling and heap profiling on hobel:
+
+%%% closing "6000.elf" %%%
+  43,586,357,072 bytes allocated in the heap
+ 820,809,712,936 bytes copied during GC
+   2,359,229,016 bytes maximum residency (805 sample(s))
+      18,434,448 bytes maximum slop
+            4603 MB total memory in use (72 MB lost due to fragmentation)
+
+  Generation 0: 81397 collections,     0 parallel, 14.06s, 13.29s elapsed
+  Generation 1:   805 collections,     0 parallel, 1582.21s, 1589.05s elapsed
+
+  INIT  time    0.00s  (  0.00s elapsed)
+  MUT   time   69.63s  ( 73.78s elapsed)
+  GC    time  1596.27s  (1602.33s elapsed)
+  RP    time    0.00s  (  0.00s elapsed)
+  PROF  time  871.45s  (871.56s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  2537.35s  (2547.67s elapsed)
+
+  %GC time      62.9%  (62.9% elapsed)
+
+  Alloc rate    625,970,947 bytes per MUT second
+
+  Productivity   2.7% of total user, 2.7% of total elapsed
