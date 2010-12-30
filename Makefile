@@ -2,11 +2,15 @@
 # see src/Makefile
 
 helf = helf +RTS -K16M -RTS
+time = gtime -v
 
 .PHONY : test examples current default helf
 
 default : 
 	make -C src
+
+bench : helf
+	$(time) $(helf) examples/ltal/w32_sig_semant.elf
 
 current : helf
 	$(helf) test/succeed/word32_ltal_sig.elf
