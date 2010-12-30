@@ -32,5 +32,7 @@ class MonadEval val env m | m -> val, m -> env where
   abstractPi:: val -> (Name, val) -> val -> m val -- ^ abstractPi a x b = pi x:a.b
   reify     :: val -> m Expr        -- ^ quote value as expression
 
-
+-- | Apply a function to a reversed list of arguments.
+appsR :: (Monad m, MonadEval val env m) => val -> [val] -> m val 
+appsR f vs = foldr (\ v mf -> mf >>= \ f -> apply f v) (return f) vs
   
