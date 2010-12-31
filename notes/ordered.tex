@@ -17,8 +17,7 @@
 \renewcommand{\textfraction}{0.1}
 
 \ifdefined\LONGVERSION
-  \relax
-\else
+  \relax \else
 % short version:
 \newcommand{\LONGVERSION}[1]{}
 \newcommand{\SHORTVERSION}[1]{#1}
@@ -61,6 +60,7 @@
 %    \end{array}\end{displaymath}}
 
 \newcommand{\OTm}{\mathsf{OTm}}
+\newcommand{\OSubst}{\mathsf{OSubst}}
 \newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
 \newcommand{\ovar}{\mathord{\bullet}}
 \newcommand{\oapp}[1]{\,\oann{#1}}
@@ -79,12 +79,14 @@
 \renewcommand{\cempty}{\varepsilon}
 \renewcommand{\sempty}{\varepsilon}
 \newcommand{\oclos}[2]{#1[#2]}
+\newcommand{\oclosp}[2]{(#1)[#2]}
 \newcommand{\ochk}[4]{#1 \der #2 \jchk \oclos{#4}{#3}}
 \newcommand{\oinf}[4]{#1 \der #2 \jinf \oclos{#4}{#3}}
 \newcommand{\Head}{\mathsf{Head}}
 \newcommand{\vapp}[1]{\mathrel{@^{#1}}}
 \renewcommand{\eval}[2]{\dent{#1}{}[#2]}
 \newcommand{\evalid}[2]{\dent{#1}{}[\ovar^{#2}]}
+\renewcommand{\funT}[2]{\Pi\,#1\of#2.\,}
 
 \title{A Nameless Term Representation Based on Ordered Logic}
 \author{Andreas Abel, Nicolai Kraus}
@@ -221,37 +223,80 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
 
 \section{Dependent Types}
 
-\paradot{Ordered syntax}
+\paradot{Named syntax}
 \[
 \begin{array}{lllrl@{\qquad}l}
 \Sort & \ni & s & ::= & \ttype \mid \tkind & \mbox{sort} \\[1ex]
-\OTm & \ni & t,u,T,U & ::= & \ovar & \mbox{variable (nameless)} \\
-&&& \mid & t \oapp k u & \mbox{application} \\
-&&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
-&&& \mid & s & \mbox{sort} \\
-&&& \mid & \opi U k T & \mbox{function type} \\
-&&& \mid & \subst t \sigma & \mbox{explicit substitution} \\
+\Const & \ni & c &&& \mbox{constant} \\
+\Tm    & \ni & M,N,A,B & ::= & s \mid c \mid x \mid \lam x A M 
+  \mid \lambda x M \mid M \app N \mid \Pi\,A\,\lambda x B 
+   & \mbox{named term}\\
 \end{array}
 \]
 
-\paradot{Values}
+
+\paradot{Ordered syntax} O-terms are given by the following grammar:
 \[
 \begin{array}{lllrl@{\qquad}l}
-\Head & \ni & h & ::= & x \mid \ovar & \mbox{head} \\[1ex]
-\Val & \ni & v,w,V,W & ::= & h \oapp {\vec k} {\vec v} & \mbox{neutral
+\OTm & \ni & t,u,T,U & ::= & \ovar & \mbox{variable (nameless)} \\
+&&& \mid & t \oapp k u & \mbox{application} \\
+&&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
+&&& \mid & c \mid s & \mbox{constant, sort} \\
+&&& \mid & \opi U k T & \mbox{function type} \\
+&&& \mid & \esubst t \sigma & \mbox{explicit substitution} 
+\\[1ex]
+\OSubst & \ni & \sigma,\tau & ::= & \vec t & \mbox{sequence of terms}\\
+\end{array}
+\]
+
+\para{Meaning} of ordered syntax is defined in terms of named
+syntax via the
+judgement $\osyn M t {\vec x}$, given inductively by the following rules.
+\begin{gather*}
+  \ru{}{\osyn s s \epsilon}
+\qquad
+  \ru{}{\osyn c c \epsilon}
+\qquad
+  \ru{}{\osyn x \ovar x}
+\qquad
+  \ru{\osyn M t {\vec x} \qquad 
+      \osyn N u {\vec y^k}
+    }{\osynp {M\,N} {t \oapp k u} {\vec x, \vec y}}
+\\[2ex]
+  \rux{\osyn M t {\vec x_0^{k_0},x,\vec x_1^{k_1},\dots,x,\vec x_n^{k_n}}
+     }{\osynp {\lambda x.M} {\olam {\vec k} t}
+         {\vec x_0,\vec x_1,\dots,\vec x_n}
+    }{x \not\in \vec x_0,\dots,\vec x_n}
+\\[2ex]
+  \rux{\osyn A U {\vec y} \qquad
+       \osyn B T {\vec x_0^{k_0},x,\vec x_1^{k_1},\dots,x,\vec x_n^{k_n}}
+     }{\osynp {\funT x A B} {\opi U k {\olam {\vec k} t}}
+         {\vec y,\vec x_0,\vec x_1,\dots,\vec x_n}
+     }{x \not\in \vec x_0,\dots,\vec x_n; 
+       k = \sum_{i=0}^n k_i}
+\end{gather*}
+Parsing and printing are inverses of each other.
+
+\para{Values} are o-terms in weak head normal form.
+\[
+\begin{array}{lllrl@{\qquad}l}
+\Head & \ni & h & ::= &  \ovar \mid c & \mbox{head} \\[1ex]
+\Val & \ni & f,v,w,V,W & ::= & h \oapp {\vec k} {\vec v} & \mbox{neutral
   value} \\
 &&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
 &&& \mid & \esubst{(\olam {\vec k} t)}{\rho} & \mbox{function closure} \\
 &&& \mid & s & \mbox{sort} \\
-&&& \mid & \opi V n W & \mbox{function type} \\
+&&& \mid & \opi V n W & \mbox{function type} \\[1ex]
+\Env & \ni & \rho & ::= & \vec v & \mbox{environment} \\[1ex]
+C\Val& \ni & P,Q & ::= & \esubst V {\vec x} & \mbox{name-closed value} \\
 \end{array}
 \]
-\paradot{Application and evaluation}
+\para{Application and evaluation} $f \oapp k v$ and $\eval t \rho$.
 \[
 \begin{array}{lll}
   h \oapp {\vec k} {\vec v} \vapp k v 
     & = & h \oapp{\vec k,k} {(\vec v,v)} \\
-  \esubst{\olam {\vec k} t}{\rho_0^{k_0},\dots,\rho_n^{k_n}} \vapp k v
+  \esubst{(\olam {\vec k} t)}{\rho_0^{k_0},\dots,\rho_n^{k_n}} \vapp k v
     & = & \eval t
     {\rho_0^{k_0},\oann{k}v,\dots,\oann{k}v,\rho_n^{k_n}}
 \\
@@ -259,6 +304,7 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
     & = & \eval t
     {\ovar^{k_0},\oann{k}v,\dots,\oann{k}v,\ovar^{k_n}}
 \\[1ex]
+  \eval c {\sempty} & = & c \\
   \eval \ovar {\oann k v} & = & v \\
   \eval {\olam{\vec k}t} \rho & = & \esubst {(\olam{\vec k}t)} \rho
   \\
@@ -266,7 +312,7 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
                        \oann{l_k}v_k,\dots,\oann{l_1}v_1} 
     & = & \eval t {v_n,\dots,v_{k+1}} \vapp l \eval u {v_k,\dots,v_1}
 \\ &&      \mbox{ where } l = \sum_{i=1}^k l_i \\
-  \eval s \rho & = & s \\
+  \eval s \sempty & = & s \\
   \eval {\opi U k T} {\oann{l_n}v_n,\dots,\oann{l_{k+1}}v_{k+1},
                        \oann{l_k}v_k,\dots,\oann{l_1}v_1} 
     & = & \opi {\eval U {v_n,\dots,v_{k+1}}} l {\eval T {v_k,\dots,v_1}}
@@ -278,7 +324,7 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
 \[
 \begin{array}{lllrl@{\qquad}l}
 && \Gamma,\Delta & ::= & \cempty \mid \Delta, x \of \oclos{T}{\vec y} 
-  & \mbox{typing context}
+  & \mbox{typing context } (\vec y \subseteq \dom(\Delta)) 
 \\
 && \vec x &&& \mbox{occurrence context} \\
 \end{array}
@@ -287,22 +333,35 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
 \paradot{Judgements}
 \[
 \begin{array}{ll}
-  \ochk \Delta M {\vec x} W & \mbox{term $M$ checks against type $W$}
+%   \ochk \Delta M {\vec x} W & \mbox{term $M$ checks against type $W$}
+%   \\
+%   \oinf \Delta M {\vec x} W & \mbox{term $M$ has inferred type $W$}
+%   \\[1ex]
+  \Delta \der M \jchk P & \mbox{term $M$ checks against type $P$}
   \\
-  \oinf \Delta M {\vec x} W & \mbox{term $M$ has inferred type $W$}
+  \Delta \der M \jinf P & \mbox{term $M$ has inferred type $P$}
+  \\[1ex]
+  \Delta \der P = Q & \mbox{types $P$ and $Q$ are equal}
+  \\
+  \Delta \der p = p' \jchk P & \mbox{values $p$ and $p'$ are equal at
+    type $P$} 
+  \\
+  \Delta \der p = p' \jinf P & \mbox{neutral values $p$ and $p'$ are
+    equal, inferring type $P$} 
   \\
 \end{array}
 \]
 Rules for inference:
 \begin{gather*}
   \ru{}{\Delta \der x \jinf \Delta(x)}
-\qquad
+\\[2ex]
   \ru{\oinf \Delta M {\vec x,{\vec y}^n} {(\opi V n W)} \qquad
       \ochk \Delta N {\vec x} V \qquad
-      \osyn N u {{\vec z}^m}
-    }{\oinf \Delta {M\,N} {\vec y,\vec z} {(W \vapp m u)}} 
+      \osyn N u {{\vec z}^m} \qquad
+      \eval u {\ovar^m} = v
+    }{\oinf \Delta {M\,N} {\vec y,\vec z} {(W \vapp m v)}} 
 \\[2ex]
-  \rux{\ochk \Delta A {} \ttype \qquad
+  \rux{\ochk \Delta A {\sempty} \ttype \qquad
       \osyn A U {{\vec y}^m} \qquad
       \evalid U m = V \\
       \oinf {\Delta, x \of \oclos V {\vec y}} M 
@@ -311,9 +370,9 @@ Rules for inference:
             {(\opi V {k} {\olam {\vec k} W})}
     }{k = \sum_{i=0}^n k_i}
 \\[2ex]
-  \ru{}{\oinf \Delta \ttype {} \tkind}
+  \ru{}{\oinf \Delta \ttype {\sempty} \tkind}
 \\[2ex]
-  \ru{\ochk \Delta A {} \ttype \qquad
+  \ru{\ochk \Delta A {\sempty} \ttype \qquad
       \osyn A U {{\vec y}^m} \qquad
       \evalid U m = V \qquad
       \oinf {\Delta, x \of \oclos V {\vec y}} B {} s
@@ -321,9 +380,13 @@ Rules for inference:
 \end{gather*}
 Rules for checking:
 \begin{gather*}
-  \ru{\oinf \Delta M {\vec x} W \qquad
-      \Delta \der \oclos W {\vec x} = \oclos V {\vec y}
-    }{\ochk \Delta M {\vec y} V}
+%   \ru{\oinf \Delta M {\vec x} W \qquad
+%       \Delta \der \oclos W {\vec x} = \oclos V {\vec y}
+%     }{\ochk \Delta M {\vec y} V}
+% \qquad
+  \ru{\Delta \der M \jinf P \qquad
+      \Delta \der P = Q
+    }{\Delta \der M \jchk Q}
 \qquad
   \ru{\ochk {\Delta, x \of \oclos V {\vec y}} M {\vec z,x} {(W \vapp 1 \ovar)}
     }{\ochk \Delta {\lambda x.M} {\vec y,{\vec z}^n} {(\opi V n W)}}
@@ -331,9 +394,48 @@ Rules for checking:
 %     }{\ochk \Delta {\lambda x.M} {\vec y,{\vec z_i}^{k_i}} {(\opi V n
 %         (\olam{\vec k} W)}
 \end{gather*}
-Rules for equality:
+Rules for equality (inference mode):
 \begin{gather*}
-  bla
+  \ru{}{\Delta \der \oclos c \sempty = \oclos c \sempty \jinf \Sigma(c)} 
+\qquad
+  \ru{}{\Delta \der \oclos \ovar x = \oclos \ovar x \jinf \Delta(x)}
+\\[2ex]
+  \ru{\Delta \der \oclos f {\vec x} = \oclos {f'}{\vec x'} \jinf 
+        \oclosp{\opi V l F}{\vec z,{\vec {z'}}^l} \qquad
+      \Delta \der \oclos v {\vec y} = \oclos {v'}{\vec y'} \jchk
+        \oclos V {\vec z}
+    }{\Delta \der \oclosp {f \oapp k v}{\vec x,\vec y^k} 
+                = \oclosp {f' \oapp {k'} v'}{\vec x',{\vec {y'}}^{k'}}
+                \jinf \oclosp{F \vapp{k} v}{\vec z',\vec y}
+    } 
+\end{gather*}
+Rules for equality (checking mode):
+\begin{gather*}
+  \ru{\Delta, x \of \oclos V {\vec y} \der 
+        \oclosp {f  \vapp 1 \ovar}{\vec x ,x} = 
+        \oclosp {f' \vapp 1 \ovar}{\vec x',x}  \jchk 
+        \oclosp {F  \vapp 1 \ovar}{\vec z, x} 
+    }{\Delta \der \oclos f {\vec x} = \oclos {f'} {\vec x'}
+          \jchk \oclosp {\opi V k F}{\vec y,\vec z^k}} 
+\\[2ex]
+  \rux{\Delta \der p = p' \jinf P
+     }{\Delta \der p = p' \jchk Q
+     }{Q \mbox{ not a function type}} 
+\end{gather*}
+Rules for equality (type mode):
+\begin{gather*}
+  \ru{}{\Delta \der \oclos s \sempty = \oclos s \sempty} 
+\qquad
+  \ru{\Delta \der P = P' \jinf \oclos \ttype \sempty
+    }{\Delta \der P = P'}
+\\[2ex]
+  \ru{\Delta \der \oclos V {\vec x} = \oclos {V'}{\vec x'} \qquad
+      \Delta, x\of\oclos V {\vec x} \der 
+         \oclosp{F  \vapp 1 \ovar}{\vec y,x} =
+         \oclosp{F' \vapp 1 \ovar}{\vec y',x} 
+    }{\Delta \der \oclosp {\opi {V }{k }{F }}{\vec x ,\vec y^k}
+               =  \oclosp {\opi {V'}{k'}{F'}}{\vec x',\vec {y'}^{k'}}
+    }
 \end{gather*}
 
 
