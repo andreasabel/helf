@@ -185,6 +185,16 @@ multiinsert x (k:klist) dyn =
   left' `DatastrucImpl.SimpleDynArray.join` dyn'
 
 
+mapMonad :: (Monad m) => (a -> m b) -> DynArray a -> m (DynArray b) 
+mapMonad f (DynArray n a) = (mapMonad' f a) >>= (\a' -> return $ DynArray n a') 
+
+mapMonad' :: (Monad m) => (a -> m b) -> DynArr a -> m (DynArr b) 
+mapMonad' f (Leaf e) = (f e) >>= (\e' -> return $ Leaf e')
+mapMonad' f (Node llen l r) = do
+                                l' <- mapMonad' f l
+                                r' <- mapMonad' f r
+                                return $ Node llen l' r'
+
 
 
 -------------------------------------------------------------

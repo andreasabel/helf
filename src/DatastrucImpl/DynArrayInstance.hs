@@ -12,3 +12,4 @@ instance DataStruc DA.DynArray a where
   split i datastruc = DA.split datastruc i
   join              = DA.join
   size              = DA.len
+  mapMonad          = DA.mapMonad

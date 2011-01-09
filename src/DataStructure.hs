@@ -11,3 +11,5 @@ class DataStruc datastruc a where
   split       :: Int -> datastruc a -> (datastruc a, datastruc a)
   join        :: datastruc a -> datastruc a -> datastruc a
   size        :: datastruc a -> Int
+  mapMonad    :: (Monad m) => (a -> m b) -> datastruc a -> m (datastruc b) -- better remove this and use Traversable (?)
+  
