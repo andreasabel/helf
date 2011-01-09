@@ -12,6 +12,7 @@ instance DataStruc [] a where
   size = length
   get = (!!)
   multiinsert x ks l = val (multiinsert x ks (L l))
+  mapMonad = mapM
 
 
 
@@ -36,4 +37,6 @@ instance DataStruc List a where
   join (L l1) (L l2) = L (l1 ++ l2)
   
   size (L l) = length l
+  
+  mapMonad f (L l) = (mapM f l) >>= (\x -> return $ L x)
 
