@@ -127,6 +127,8 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       HDef x f t vs -> appsR f vs
       _             -> return v
 
+  abstractPi a (_, HVar x _ []) b = return $ Fun a $ Abs x b emptyEnv
+  abstractPi _ _ _                = fail $ "can only abstract a free variable"
 
 {-
                           currently missing: 
@@ -207,7 +209,7 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
         Just k -> do
           modify $ incrKaddZero (lblsize lbl - 1 - k)
           return (1, O)
-        Nothing -> fail $ "variable " ++ show x ++ " is not bound" -- or OVar ?
+        Nothing -> return (0, OVar x) -- fail $ "variable " ++ show x ++ " is not bound" 
     Con x -> return (0, OCon x)
     Def x -> return (0, ODef x)  
   trans (App e1 e2) = do
