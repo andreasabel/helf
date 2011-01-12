@@ -45,7 +45,6 @@ data OTm -- names are only used for quoting
   | OSort Value.Sort
   | OPi OTm Int OTm -- OPi t k (OLam ...)
   
-
 -- * values
 
 data Val
@@ -68,7 +67,7 @@ type Env = Map A.UID Val
 instance Value A.Name Val where
   typ  = Sort Type 
   kind = Sort Kind
-  freeVar x t = HVar x t []
+  freeVar = var
 
   valView v =
     case v of
@@ -106,7 +105,7 @@ lookupEnv = Map.lookup
 
 instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val OSubst m where
 
-  -- apply :: Val -> Val -> Val
+  -- apply :: Val -> Val -> m Val
   apply f w =
     case f of
       HVar x t vs             -> return $ HVar x t (w:vs)
@@ -145,7 +144,8 @@ eval' :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -
 eval' t osubst = case t of
   O | size osubst == 1    -> return $ DS.get osubst 0
   O                       -> fail $ "tried to evaluate O with more or less than one substitution"
-  OVar _                  -> fail $ "found a free variable in an OTm"
+  OVar x                  -> return $ HVar x DontCare []
+                            --fail $ "found a free variable in an OTm"
   OCon x                  -> con x . symbType . sigLookup' (A.uid x) <$> ask
   ODef x                  -> -- ((symbType, symbDef) . sigLookup' (A.uid x) <$> ask) >>= \ t d -> return $ def x d t
                             do
@@ -169,7 +169,10 @@ subst env v = case v of
                               Nothing -> HVar x <$> (subst env t) <*> mapM (subst env) vs
   HCon c t vs             -> HCon c t <$> mapM (subst env) vs
   HDef d w t vs           -> HDef d w t <$> mapM (subst env) vs
-  CLam mname ks t osubst  -> CLam mname ks t <$> mapMonad (subst env) osubst
+  CLam mname ks t osubst  ->  let
+                                tsubst = t -- problem: something like "subst_term :: Env -> OTm -> OTm" is not available.
+                              in
+                                CLam mname ks tsubst <$> mapMonad (subst env) osubst -- update: free variables in t allowed!
   Abs x w env'            -> Abs x w . flip Map.union env <$> mapM (subst env) env'
       -- composing two substitutions is done in the same way as it is done in ClosVal
   Sort s                  -> return $ Sort s
