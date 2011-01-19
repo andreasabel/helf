@@ -135,6 +135,10 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       HDef d f t vs   -> appsR f vs
       _               -> return v
 
+  unfolds v = 
+    case v of
+      HDef d f t vs   -> unfolds =<< appsR' f vs 
+      _               -> return v
 
 
 
@@ -232,3 +236,17 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
       (i2, oty2) <- trans ty2
       return (i1+i2, OPi oty1 i2 $ OLam Nothing [] Nothing oty2)
   trans A.Typ = return (0, OSort Type)
+
+
+
+-- * supporting unfolds
+appsR' :: (Applicative m, Monad m, MonadEval Val OSubst m) => Val -> [Val] -> m Val 
+appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
+
+apply' :: (Applicative m, Monad m, MonadEval Val OSubst m) => Val -> Val -> m Val
+apply' f v =
+    case f of
+      HDef d w t []   -> apply' w v
+      HDef d w t ws   -> appsR' w (v:ws)
+      _               -> apply f v
+      
