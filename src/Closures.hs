@@ -22,6 +22,7 @@ import Data.Traversable
 
 import qualified Abstract as A
 import ClosVal
+import qualified ListEnv as Env
 import Context
 import PrettyM
 -- import Scoping
@@ -50,7 +51,7 @@ data Context = Context
   }
 
 emptyContext :: Context
-emptyContext = Context 0 Map.empty Map.empty
+emptyContext = Context 0 Env.empty Env.empty
 
 type ContextM = Reader Context
 
@@ -60,12 +61,12 @@ instance MonadCxt Val Env ContextM where
     l <- asks level
     let xv = Ne (A.Var $ n { A.uid = l }) t []
     local (\ (Context l gamma rho) -> 
-             Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho)) 
+             Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho)) 
           (cont xv)
 
   lookupLocal x = do 
     gamma <- asks tyEnv
-    return $ lookupSafe (A.uid x) gamma
+    return $ Env.lookupSafe (A.uid x) gamma
 
   getEnv = asks valEnv
 
@@ -81,12 +82,12 @@ instance MonadCxt Val Env CheckExprM where
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
     let xv  = Ne (A.Var $ n { A.uid = l }) t []
-    let cxt = Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho) 
+    let cxt = Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho) 
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
   lookupLocal n@(A.Name x _) = do 
     gamma <- asks $ tyEnv . locals
-    return $ lookupSafe x gamma
+    return $ Env.lookupSafe x gamma
 
   getEnv = asks $ valEnv . locals
 

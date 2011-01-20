@@ -279,7 +279,34 @@ ordered:
 
   Productivity  73.5% of total user, 64.2% of total elapsed
 
+NO PRINTING:
+
+%%% closing "w32_sig_semant.elf" %%%
+  64,461,303,656 bytes allocated in the heap
+  22,762,217,144 bytes copied during GC
+   4,272,030,072 bytes maximum residency (19 sample(s))
+      33,865,904 bytes maximum slop
+            8749 MB total memory in use (137 MB lost due to fragmentation)
+
+  Generation 0: 122935 collections,     0 parallel, 34.02s, 34.09s elapsed
+  Generation 1:    19 collections,     0 parallel, 34.45s, 40.24s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   79.61s  ( 79.81s elapsed)
+  GC    time   68.47s  ( 74.32s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  148.09s  (154.14s elapsed)
+
+  %GC time      46.2%  (48.2% elapsed)
+
+  Alloc rate    809,611,952 bytes per MUT second
+
+  Productivity  53.8% of total user, 51.6% of total elapsed
+
+
 WITH PROFILING:
+----------------------------------------------------------------------
+
 %%% closing "6000.elf" %%%
   47,549,845,296 bytes allocated in the heap
   13,460,145,248 bytes copied during GC
