@@ -1,6 +1,6 @@
 # Makefile for helf
 
-files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping ScopeMonad PrettyM Value Signature Context TypeCheck TheMonad ClosVal Closures
+files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping ScopeMonad PrettyM Value Signature Context TypeCheck TheMonad ClosVal Closures OrderedComplex2 OrderedCom2 
 # Warshall Util TreeShapedOrder TraceError Extract HsSyntax ToHaskell PrettyTCM
 hsfiles=$(foreach file,$(files),$(file).hs)
 ghcflags=-fglasgow-exts -ignore-package monads-fd -O

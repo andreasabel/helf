@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 module OrderedComplex2 where
 
 import Prelude hiding (pi,abs,mapM)
@@ -150,7 +152,8 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       HDef d f t vs   -> unfolds =<< appsR' f vs 
       _               -> return v
 
-
+  -- reify :: Val -> m Expr
+  reify v = return $ A.Ident $ A.Con $ Name 0 $ "NYI: reify"
  
 
 evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> E -> OSubst -> m Val

@@ -83,6 +83,7 @@
 \newcommand{\ochk}[4]{#1 \der #2 \jchk \oclos{#4}{#3}}
 \newcommand{\oinf}[4]{#1 \der #2 \jinf \oclos{#4}{#3}}
 \newcommand{\Head}{\mathsf{Head}}
+\newcommand{\appa}{\mathrel{@}}
 \newcommand{\vapp}[1]{\mathrel{@^{#1}}}
 \renewcommand{\eval}[2]{\dent{#1}{}[#2]}
 \newcommand{\evalid}[2]{\dent{#1}{}[\ovar^{#2}]}
@@ -229,7 +230,7 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
 \Sort & \ni & s & ::= & \ttype \mid \tkind & \mbox{sort} \\[1ex]
 \Const & \ni & c &&& \mbox{constant} \\
 \Tm    & \ni & M,N,A,B & ::= & s \mid c \mid x \mid \lam x A M 
-  \mid \lambda x M \mid M \app N \mid \Pi\,A\,\lambda x B 
+  \mid \lambda x M \mid M \, N \mid \Pi\,A\,\lambda x B 
    & \mbox{named term}\\
 \end{array}
 \]
@@ -277,46 +278,44 @@ judgement $\osyn M t {\vec x}$, given inductively by the following rules.
 \end{gather*}
 Parsing and printing are inverses of each other.
 
-\para{Values} are o-terms in weak head normal form.
+\subsection{Values without Abstraction}
+
+\para{Values} are o-closed o-terms in weak head normal form with named
+free variables.
 \[
 \begin{array}{lllrl@{\qquad}l}
-\Head & \ni & h & ::= &  \ovar \mid c & \mbox{head} \\[1ex]
-\Val & \ni & f,v,w,V,W & ::= & h \oapp {\vec k} {\vec v} & \mbox{neutral
+\Head & \ni & h & ::= &  x \mid c & \mbox{head} \\[1ex]
+\Val & \ni & f,v,w,V,W & ::= & h \, {\vec v} & \mbox{neutral
   value} \\
-&&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
 &&& \mid & \esubst{(\olam {\vec k} t)}{\rho} & \mbox{function closure} \\
 &&& \mid & s & \mbox{sort} \\
-&&& \mid & \opi V n W & \mbox{function type} \\[1ex]
+&&& \mid & \piT V  W & \mbox{function type} \\[1ex]
 \Env & \ni & \rho & ::= & \vec v & \mbox{environment} \\[1ex]
 C\Val& \ni & P,Q & ::= & \esubst V {\vec x} & \mbox{name-closed value} \\
 \end{array}
 \]
-\para{Application and evaluation} $f \oapp k v$ and $\eval t \rho$.
+\para{Application and evaluation} $f \appa v$ and $\eval t \rho$.
 \[
 \begin{array}{lll}
-  h \oapp {\vec k} {\vec v} \vapp k v 
-    & = & h \oapp{\vec k,k} {(\vec v,v)} \\
-  \esubst{(\olam {\vec k} t)}{\rho_0^{k_0},\dots,\rho_n^{k_n}} \vapp k v
+  h \,{\vec v} \appa v 
+    & = & h \, {(\vec v,v)} \\
+  \esubst{(\olam {\vec k} t)}{\rho_0^{k_0},\dots,\rho_n^{k_n}} \appa v
     & = & \eval t
-    {\rho_0^{k_0},\oann{k}v,\dots,\oann{k}v,\rho_n^{k_n}}
-\\
-  (\olam {\vec k} t) \vapp k v
-    & = & \eval t
-    {\ovar^{k_0},\oann{k}v,\dots,\oann{k}v,\ovar^{k_n}}
+    {\rho_0^{k_0},v,\dots,v,\rho_n^{k_n}}
 \\[1ex]
   \eval c {\sempty} & = & c \\
-  \eval \ovar {\oann k v} & = & v \\
+  \eval \ovar {v} & = & v \\
   \eval {\olam{\vec k}t} \rho & = & \esubst {(\olam{\vec k}t)} \rho
   \\
-  \eval {t \oapp k u} {\oann{l_n}v_n,\dots,\oann{l_{k+1}}v_{k+1},
-                       \oann{l_k}v_k,\dots,\oann{l_1}v_1} 
-    & = & \eval t {v_n,\dots,v_{k+1}} \vapp l \eval u {v_k,\dots,v_1}
-\\ &&      \mbox{ where } l = \sum_{i=1}^k l_i \\
+  \eval {t \oapp k u} {v_n,\dots,v_{k+1},
+                       v_k,\dots,v_1} 
+    & = & \eval t {v_n,\dots,v_{k+1}} \appa \eval u {v_k,\dots,v_1}
+\\ 
   \eval s \sempty & = & s \\
-  \eval {\opi U k T} {\oann{l_n}v_n,\dots,\oann{l_{k+1}}v_{k+1},
-                       \oann{l_k}v_k,\dots,\oann{l_1}v_1} 
-    & = & \opi {\eval U {v_n,\dots,v_{k+1}}} l {\eval T {v_k,\dots,v_1}}
-\\ &&      \mbox{ where } l = \sum_{i=1}^k l_i \\
+  \eval {\opi U k T} {v_n,\dots,v_{k+1},
+                      v_k,\dots,v_1} 
+    & = & \piT {\eval U {v_n,\dots,v_{k+1}}} {\eval T {v_k,\dots,v_1}}
+\\ 
 \end{array}
 \]
 
@@ -442,3 +441,4 @@ Rules for equality (type mode):
 
 
 \end{document}
+
