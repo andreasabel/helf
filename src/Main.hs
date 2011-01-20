@@ -15,7 +15,8 @@ import qualified Stream
 import TheMonad
 import qualified Scoping 
 import qualified ScopeMonad as Scoping
-import Closures
+-- import Closures
+import OrderedCom2
 
 {-
 import TypeCheck

@@ -32,6 +32,8 @@ import OrderedComplex2
 
 type EvalM = Reader (MapSig Val)
 
+instance PrettyM EvalM Val where
+  prettyM = prettyM <=< reify
 
 -- * Context monad
 
@@ -89,11 +91,16 @@ instance MonadCheckExpr Val E EvalM CheckExprM where
   doEval comp    = runReader comp <$> asks globals
 
   -- TODO
+  typeError err  = failDoc $ prettyM err 
+  newError err k = k `catchError` (const $ typeError err)
+{-
   typeError err  = failDoc $ text "error"  
   newError err k = failDoc $ text "new error"
+-}
 
   typeTrace tr   = -- traceM (showM tr) .
-    enterDoc $ text "type trace" --(enterDoc $ prettyM tr)
+    -- enterDoc $ text "type trace" --
+    (enterDoc $ prettyM tr)
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 {-
@@ -121,10 +128,8 @@ instance MonadCheckExpr Val E EvalM CheckExprM where
       Nothing -> fail $ "unbound variable " ++ x 
 -}
 
-{- TODO
 instance PrettyM CheckExprM Val where
   prettyM = doEval . prettyM 
--}
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
@@ -145,10 +150,8 @@ instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
   doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get where
      sigCxt sig = SigCxt sig emptyContext
 
-{- TODO
 instance PrettyM CheckDeclM Val where
   prettyM = doCheckExpr . prettyM 
--}
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
