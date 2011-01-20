@@ -226,3 +226,155 @@ profiling and heap profiling on hobel:
   Alloc rate    625,970,947 bytes per MUT second
 
   Productivity   2.7% of total user, 2.7% of total elapsed
+
+CORRECT??
+
+----------------------------------------------------------------------
+
+ordered:
+
+2011-01-20 hobel -O
+
+%%% closing "6000.elf" %%%
+  28,485,506,304 bytes allocated in the heap
+   5,924,336,448 bytes copied during GC
+     681,474,896 bytes maximum residency (17 sample(s))
+      14,894,728 bytes maximum slop
+            1633 MB total memory in use (25 MB lost due to fragmentation)
+
+  Generation 0: 53469 collections,     0 parallel,  5.59s,  9.69s elapsed
+  Generation 1:    17 collections,     0 parallel,  7.24s,  8.27s elapsed
+
+  INIT  time    0.00s  (  0.00s elapsed)
+  MUT   time   38.83s  ( 41.11s elapsed)
+  GC    time   12.83s  ( 17.96s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time   51.66s  ( 59.07s elapsed)
+
+  %GC time      24.8%  (30.4% elapsed)
+
+  Alloc rate    733,595,320 bytes per MUT second
+
+  Productivity  75.2% of total user, 65.7% of total elapsed
+
+%%% closing "w32_sig_semant.elf" %%%
+ 148,214,174,560 bytes allocated in the heap
+  32,062,204,696 bytes copied during GC
+   3,185,112,840 bytes maximum residency (21 sample(s))
+      65,784,408 bytes maximum slop
+            7640 MB total memory in use (119 MB lost due to fragmentation)
+
+  Generation 0: 278000 collections,     0 parallel, 34.39s, 54.56s elapsed
+  Generation 1:    21 collections,     0 parallel, 39.14s, 43.87s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time  204.07s  (219.51s elapsed)
+  GC    time   73.53s  ( 98.42s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  277.61s  (317.94s elapsed)
+
+  %GC time      26.5%  (31.0% elapsed)
+
+  Alloc rate    726,255,265 bytes per MUT second
+
+  Productivity  73.5% of total user, 64.2% of total elapsed
+
+WITH PROFILING:
+%%% closing "6000.elf" %%%
+  47,549,845,296 bytes allocated in the heap
+  13,460,145,248 bytes copied during GC
+   2,158,104,448 bytes maximum residency (20 sample(s))
+      27,696,856 bytes maximum slop
+            4902 MB total memory in use (77 MB lost due to fragmentation)
+
+  Generation 0: 89347 collections,     0 parallel, 10.89s, 14.80s elapsed
+  Generation 1:    20 collections,     0 parallel, 14.99s, 17.81s elapsed
+
+  INIT  time    0.00s  (  0.00s elapsed)
+  MUT   time   83.71s  ( 87.27s elapsed)
+  GC    time   25.88s  ( 32.61s elapsed)
+  RP    time    0.00s  (  0.00s elapsed)
+  PROF  time    0.00s  (  0.00s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  109.59s  (119.88s elapsed)
+
+  %GC time      23.6%  (27.2% elapsed)
+
+  Alloc rate    568,030,645 bytes per MUT second
+
+  Productivity  76.4% of total user, 69.8% of total elapsed
+
+PROFILING:
+----------------------------------------------------------------------
+
+%%% closing "w32_sig_semant.elf" %%%
+ 244,948,229,400 bytes allocated in the heap
+  65,137,284,248 bytes copied during GC
+   8,520,939,624 bytes maximum residency (24 sample(s))
+     119,774,256 bytes maximum slop
+           19442 MB total memory in use (304 MB lost due to fragmentation)
+
+  Generation 0: 459838 collections,     0 parallel, 61.10s, 83.89s elapsed
+  Generation 1:    24 collections,     0 parallel, 67.63s, 79.03s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time  438.98s  (453.90s elapsed)
+  GC    time  128.73s  (162.92s elapsed)
+  RP    time    0.00s  (  0.00s elapsed)
+  PROF  time    0.00s  (  0.00s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  567.72s  (616.82s elapsed)
+
+  %GC time      22.7%  (26.4% elapsed)
+
+  Alloc rate    557,981,342 bytes per MUT second
+
+  Productivity  77.3% of total user, 71.2% of total elapsed
+
+	Thu Jan 20 16:27 2011 Time and Allocation Profiling Report  (Final)
+
+	   helf-prof +RTS -p -s -RTS w32_sig_semant.elf
+
+	total time  =      451.42 secs   (22571 ticks @ 20 ms)
+	total alloc = 147,338,022,008 bytes  (excludes profiling overheads)
+
+COST CENTRE                    MODULE               %time %alloc
+
+checkDeclaration               OrderedCom2           41.0   50.2
+evalTerm                       OrderedComplex2        8.6    4.4
+equalApp                       TypeCheck              3.9    2.5
+getIdent_avYY                  ScopeMonad             3.8    1.7
+equalBase                      TypeCheck              3.6    2.9
+infer                          TypeCheck              3.2    2.5
+appM2                          Util                   2.7    1.5
+equalTm                        TypeCheck              2.7    1.5
+alex_scan_tkn                  Lexer                  2.6    6.0
+parse_aqZg                     Scoping                1.5    1.4
+transform                      OrderedComplex2        1.5    1.9
+parse_ar15                     Scoping                1.5    1.6
+getFixity_avXv                 ScopeMonad             1.4    1.1
+check                          TypeCheck              1.2    0.9
+alexScanTokens                 Lexer                  0.9    1.1
+valView_aKtG                   OrderedComplex2        0.8    1.5
+doEval_aQB9                    OrderedCom2            0.8    1.4
+alexGetChar                    Lexer                  0.5    2.2
+alexMove                       Lexer                  0.2    1.4
+
+                                                                                               individual    inherited
+COST CENTRE              MODULE                                               no.    entries  %time %alloc   %time %alloc
+
+MAIN                     MAIN                                                   1           0   0.0    0.0   100.0  100.0
+ main                    Main                                                 472           4   0.0    0.0    72.4   79.8
+  mainFile               Main                                                 474           4   0.2    0.6    72.4   79.8
+   doTypeCheck           Main                                                3808           1   0.0    0.0    57.1   61.0
+    runCheckDecls        OrderedCom2                                         3809           1   0.0    0.0    57.1   61.0
+     checkDeclarations   OrderedCom2                                         3810           1   0.0    0.0    57.1   61.0
+      checkDeclaration   OrderedCom2                                         3812       32397  41.0   50.2    57.1   61.0
+       checkDecl         TypeCheck                                           3842       10798   0.0    0.0    12.6    7.4
+        infer            TypeCheck                                           4649        5172   0.0    0.0     0.0    0.0
+
+        check            TypeCheck                                           4250     1054956   0.4    0.2    10.5    6.1
+          evalTerm       OrderedComplex2                                     4371     1342714   0.2    0.1     0.4    0.2
+          evalTerm       OrderedComplex2                                     4359     1020786   0.2    0.1     0.4    0.2
+
+----------------------------------------------------------------------

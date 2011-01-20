@@ -155,7 +155,9 @@ instance PrettyM CheckDeclM Val where
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
-  liftIO . putStrLn =<< showM d
+  -- No output:
+  -- liftIO . putStrLn =<< showM d
+
   -- liftIO . putStrLn . show $ d -- debugging
   -- enter (show d) $  -- debugging
   checkDecl d
