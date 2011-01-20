@@ -202,6 +202,7 @@ hobel: -O
   Productivity  62.9% of total user, 53.2% of total elapsed
 
 profiling and heap profiling on hobel:
+======================================
 
 %%% closing "6000.elf" %%%
   43,586,357,072 bytes allocated in the heap
@@ -227,7 +228,54 @@ profiling and heap profiling on hobel:
 
   Productivity   2.7% of total user, 2.7% of total elapsed
 
-CORRECT??
+----------------------------------------------------------------------
+environments as lists:
+
+2011-01-20 hobel -O
+
+%% closing "6000.elf" %%%
+  27,186,422,792 bytes allocated in the heap
+   5,876,915,288 bytes copied during GC
+     699,570,032 bytes maximum residency (17 sample(s))
+      13,524,344 bytes maximum slop
+            1667 MB total memory in use (26 MB lost due to fragmentation)
+
+  Generation 0: 50991 collections,     0 parallel,  5.46s,  9.31s elapsed
+  Generation 1:    17 collections,     0 parallel,  7.41s,  8.42s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   36.17s  ( 38.77s elapsed)
+  GC    time   12.87s  ( 17.73s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time   49.05s  ( 56.50s elapsed)
+
+  %GC time      26.2%  (31.4% elapsed)
+
+  Alloc rate    751,421,304 bytes per MUT second
+
+  Productivity  73.7% of total user, 64.0% of total elapsed
+
+%%% closing "w32_sig_semant.elf" %%%
+ 142,450,635,624 bytes allocated in the heap
+  31,791,699,704 bytes copied during GC
+   3,265,775,264 bytes maximum residency (21 sample(s))
+      61,469,688 bytes maximum slop
+            7784 MB total memory in use (121 MB lost due to fragmentation)
+
+  Generation 0: 267007 collections,     0 parallel, 34.45s, 52.86s elapsed
+  Generation 1:    21 collections,     0 parallel, 39.65s, 44.42s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time  186.17s  (205.99s elapsed)
+  GC    time   74.10s  ( 97.28s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  260.28s  (303.27s elapsed)
+
+  %GC time      28.5%  (32.1% elapsed)
+
+  Alloc rate    765,123,190 bytes per MUT second
+
+  Productivity  71.5% of total user, 61.4% of total elapsed
 
 ----------------------------------------------------------------------
 
