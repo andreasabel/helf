@@ -40,10 +40,12 @@ pair f g x = (f x, g x)
 -- | Binary version of @=<<@.
 appM2 :: Monad m => (a -> b -> m c) -> m a -> m b -> m c
 appM2 f ma mb = ma >>= \ a -> mb >>= f a
+{-# INLINE appM2 #-}
 
 -- | Ternary version of @=<<@.
 appM3 :: Monad m => (a -> b -> c -> m d) -> m a -> m b -> m c -> m d
 appM3 f ma mb mc = ma >>= \ a -> mb >>= \ b -> mc >>= f a b
+{-# INLINE appM3 #-}
 
 whenMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
 whenMaybe m cont = maybe (return ()) cont m

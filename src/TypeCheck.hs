@@ -61,6 +61,7 @@ class (Monad m, -- Scoping.Scope m,
 
   -- evaluation stuff
   doEval       :: me a -> m a      -- ^ run evaluation
+  {-# INLINE doEval #-}
   app          :: val -> val -> m val
   app f v       = doEval $ apply f v
   eval         :: Expr -> m val
@@ -245,6 +246,7 @@ class (Monad m, -- Scoping.Scope m,
   MonadCheckDecl val env me mc m | m -> mc, m -> me where
 
   doCheckExpr :: mc a -> m a -- ^ monad lifting
+  {-# INLINE doCheckExpr #-}
 
   evalExpr    :: Expr -> m val
   evalExpr     = doCheckExpr . doEval . evaluate' 
