@@ -15,11 +15,15 @@ import Prelude hiding (pi,abs,mapM)
 import Control.Applicative
 import Control.Monad.Reader hiding (mapM)
 
+{-
 import Data.Map (Map)
 import qualified Data.Map as Map
+-}
 import Data.Traversable
 
 import qualified Abstract as A
+import qualified ListEnv as Env
+-- import qualified MapEnv as Env
 import Signature
 import Util
 import Value
@@ -79,19 +83,21 @@ boundName _ = A.noName
 
 -- * Environments (Values for expression (=bound) variables)
 
-type Env = Map Var Val
+type Env = Env.Env Var Val
 
+{-
 update :: Env -> Var -> Val -> Env
 update rho x e = Map.insert x e rho 
+-}
 
 -- * Substitutions (Values for value (=free) variables)
 
-type Subst = Map Var Val
+type Subst = Env
 
-emptySubst = Map.empty
-sgSubst v x = Map.singleton x v
-updateSubst sigma x v = Map.insert x v sigma
-lookupSubst = Map.lookup
+emptySubst  = Env.empty
+sgSubst     = flip Env.singleton
+updateSubst = Env.update
+lookupSubst = Env.lookup
 
 -- * Evaluation
   
@@ -104,7 +110,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       K w               -> return $ w
       Ne h t vs         -> return $ Ne h t (v:vs)
       Df h w t vs       -> return $ Df h w t (v:vs)
-      CLam x e rho      -> evaluate e (update rho (A.uid x) v)
+      CLam x e rho      -> evaluate e (Env.update rho (A.uid x) v)
       Abs x w sigma     -> substs (updateSubst sigma (A.uid x) v) w
   
   evaluate e rho =
@@ -114,7 +120,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       A.Ident (A.Def x) -> do 
         SigDef t v <- sigLookup' (A.uid x) <$> ask
         return $ def x v t 
-      A.Ident (A.Var x) -> return $ lookupSafe (A.uid x) rho
+      A.Ident (A.Var x) -> return $ Env.lookupSafe (A.uid x) rho
       A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)
       A.Lam x mt e -> return $ CLam x e rho
       A.Pi mx e e' -> Fun <$> (evaluate e rho) <*> case mx of
@@ -122,7 +128,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
                         Nothing -> K <$> evaluate e' rho 
       A.Typ        -> return typ
 
-  evaluate' e = evaluate e Map.empty
+  evaluate' e = evaluate e Env.empty
 
   unfold v = 
     case v of
@@ -157,9 +163,9 @@ substs sigma = subst where
   subst (Ne h a vs)    = Ne h a <$> mapM subst vs    -- a is closed
   subst (Df h v a vs)  = Df h v a <$> mapM subst vs  -- a,v are closed
   subst (Sort s)       = return (Sort s)
-  subst (CLam y e rho) = CLam y e <$> mapM subst rho
+  subst (CLam y e rho) = CLam y e <$> Env.mapM subst rho
   subst (K v)          = K <$> subst v
-  subst (Abs x v tau)  = Abs x v . flip Map.union sigma <$> mapM subst tau
+  subst (Abs x v tau)  = Abs x v . flip Env.union sigma <$> Env.mapM subst tau
     -- composing two substitutions (first tau, then sigma) :
     --   apply sigma to tau
     --   add all bindings from sigma that are not yet present
@@ -188,7 +194,7 @@ apply' f v =
       Ne h t vs         -> return $ Ne h t (v:vs)
       Df h w t []       -> apply' w v
       Df h w t vs       -> appsR' w (v:vs)
-      CLam x e rho      -> evaluate e (update rho (A.uid x) v)
+      CLam x e rho      -> evaluate e (Env.update rho (A.uid x) v)
       Abs x w sigma     -> substs (updateSubst sigma (A.uid x) v) w
 
 -- * Reification
