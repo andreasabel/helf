@@ -1,4 +1,4 @@
-module OrderedComplex where
+module OrderedComplex2 where
 
 import Prelude hiding (pi,abs,mapM)
 
@@ -58,6 +58,8 @@ data Val
 type OSubst = DatastrucImpl.SimpleDynArray.DynArray Val
 type Env = Map A.UID Val
 
+type E = Map UID Val
+
 -- * 
 
 instance Value A.Name Val where
@@ -99,23 +101,20 @@ sgEnv v x = Map.singleton x v
 lookupEnv :: A.UID -> Env -> Maybe Val
 lookupEnv = Map.lookup
 
+emptyE = Map.empty
+updateE env x v = Map.insert x v env
+sgE v x = Map.singleton x v
+lookupE :: UID -> Env -> Maybe Val
+lookupE = Map.lookup
+
 emptyOSubst :: OSubst
 emptyOSubst = DS.empty
 updateSubst :: OSubst -> Int -> Val-> OSubst
 updateSubst osubst k v = DS.insert v k osubst
 
-{-
--- simplify double substitution 
-unifyEnv :: Env -> Env -> Env
-unify first second = flip Map.union env <$> mapM subst env'
--}
-
 -- * evaluation
 
-{-
-instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val Env m where
--}
-instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val OSubst m where
+instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val E m where
 
   -- apply :: Val -> Val -> m Val
   apply f w =
@@ -130,19 +129,13 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
                                      substs (updateEnv env (uid x) w) v
             
   
-  -- evaluate  :: Expr -> env -> m val  
-  evaluate expr osubst =
+  -- evaluate  :: Expr -> E -> m val  
+  evaluate expr e =
     let t = transform expr
-    in evalTerm t emptyEnv osubst
+    in evalTerm t e emptyOSubst
   
-  evaluate' = flip evaluate emptyOSubst
-{-  
-  evaluate expr env =
-    let t = transform expr
-    in evalTerm t env emptyOSubst
-  
-  evaluate' = flip evaluate emptyEnv
--}  
+  evaluate' = flip evaluate emptyE
+
 
   abstractPi a (_, HVar x _ []) b = return $ Fun a $ Abs x b emptyEnv
   abstractPi _ _ _                = fail $ "can only abstract a free variable"
@@ -158,18 +151,9 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       _               -> return v
 
 
-{-
-instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val Env m where
-  apply = apply
-  evaluate expr env =
-    let t = transform expr
-    in evalTerm t env emptyOSubst
-  evaluate' expr = evaluate emptyEnv
--}  
+ 
 
-  
-
-evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> Env -> OSubst -> m Val
+evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> E -> OSubst -> m Val
 evalTerm t env osubst =
   case t of
     O                       -> return $ DS.get osubst 0 
@@ -191,9 +175,9 @@ evalTerm t env osubst =
                                  b <- evalTerm t2 env osubst2
                                  return $ Fun a b
     
-substs :: (Applicative m, Monad m, MonadEval Val OSubst m) => Env -> Val -> m Val 
+substs :: (Applicative m, Monad m, MonadEval Val E m) => Env -> Val -> m Val 
 substs env = subst where
-  subst :: (Applicative m, Monad m, MonadEval Val OSubst m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Val E m) => Val -> m Val 
   subst value = case value of
     HVar x t vs                 -> case lookupEnv (uid x) env of
                                       Just w  -> appsR w =<< mapM subst vs
@@ -264,10 +248,11 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
 
 
 -- * supporting unfolds
-appsR' :: (Applicative m, Monad m, MonadEval Val OSubst m) => Val -> [Val] -> m Val 
+
+appsR' :: (Applicative m, Monad m, MonadEval Val E m) => Val -> [Val] -> m Val 
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
-apply' :: (Applicative m, Monad m, MonadEval Val OSubst m) => Val -> Val -> m Val
+apply' :: (Applicative m, Monad m, MonadEval Val E m) => Val -> Val -> m Val
 apply' f v =
     case f of
       HDef d w t []   -> apply' w v
