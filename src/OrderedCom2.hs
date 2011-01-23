@@ -39,16 +39,16 @@ instance PrettyM EvalM Val where
 
 data Context = Context
   { level  :: Int
-  , tyEnv  :: E
-  , valEnv :: E
+  , tyEnv  :: Env
+  , valEnv :: Env
   }
 
 emptyContext :: Context
-emptyContext = Context 0 emptyE emptyE
+emptyContext = Context 0 emptyEnv emptyEnv
 
 type ContextM = Reader Context
 
-instance MonadCxt Val E ContextM where -- should be OSubst.
+instance MonadCxt Val Env ContextM where -- should be OSubst.
 
   addLocal n@(A.Name x _) t cont = do
     l <- asks level
@@ -70,7 +70,7 @@ data SigCxt = SigCxt { globals :: MapSig Val, locals :: Context }
 type Err = Either String
 type CheckExprM = ReaderT SigCxt Err
 
-instance MonadCxt Val E CheckExprM where
+instance MonadCxt Val Env CheckExprM where
 
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
@@ -86,7 +86,7 @@ instance MonadCxt Val E CheckExprM where
 
 
 
-instance MonadCheckExpr Val E EvalM CheckExprM where  
+instance MonadCheckExpr Val Env EvalM CheckExprM where  
 
   doEval comp    = runReader comp <$> asks globals
 
