@@ -1,4 +1,4 @@
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UndecidableInstances, TupleSections #-}
 
 module OrderedComplex2 where
 
@@ -39,7 +39,7 @@ data OTm -- names are only used for quoting
   | OCon A.Name
   | ODef A.Name
   | OApp OTm Int OTm
-  | OLam (Maybe A.Name) [Int] (Maybe OTm) OTm -- maybe type annotation
+  | OLam (Maybe A.Name) [Int] OTm
   | OSort Value.Sort
   | OPi OTm Int OTm -- OPi t k (OLam ...)
 
@@ -155,8 +155,9 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       _               -> return v
 
   -- reify :: Val -> m Expr
-  reify v = return $ A.Ident $ A.Con $ Name 0 $ "NYI: reify"
- 
+  -- reify v = return $ A.Ident $ A.Con $ Name 0 $ "NYI: reify"
+  reify v = quote v A.initSysNameCounter 
+
 
 evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> Env -> OSubst -> m Val
 evalTerm t env osubst =
@@ -172,7 +173,7 @@ evalTerm t env osubst =
                                  (osubst1, osubst2) = DS.split (size osubst - k) osubst
                                in
                                  Util.appM2 apply (evalTerm t1 env osubst1) (evalTerm t2 env osubst2)
-    OLam mname ks mtype t   -> return $ CLam mname ks t env osubst -- todo: the information mty is wasted ?!
+    OLam mname ks t         -> return $ CLam mname ks t env osubst
     OSort s		              -> return $ Sort s
     OPi t1 k t2		          -> let (osubst1, osubst2) = DS.split (size osubst - k) osubst
                                in do
@@ -194,6 +195,39 @@ substs env = subst where
     Sort s                      -> return $ Sort s
     Fun a b                     -> Fun <$> subst a <*> subst b
     
+    
+-- * quoting (reify)
+
+quote :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> A.SysNameCounter -> m A.Expr
+quote v i =
+  case v of
+    HVar name _ vs                -> foldr (flip App) (Ident $ Var name) <$> mapM (flip quote i) vs
+    HCon name _ vs                -> foldr (flip App) (Ident $ Con name) <$> mapM (flip quote i) vs
+    HDef name _ _ vs              -> foldr (flip App) (Ident $ Def name) <$> mapM (flip quote i) vs
+    -- CLam mname ks otm env osubst  -> see below
+    -- Abs name v env                -> see below
+    Sort Type                     -> return Typ
+    Sort Kind                     -> error "cannot quote sort kind"
+    Fun a b                       -> do
+                                      u     <- quote a i
+                                      (x,t) <- quoteFun b i
+                                      return $ Pi (Just x) u t
+    DontCare                      -> error "cannot quote dontcare"
+    _                             -> do
+                                      (x,e) <- quoteFun v i
+                                      return $ Lam x Nothing e
+    
+-- | @quoteFun n v@ expects @v@ to be a function and returns and its body as an expression.
+quoteFun :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> A.SysNameCounter -> m (A.Name, A.Expr)
+quoteFun f i = do
+  let n = case f of
+          CLam (Just name) _ _ _ _ -> name
+          Abs name _ _             -> name
+          _                        -> A.noName
+  let (x, i') = A.nextSysName i n
+  v <- f `apply` (var_ x)
+  (x,) <$> quote v i'
+
     
 -- * transforming A.Expr to OTm
 
@@ -229,17 +263,13 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
     (i2, t2) <- trans e2
     return (i1 + i2, OApp t1 i2 t2)
   trans (Lam x mty e) = 
-    let moty = case mty of
-                Just ty -> Just $ transform ty -- can ty depend on bound variables? e.g., is \x:A. \y:B(x). xy possible?
-                Nothing -> Nothing
-    in
     do 
     modify ((:) [0]) 
     (i, t)    <- local (insert_lbl x) $ trans e
     (l':ll')  <- Control.Monad.State.get    --
     put $ ll'                               -- these lines are the same as: modify (tail)
-    return (i + 1 - (length l'), OLam (Just x) (reverse $ tail l') moty t) 
-  trans (Pi name ty1 ty2) = case name of
+    return (i + 1 - (length l'), OLam (Just x) (reverse $ tail l') t) 
+  trans (Pi mname ty1 ty2) = case mname of
     Just n -> do
       (i1, oty1) <- trans ty1
       (i2, oty2) <- trans $ Lam n Nothing ty2 -- Nothing?
@@ -247,7 +277,7 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
     Nothing -> do
       (i1, oty1) <- trans ty1
       (i2, oty2) <- trans ty2
-      return (i1+i2, OPi oty1 i2 $ OLam Nothing [] Nothing oty2)
+      return (i1+i2, OPi oty1 i2 $ OLam Nothing [] oty2)
   trans A.Typ = return (0, OSort Type)
 
 
