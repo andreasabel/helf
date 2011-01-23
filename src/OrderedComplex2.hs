@@ -60,7 +60,7 @@ data Val
 type OSubst = DatastrucImpl.SimpleDynArray.DynArray Val
 type Env = Map A.UID Val
 
-type E = Map UID Val
+--type E = Map UID Val
 
 -- * 
 
@@ -103,11 +103,13 @@ sgEnv v x = Map.singleton x v
 lookupEnv :: A.UID -> Env -> Maybe Val
 lookupEnv = Map.lookup
 
+{-
 emptyE = Map.empty
 updateE env x v = Map.insert x v env
 sgE v x = Map.singleton x v
 lookupE :: UID -> Env -> Maybe Val
 lookupE = Map.lookup
+-}
 
 emptyOSubst :: OSubst
 emptyOSubst = DS.empty
@@ -116,7 +118,7 @@ updateSubst osubst k v = DS.insert v k osubst
 
 -- * evaluation
 
-instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val E m where
+instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val Env m where
 
   -- apply :: Val -> Val -> m Val
   apply f w =
@@ -131,12 +133,12 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
                                      substs (updateEnv env (uid x) w) v
             
   
-  -- evaluate  :: Expr -> E -> m val  
+  -- evaluate  :: Expr -> Env -> m val  
   evaluate expr e =
     let t = transform expr
     in evalTerm t e emptyOSubst
   
-  evaluate' = flip evaluate emptyE
+  evaluate' = flip evaluate emptyEnv
 
 
   abstractPi a (_, HVar x _ []) b = return $ Fun a $ Abs x b emptyEnv
@@ -156,11 +158,11 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
   reify v = return $ A.Ident $ A.Con $ Name 0 $ "NYI: reify"
  
 
-evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> E -> OSubst -> m Val
+evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> Env -> OSubst -> m Val
 evalTerm t env osubst =
   case t of
     O                       -> return $ DS.get osubst 0 
-            -- if size osubst == 1 then DS.get osubst 0 else error "wrong size of osubst when evaluating a single O"
+            -- if size osubst == 1 then DS.get osubst 0 else fail "wrong size of osubst when evaluating a single O"
     OVar x                  -> return $ lookupSafe (uid x) env
     OCon x                  -> con x . symbType . sigLookup' (A.uid x) <$> ask
     ODef x                  -> do
@@ -178,9 +180,9 @@ evalTerm t env osubst =
                                  b <- evalTerm t2 env osubst2
                                  return $ Fun a b
     
-substs :: (Applicative m, Monad m, MonadEval Val E m) => Env -> Val -> m Val 
+substs :: (Applicative m, Monad m, MonadEval Val Env m) => Env -> Val -> m Val 
 substs env = subst where
-  subst :: (Applicative m, Monad m, MonadEval Val E m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> m Val 
   subst value = case value of
     HVar x t vs                 -> case lookupEnv (uid x) env of
                                       Just w  -> appsR w =<< mapM subst vs
@@ -252,10 +254,10 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
 
 -- * supporting unfolds
 
-appsR' :: (Applicative m, Monad m, MonadEval Val E m) => Val -> [Val] -> m Val 
+appsR' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> [Val] -> m Val 
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
-apply' :: (Applicative m, Monad m, MonadEval Val E m) => Val -> Val -> m Val
+apply' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> Val -> m Val
 apply' f v =
     case f of
       HDef d w t []   -> apply' w v
