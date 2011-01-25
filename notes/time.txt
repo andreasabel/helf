@@ -453,3 +453,187 @@ MAIN                     MAIN                                                   
           evalTerm       OrderedComplex2                                     4359     1020786   0.2    0.1     0.4    0.2
 
 ----------------------------------------------------------------------
+monolith:  siena -O
+
+%%% closing "w32_sig_semant.elf" %%%
+ 174,417,896,112 bytes allocated in the heap
+  32,427,176,152 bytes copied during GC
+   3,212,367,224 bytes maximum residency (21 sample(s))
+      69,383,216 bytes maximum slop
+            7736 MB total memory in use (121 MB lost due to fragmentation)
+
+  Generation 0: 327983 collections,     0 parallel, 37.85s, 55.87s elapsed
+  Generation 1:    21 collections,     0 parallel, 39.84s, 44.37s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time  213.67s  (233.19s elapsed)
+  GC    time   77.69s  (100.24s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  291.37s  (333.43s elapsed)
+
+  %GC time      26.7%  (30.1% elapsed)
+
+  Alloc rate    816,257,469 bytes per MUT second
+
+  Productivity  73.3% of total user, 64.1% of total elapsed
+
+A monolithic monad wastes 10% time and requires 20% more short-time allocation 
+in the heap.
+
+PROFILING:
+%%% closing "6000.elf" %%%
+  53,253,890,200 bytes allocated in the heap
+  13,591,487,520 bytes copied during GC
+   2,205,597,384 bytes maximum residency (20 sample(s))
+      29,701,016 bytes maximum slop
+            5014 MB total memory in use (78 MB lost due to fragmentation)
+
+  Generation 0: 100228 collections,     0 parallel, 10.19s, 14.95s elapsed
+  Generation 1:    20 collections,     0 parallel, 15.22s, 18.28s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   86.72s  ( 88.89s elapsed)
+  GC    time   25.41s  ( 33.23s elapsed)
+  RP    time    0.00s  (  0.00s elapsed)
+  PROF  time    0.00s  (  0.00s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  112.14s  (122.12s elapsed)
+
+  %GC time      22.7%  (27.2% elapsed)
+
+  Alloc rate    614,019,257 bytes per MUT second
+
+  Productivity  77.3% of total user, 71.0% of total elapsed
+
+	Sun Jan 23 19:20 2011 Time and Allocation Profiling Report  (Final)
+
+	   helf-prof +RTS -s -p -RTS 6000.elf
+
+	total time  =       88.24 secs   (4412 ticks @ 20 ms)
+	total alloc = 31,080,335,792 bytes  (excludes profiling overheads)
+
+COST CENTRE                    MODULE               %time %alloc
+
+checkDeclaration               Monolith              36.4   43.0
+evaluate_arkG                  MonoVal               12.3    8.6
+appM2                          Util                   4.3    5.5
+equalBase                      TypeCheck              4.1    3.7
+infer                          TypeCheck              4.0    3.5
+equalApp                       TypeCheck              3.8    3.7
+getIdent_alVR                  ScopeMonad             3.5    1.6
+alex_scan_tkn                  Lexer                  2.5    5.4
+getFixity_alUn                 ScopeMonad             1.9    1.2
+equalTm                        TypeCheck              1.9    1.9
+check                          TypeCheck              1.7    1.3
+parse_agXL                     Scoping                1.5    1.6
+parse_agVW                     Scoping                1.4    1.4
+valView_armR                   MonoVal                0.8    1.5
+alexScanTokens                 Lexer                  0.7    1.0
+alexGetChar                    Lexer                  0.6    2.0
+alexMove                       Lexer                  0.3    1.3
+
+%%% closing "w32_sig_semant.elf" %%%
+ 281,667,255,832 bytes allocated in the heap
+  66,067,815,968 bytes copied during GC
+   8,715,668,920 bytes maximum residency (24 sample(s))
+     123,842,440 bytes maximum slop
+           19937 MB total memory in use (311 MB lost due to fragmentation)
+
+  Generation 0: 529878 collections,     0 parallel, 64.36s, 86.37s elapsed
+  Generation 1:    24 collections,     0 parallel, 69.18s, 80.57s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time  452.46s  (471.29s elapsed)
+  GC    time  133.54s  (166.94s elapsed)
+  RP    time    0.00s  (  0.00s elapsed)
+  PROF  time    0.00s  (  0.00s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  586.01s  (638.23s elapsed)
+
+  %GC time      22.8%  (26.2% elapsed)
+
+  Alloc rate    622,510,345 bytes per MUT second
+
+  Productivity  77.2% of total user, 70.9% of total elapsed
+
+	Sun Jan 23 19:40 2011 Time and Allocation Profiling Report  (Final)
+
+	   helf-prof +RTS -s -p -RTS w32_sig_semant.elf
+
+	total time  =      466.42 secs   (23321 ticks @ 20 ms)
+	total alloc = 164,743,138,552 bytes  (excludes profiling overheads)
+
+COST CENTRE                    MODULE               %time %alloc
+
+checkDeclaration               Monolith              37.9   44.9
+evaluate_arkG                  MonoVal               13.4    9.9
+appM2                          Util                   4.1    5.4
+infer                          TypeCheck              4.0    3.0
+equalApp                       TypeCheck              3.8    3.4
+getIdent_alVR                  ScopeMonad             3.6    1.5
+equalBase                      TypeCheck              3.5    3.5
+alex_scan_tkn                  Lexer                  2.6    5.4
+equalTm                        TypeCheck              2.0    1.7
+check                          TypeCheck              1.6    1.1
+parse_agVW                     Scoping                1.5    1.2
+parse_agXL                     Scoping                1.5    1.4
+getFixity_alUn                 ScopeMonad             1.4    1.0
+alexScanTokens                 Lexer                  0.9    1.0
+valView_armR                   MonoVal                0.7    1.4
+alexGetChar                    Lexer                  0.6    2.0
+alexMove                       Lexer                  0.1    1.2
+
+-----------------------------------------------------------------------
+To compare: Closures (ListEnv)
+
+%%% closing "w32_sig_semant.elf" %%%
+ 231,647,728,784 bytes allocated in the heap
+  64,884,677,176 bytes copied during GC
+   8,806,326,192 bytes maximum residency (24 sample(s))
+     115,713,928 bytes maximum slop
+           20067 MB total memory in use (313 MB lost due to fragmentation)
+
+  Generation 0: 434467 collections,     0 parallel, 57.32s, 79.99s elapsed
+  Generation 1:    24 collections,     0 parallel, 67.66s, 80.01s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time  379.58s  (403.10s elapsed)
+  GC    time  124.98s  (160.00s elapsed)
+  RP    time    0.00s  (  0.00s elapsed)
+  PROF  time    0.00s  (  0.00s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  504.57s  (563.10s elapsed)
+
+  %GC time      24.8%  (28.4% elapsed)
+
+  Alloc rate    610,257,722 bytes per MUT second
+
+  Productivity  75.2% of total user, 67.4% of total elapsed
+
+	Sun Jan 23 19:59 2011 Time and Allocation Profiling Report  (Final)
+
+	   helf-prof +RTS -s -p -RTS w32_sig_semant.elf
+
+	total time  =      402.50 secs   (20125 ticks @ 20 ms)
+	total alloc = 139,729,493,216 bytes  (excludes profiling overheads)
+
+COST CENTRE                    MODULE               %time %alloc
+
+checkDeclaration               Closures              44.0   52.9
+evaluate_a1s2                  ClosVal                6.3    3.1
+getIdent_alVR                  ScopeMonad             4.1    1.8
+equalBase                      TypeCheck              3.5    3.0
+equalApp                       TypeCheck              3.3    2.6
+infer                          TypeCheck              3.2    2.6
+alex_scan_tkn                  Lexer                  3.0    6.3
+equalTm                        TypeCheck              2.1    1.6
+appM2                          Util                   2.1    1.5
+getFixity_alUn                 ScopeMonad             1.6    1.2
+parse_agVW                     Scoping                1.6    1.4
+parse_agXL                     Scoping                1.5    1.6
+check                          TypeCheck              1.5    1.0
+alexScanTokens                 Lexer                  0.9    1.2
+doEval_a6AM                    Closures               0.9    1.5
+valView_a1uz                   ClosVal                0.8    1.7
+alexGetChar                    Lexer                  0.7    2.4
+alexMove                       Lexer                  0.2    1.5
