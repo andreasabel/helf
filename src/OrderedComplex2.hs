@@ -272,7 +272,7 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
   trans (Pi mname ty1 ty2) = case mname of
     Just n -> do
       (i1, oty1) <- trans ty1
-      (i2, oty2) <- trans $ Lam n Nothing ty2 -- Nothing?
+      (i2, oty2) <- trans $ Lam n Nothing ty2 
       return (i1+i2, OPi oty1 i2 oty2)
     Nothing -> do
       (i1, oty1) <- trans ty1
