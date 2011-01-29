@@ -1,7 +1,7 @@
 {-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections #-}
 
-module OrderedCom2 where
+module HeredNormal where
 
 import Prelude hiding (pi,abs,mapM)
 
@@ -25,14 +25,14 @@ import Value
 import PrettyM
 import Data.Char 
 
-import OrderedComplex2
+import HeredNormVal
 
 
 -- * Evaluation monad
 
-type EvalM = Reader (MapSig Val)
+type EvalM = Reader (MapSig NVal)
 
-instance PrettyM EvalM Val where
+instance PrettyM EvalM NVal where
   prettyM = prettyM <=< reify
 
 -- * Context monad
@@ -48,11 +48,11 @@ emptyContext = Context 0 emptyEnv emptyEnv
 
 type ContextM = Reader Context
 
-instance MonadCxt Val Env ContextM where 
+instance MonadCxt NVal Env ContextM where 
 
   addLocal n@(A.Name x _) t cont = do
     l <- asks level
-    let xv = HVar (n { A.uid = l }) t []
+    let xv = NVar (n { A.uid = l }) t []
     local (\ (Context l gamma rho) -> 
              Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho)) 
           (cont xv)
@@ -63,18 +63,19 @@ instance MonadCxt Val Env ContextM where
 
   getEnv = asks valEnv
 
+  
 -- * Type checking monad
 
-data SigCxt = SigCxt { globals :: MapSig Val, locals :: Context }
+data SigCxt = SigCxt { globals :: MapSig NVal, locals :: Context }
 
 type Err = Either String
 type CheckExprM = ReaderT SigCxt Err
 
-instance MonadCxt Val Env CheckExprM where
+instance MonadCxt NVal Env CheckExprM where
 
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
-    let xv  = HVar (n { A.uid = l }) t []
+    let xv  = NVar (n { A.uid = l }) t []
     let cxt = Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho) 
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
@@ -86,49 +87,20 @@ instance MonadCxt Val Env CheckExprM where
 
 
 
-instance MonadCheckExpr Val Env EvalM CheckExprM where  
+instance MonadCheckExpr NVal Env EvalM CheckExprM where  
 
   doEval comp    = runReader comp <$> asks globals
 
-  -- TODO
+  -- TODO ?
   typeError err  = failDoc $ prettyM err 
   newError err k = k `catchError` (const $ typeError err)
-{-
-  typeError err  = failDoc $ text "error"  
-  newError err k = failDoc $ text "new error"
--}
 
-  typeTrace tr   = -- traceM (showM tr) .
-    -- enterDoc $ text "type trace" --
-    (enterDoc $ prettyM tr)
+  typeTrace tr   = (enterDoc $ prettyM tr)
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
-{-
---  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
-    
 
-  addBind x a cont = do
-    Context level tyEnv valEnv <- ask
-    let xv   = freeVar level a
-    let cxt' = Context 
-                 (level + 1)
-                 (Map.insert x a tyEnv)
-                 (Map.insert x xv valEnv)
-    local (const cxt') (cont xv)
 
-  addBind' _ a cont = do
-    l <- asks level
-    let xv = freeVar l a
-    local (\ cxt -> cxt { level = level cxt + 1 }) (cont xv)
-
-  lookupVar x = do
-    gamma <- asks tyEnv
-    case Map.lookup x gamma of
-      Just t  -> return t
-      Nothing -> fail $ "unbound variable " ++ x 
--}
-
-instance PrettyM CheckExprM Val where
+instance PrettyM CheckExprM NVal where
   prettyM = doEval . prettyM 
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
@@ -140,27 +112,21 @@ checkTySig e t = do
 runCheck :: A.Expr -> A.Type -> Err ()
 runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
+
 -- * Declarations
 
--- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
-type CheckDeclM = StateT (MapSig Val) (ErrorT String IO)
+type CheckDeclM = StateT (MapSig NVal) (ErrorT String IO)
 
-instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
+instance MonadCheckDecl NVal Env EvalM CheckExprM CheckDeclM where
 
   doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get where
      sigCxt sig = SigCxt sig emptyContext
 
-instance PrettyM CheckDeclM Val where
+instance PrettyM CheckDeclM NVal where
   prettyM = doCheckExpr . prettyM 
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
-checkDeclaration d = do
-  -- No output:
-  -- liftIO . putStrLn =<< showM d
-
-  -- liftIO . putStrLn . show $ d -- debugging
-  -- enter (show d) $  -- debugging
-  checkDecl d
+checkDeclaration d = do checkDecl d
 
 checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations
