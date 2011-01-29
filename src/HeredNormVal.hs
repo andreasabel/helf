@@ -1,3 +1,8 @@
+{- 
+Values are always in beta normal form.
+We use hereditary substitution.
+-}
+
 {-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections #-}
 
@@ -142,8 +147,12 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
       NDef d f t vs   -> unfolds =<< appsR' f vs 
       _               -> return v
 
-  reify v = fail $ "not implemented yet"
+  -- reify v = fail $ "not implemented yet"
+  reify v = quote v A.initSysNameCounter 
 
+  
+  
+  
 -- * substituation
 
 subst :: (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => NVal -> Env' -> m NVal
@@ -173,3 +182,40 @@ apply' f v =
       NDef d w t ws   -> appsR' w (v:ws)
       _               -> apply f v
       
+
+-- * Reification
+
+-- quote :: NVal -> A.SysNameCounter -> EvalM A.Expr
+quote :: (Applicative m, Monad m, MonadEval NVal Env' m) => NVal -> A.SysNameCounter -> m A.Expr
+quote v i =
+  case v of
+    NVar x _ vs         -> foldr (flip A.App) (A.Ident $ A.Var x) <$> mapM (flip quote i) vs
+    NCon x _ vs         -> foldr (flip A.App) (A.Ident $ A.Con x) <$> mapM (flip quote i) vs
+    NDef x _ _ vs       -> foldr (flip A.App) (A.Ident $ A.Def x) <$> mapM (flip quote i) vs
+    --NLam x w            -> see below
+    --NK _                -> see below
+    NSort Type          -> return A.Typ
+    NSort Kind          -> error "cannot quote sort kind"
+    NDontCare           -> error "cannot quote the dontcare value"
+    NFun a (NK b)       -> A.Pi Nothing <$> quote a i <*> quote b i
+    NFun a f            -> do
+                            u     <- quote a i
+                            (x,t) <- quoteFun f i
+                            return $ A.Pi (Just x) u t
+    f                   -> do
+                            (x,e) <- quoteFun f i
+                            return $ A.Lam x Nothing e
+  
+
+-- | @quoteFun n v@ expects @v@ to be a function and returns and its
+--   body as an expression.
+-- quoteFun :: Val -> A.SysNameCounter -> EvalM (A.Name, A.Expr)
+quoteFun :: (Applicative m, Monad m, MonadEval NVal Env' m) =>
+            NVal -> A.SysNameCounter -> m (A.Name, A.Expr)
+quoteFun f i = do
+  let n = case f of
+          NLam x _  -> x
+          NK w      -> A.noName
+  let (x, i') = A.nextSysName i n
+  v <- f `apply` (var_ x)
+  (x,) <$> quote v i'
