@@ -19,8 +19,9 @@ import qualified Abstract as A
 import Context
 import Signature
 import TypeCheck hiding (app)
-import Util
+import Util hiding (lookupSafe)
 import Value
+import MapEnv as M
 
 import PrettyM
 import Data.Char 
@@ -39,16 +40,16 @@ instance PrettyM EvalM NVal where
 
 data Context = Context
   { level  :: Int
-  , tyEnv  :: Env
-  , valEnv :: Env
+  , tyEnv  :: Env'
+  , valEnv :: Env'
   }
 
 emptyContext :: Context
-emptyContext = Context 0 emptyEnv emptyEnv
+emptyContext = Context 0 M.empty M.empty
 
 type ContextM = Reader Context
 
-instance MonadCxt NVal Env ContextM where 
+instance MonadCxt NVal Env' ContextM where 
 
   addLocal n@(A.Name x _) t cont = do
     l <- asks level
@@ -71,7 +72,7 @@ data SigCxt = SigCxt { globals :: MapSig NVal, locals :: Context }
 type Err = Either String
 type CheckExprM = ReaderT SigCxt Err
 
-instance MonadCxt NVal Env CheckExprM where
+instance MonadCxt NVal Env' CheckExprM where
 
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
@@ -87,7 +88,7 @@ instance MonadCxt NVal Env CheckExprM where
 
 
 
-instance MonadCheckExpr NVal Env EvalM CheckExprM where  
+instance MonadCheckExpr NVal Env' EvalM CheckExprM where  
 
   doEval comp    = runReader comp <$> asks globals
 
@@ -110,14 +111,14 @@ checkTySig e t = do
   check e t
 
 runCheck :: A.Expr -> A.Type -> Err ()
-runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
+runCheck e t = runReaderT (checkTySig e t) $ SigCxt M.empty emptyContext
 
 
 -- * Declarations
 
 type CheckDeclM = StateT (MapSig NVal) (ErrorT String IO)
 
-instance MonadCheckDecl NVal Env EvalM CheckExprM CheckDeclM where
+instance MonadCheckDecl NVal Env' EvalM CheckExprM CheckDeclM where
 
   doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get where
      sigCxt sig = SigCxt sig emptyContext
