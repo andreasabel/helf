@@ -3,16 +3,16 @@
 
 module HeredNormVal where
 
-import Prelude hiding (pi,abs,mapM)
+import Prelude hiding (pi,abs,mapM,lookup)
 
 import Control.Monad.Reader hiding (mapM)
-import Control.Applicative
+import Control.Applicative hiding (empty)
 import Control.Monad.Error hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State hiding (mapM)
 
 import Data.Traversable
-import Data.Map (Map)
+import Data.Map (Map) 
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
@@ -22,9 +22,9 @@ import Value
 import TypeCheck
 -- import Context
 import Signature
-import Util
+import Util hiding (lookupSafe)
 import Value
-
+import MapEnv as M hiding (mapM)
 
 
 -- * beta-normal values
@@ -71,7 +71,17 @@ def x v t = NDef x v t []
 
 
 -- * environment handling
+-- see MapEnv.hs
+type Env' = Env UID NVal
 
+lookupVal :: NVal -> Env' -> NVal
+lookupVal v@(NVar x _ _) env = case lookup (uid x) env of
+      Just w  -> w
+      _       -> v
+
+deleteFromEnv :: Env' -> A.UID -> Env'
+deleteFromEnv env x = Map.delete x env
+{-
 type Env = Map A.UID NVal
 emptyEnv = Map.empty
 updateEnv :: Env -> A.UID -> NVal -> Env
@@ -79,18 +89,11 @@ updateEnv env x v = Map.insert x v env
 sgEnv v x = Map.singleton x v
 lookupEnv :: A.UID -> Env -> Maybe NVal
 lookupEnv = Map.lookup
-deleteFromEnv :: Env -> A.UID -> Env
-deleteFromEnv env x = Map.delete x env
-
-lookupVal :: NVal -> Env -> NVal
-lookupVal v@(NVar x _ _) env = case lookupEnv (uid x) env of
-      Just w  -> w
-      _       -> v
-
+-}
 
 -- * evaluation
 
-instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => MonadEval NVal Env m where
+instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => MonadEval NVal Env' m where
 
   -- apply :: NVal- NVal -> m NVal
   apply f w =
@@ -98,7 +101,7 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
       NVar x t vs                 -> return $ NVar x t (w:vs)
       NCon x t vs                 -> return $ NCon x t (w:vs)
       NDef x v t vs               -> return $ NDef x v t (w:vs)
-      NLam x v                    -> subst v (sgEnv w $ uid x) 
+      NLam x v                    -> subst v (singleton (uid x) w) 
       NK v                        -> return v
   
   -- evaluate :: Expr -> Env -> m NVal
@@ -124,7 +127,7 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
       App e1 e2       -> Util.appM2 apply (evaluate e1 env) (evaluate e2 env) 
   
   -- evaluate' :: Expr -> m NVal
-  evaluate' = flip evaluate emptyEnv
+  evaluate' = flip evaluate empty
 
   abstractPi a (_, NVar x _ []) b = return $ NFun a $ NLam x b
   abstractPi _ _ _                = fail $ "can only abstract a free variable"
@@ -143,9 +146,9 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
 
 -- * substituation
 
-subst :: (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => NVal -> Env -> m NVal
+subst :: (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => NVal -> Env' -> m NVal
 subst nval env = case nval of
-  NVar x t vs         -> case lookupEnv (uid x) env of
+  NVar x t vs         -> case lookup (uid x) env of
                           Nothing -> (\z -> return $ NVar x t z) =<< (mapM (flip subst env) vs)
                           Just v  -> appsR v =<< mapM (flip subst env) vs
   NCon x t vs         -> (\z -> return $ NCon x t z) =<< mapM (flip subst env) vs
@@ -160,10 +163,10 @@ subst nval env = case nval of
   
 -- * supporting unfolds
 
-appsR' :: (Applicative m, Monad m, MonadEval NVal Env m) => NVal -> [NVal] -> m NVal 
+appsR' :: (Applicative m, Monad m, MonadEval NVal Env' m) => NVal -> [NVal] -> m NVal 
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
-apply' :: (Applicative m, Monad m, MonadEval NVal Env m) => NVal -> NVal -> m NVal
+apply' :: (Applicative m, Monad m, MonadEval NVal Env' m) => NVal -> NVal -> m NVal
 apply' f v =
     case f of
       NDef d w t []   -> apply' w v
