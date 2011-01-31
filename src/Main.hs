@@ -15,14 +15,13 @@ import qualified Stream
 import TheMonad
 import qualified Scoping 
 import qualified ScopeMonad as Scoping
-import Monolith
--- import Closures
--- import OrderedCom2
 
-{-
-import TypeCheck
-import Closures
--}
+
+
+import ErrorExpected
+
+
+
 
 import System
 import System.IO (stdout, hSetBuffering, BufferMode(..))
