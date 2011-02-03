@@ -17,7 +17,7 @@ import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State hiding (mapM)
 
 import Data.Traversable
-import Data.Map (Map) 
+import Data.Map (Map, fold, notMember) 
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
@@ -86,15 +86,7 @@ lookupVal v@(NVar x _ _) env = case lookup (uid x) env of
 
 deleteFromEnv :: Env' -> A.UID -> Env'
 deleteFromEnv env x = Map.delete x env
-{-
-type Env = Map A.UID NVal
-emptyEnv = Map.empty
-updateEnv :: Env -> A.UID -> NVal -> Env
-updateEnv env x v = Map.insert x v env
-sgEnv v x = Map.singleton x v
-lookupEnv :: A.UID -> Env -> Maybe NVal
-lookupEnv = Map.lookup
--}
+
 
 -- * evaluation
 
@@ -162,11 +154,33 @@ subst nval env = case nval of
                           Just v  -> appsR v =<< mapM (flip subst env) vs
   NCon x t vs         -> (\z -> return $ NCon x t z) =<< mapM (flip subst env) vs
   NDef x v t vs       -> (\z -> return $ NDef x v t z) =<< mapM (flip subst env) vs
-  NLam x v            -> (\z -> return $ NLam x z) =<< (subst v $ deleteFromEnv env $ uid x)    
-                         -- care! x must not be in range(env), so this must be guaranteed! (however, if all names are unique anyway, 'deleteFromEnv' is not needed)
+  NLam x v            -> if testUniqueness env (uid x)
+                            then
+                              if notMember (uid x) env
+                                then (\z -> return $ NLam x z) =<< (subst v env)
+                                else fail $ (show x) ++ " is a key in the current environment"
+                            else fail $ (show x) ++ " is mentioned in the current environment"
+                         -- note to self: care! x must not be in range(env), so this must be guaranteed! (however, if all names are unique anyway, 'deleteFromEnv' is not needed)
   NK v                -> (\z -> return $ NK z) =<< (subst v env)
   NFun a b            -> Util.appM2 (\s t -> return $ NFun s t) (subst a env) (subst b env)
 
+  
+-- hopefully, this is not necessary thanks to unique names...
+-- take an Env' and an UID and test whether the UID is mentioned anywhere.
+testUniqueness :: Env' -> UID -> Bool
+testUniqueness env u = Data.Map.fold (\y x -> x && (testUn y)) True env where
+  testUn :: NVal -> Bool
+  testUn (NVar x t vs)    = (not $ u == uid x) && testUn t && (foldr (&&) True $ map testUn vs)
+  testUn (NCon x t vs)    = testUn (NVar x t vs)
+  testUn (NDef x t v vs)  = testUn (NVar x t vs) && testUn v
+  testUn (NLam x v)       = (not $ u == uid x) && testUn v
+  testUn (NK v)           = testUn v
+  testUn (NSort _)        = True
+  testUn (NFun a b)       = (testUn a) && (testUn b)
+  testUn (NDontCare)      = True
+
+
+  
   
 
   
