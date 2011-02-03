@@ -18,8 +18,16 @@ import qualified ScopeMonad as Scoping
 
 
 
-import ErrorExpected
+--import ErrorExpected
 
+--import OrderedComplex2
+--import OrderedCom2
+
+--import ClosVal
+--import Closures
+
+import HeredNormVal
+import HeredNormal
 
 
 
