@@ -36,7 +36,7 @@ examples : helf
 
 
 clean : 
-	rm *.o *.hi
+	-make -C src clean
 	make -C test/fail clean
 
 # EOF
