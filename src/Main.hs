@@ -26,8 +26,11 @@ import qualified ScopeMonad as Scoping
 --import ClosVal
 --import Closures
 
-import HeredNormVal
-import HeredNormal
+--import HeredNormVal
+--import HeredNormal
+
+import HerBruijnVal
+import HerBruijn
 
 
 

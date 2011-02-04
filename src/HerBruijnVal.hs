@@ -30,7 +30,7 @@ import MapEnv as M hiding (mapM)
 -- * de Bruijn Terms
 
 data BTm -- names are only used for quoting
-  = B Int
+  = B Int A.Name
   | BVar A.Name
   | BCon A.Name
   | BDef A.Name
@@ -44,12 +44,12 @@ data BTm -- names are only used for quoting
 -- * beta normal values
 
 data HVal
-  = HBound Int  HVal [HVal]        -- }   (bound head variable)
-  | HVar A.Name HVal [HVal]        -- }
-  | HCon A.Name HVal [HVal]        -- }-> Head
+  = HBound Int A.Name [HVal]       -- }   (bound head variable)
+  | HVar A.Name HVal  [HVal]       -- }
+  | HCon A.Name HVal  [HVal]       -- }-> Head
   | HDef A.Name HVal HVal [HVal]   -- }
   | HLam A.Name HVal
-  | HK HVal                        -- constant Lambda 
+  | HK HVal                        -- constant Lambda, not binding anything and therefor not counted by de Bruijn indices 
   | HSort Value.Sort
   | HFun HVal HVal
   | HDontCare
@@ -60,6 +60,7 @@ instance Value A.Name HVal where
   freeVar = var
   valView v =
     case v of
+      HBound k name vs    -> VNe name HDontCare (reverse vs) 
       HVar x t vs         -> VNe x t (reverse vs)
       HCon x t vs         -> VNe x t (reverse vs)
       HDef x v t vs       -> VDef x t (reverse vs)
@@ -97,13 +98,13 @@ lookupVal v@(HVar x _ _) env = case lookup (uid x) env of
 
 instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => MonadEval HVal Env' m where
 
-  -- apply :: HVal- HVal -> m HVal
+  -- apply :: HVal-> HVal -> m HVal
   apply f w =
     case f of
       HVar x t vs                 -> return $ HVar x t (w:vs)
       HCon x t vs                 -> return $ HCon x t (w:vs)
       HDef x v t vs               -> return $ HDef x v t (w:vs)
-      --HLam x v                    -> subst v (singleton (uid x) w) 
+      HLam x v                    -> subst v w
       HK v                        -> return v
 
   -- evaluate :: Expr -> Env' -> m HVal
@@ -113,7 +114,7 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
     where
       -- evaluate' :: BTm -> Env' -> m HVal
       evaluate' btm env = case btm of
-        B k         -> return $ HBound k HDontCare []
+        B k n       -> return $ HBound k n []
         BVar x      -> return $ lookupVal (var_ x) env
         BCon x      -> con x . symbType . sigLookup' (uid x) <$> ask
         BDef x      -> do
@@ -125,19 +126,103 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
         BSort sort  -> return $ HSort sort
         BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
         
-  -- evaluate' :: Expr -> m NVal
+  -- evaluate' :: Expr -> m HVal
   evaluate' = flip evaluate empty
 
-        
+  abstractPi a (_, HVar x _ []) b = return $ HFun a $ HLam x $ bindx 0 b where
+    bindx :: Int -> HVal -> HVal
+    bindx k (HBound i n vs) = HBound i n $ map (bindx k) vs
+    bindx k (HVar y t vs)   = (if  x==y 
+                                then HBound k x 
+                                else HVar y $ bindx k t) 
+                                $ map (bindx k) vs
+    bindx k (HCon c t vs)   = HCon c t $ map (bindx k) vs
+    bindx k (HDef y t d vs) = HDef y t d $ map (bindx k) vs
+    bindx k (HLam y t)      = HLam y $ bindx (k+1) t
+    bindx k (HK t)          = HK $ bindx k t
+    bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
+    bindx _ anything        = anything -- Sort, DontCare
+  abstractPi _ _ _                = fail $ "can only abstract a free variable"
+
+  unfold v = 
+    case v of
+      HDef d f t vs   -> appsR f vs
+      _               -> return v
+
+  unfolds v = 
+    case v of
+      HDef d f t vs   -> unfolds =<< appsR' f vs 
+      _               -> return v
+
+  -- reify v = fail $ "not implemented yet"
+  reify v = quote v A.initSysNameCounter 
 
 
 
+subst :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => HVal -> HVal -> m HVal
+subst t w = sub 0 t where
+  sub :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Int -> HVal -> m HVal
+  sub k t = case t of
+    HBound i n vs   -> if k==i 
+                        then appsR w =<< mapM (sub k) vs
+                        else HBound i n <$> mapM (sub k) vs
+    HVar x a vs     -> HVar x a <$> mapM (sub k) vs
+    HCon c a vs     -> HCon c a <$> mapM (sub k) vs
+    HDef x a v vs   -> HDef x a v <$> mapM (sub k) vs
+    HLam x v        -> HLam x <$> sub (k+1) v
+    HK v            -> HK <$> sub k v
+    HFun a b        -> HFun <$> sub k a <*> sub k b
+    anything        -> return anything
 
+    
+-- * supporting unfolds
 
+appsR' :: (Applicative m, Monad m, MonadEval HVal Env' m) => HVal -> [HVal] -> m HVal 
+appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
+apply' :: (Applicative m, Monad m, MonadEval HVal Env' m) => HVal -> HVal -> m HVal
+apply' f v =
+    case f of
+      HDef d w t []   -> apply' w v
+      HDef d w t ws   -> appsR' w (v:ws)
+      _               -> apply f v
+      
 
+-- * Reification
 
+-- quote :: NVal -> A.SysNameCounter -> EvalM A.Expr
+quote :: (Applicative m, Monad m, MonadEval HVal Env' m) => HVal -> A.SysNameCounter -> m A.Expr
+quote v i =
+  case v of
+    HBound k n vs       -> foldr (flip A.App) (A.Ident $ A.Var n) <$> mapM (flip quote i) vs
+    HVar x _ vs         -> foldr (flip A.App) (A.Ident $ A.Var x) <$> mapM (flip quote i) vs
+    HCon x _ vs         -> foldr (flip A.App) (A.Ident $ A.Con x) <$> mapM (flip quote i) vs
+    HDef x _ _ vs       -> foldr (flip A.App) (A.Ident $ A.Def x) <$> mapM (flip quote i) vs
+    --HLam x w            -> see below
+    --HK _                -> see below
+    HSort Type          -> return A.Typ
+    HSort Kind          -> error "cannot quote sort kind"
+    HDontCare           -> error "cannot quote the dontcare value"
+    HFun a (HK b)       -> A.Pi Nothing <$> quote a i <*> quote b i
+    HFun a f            -> do
+                            u     <- quote a i
+                            (x,t) <- quoteFun f i
+                            return $ A.Pi (Just x) u t
+    f                   -> do
+                            (x,e) <- quoteFun f i
+                            return $ A.Lam x Nothing e
+  
 
+-- quoteFun :: HVal -> A.SysNameCounter -> EvalM (A.Name, A.Expr)
+quoteFun :: (Applicative m, Monad m, MonadEval HVal Env' m) =>
+            HVal -> A.SysNameCounter -> m (A.Name, A.Expr)
+quoteFun f i = do
+  let n = case f of
+          HLam x _  -> x
+          HK w      -> A.noName
+  let (x, i') = A.nextSysName i n
+  v <- f `apply` (var_ x)
+  (x,) <$> quote v i'
 
 
 -- * transformation
@@ -161,7 +246,7 @@ transform = trans lbl_empty where
   trans :: LocBoundList A.Name -> A.Expr -> BTm
   trans lbl (Ident ident) = case ident of
         Var x -> case lookup_lbl x lbl of 
-                        Just k  -> B (lblsize lbl - 1 - k)
+                        Just k  -> B (lblsize lbl - 1 - k) x
                         Nothing -> BVar x
         Con x -> BCon x
         Def x -> BDef x
