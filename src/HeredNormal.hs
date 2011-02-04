@@ -45,7 +45,7 @@ data Context = Context
   }
 
 emptyContext :: Context
-emptyContext = Context 0 M.empty M.empty
+emptyContext = Context (-1) M.empty M.empty
 
 type ContextM = Reader Context
 
@@ -55,7 +55,7 @@ instance MonadCxt NVal Env' ContextM where
     l <- asks level
     let xv = NVar (n { A.uid = l }) t []
     local (\ (Context l gamma rho) -> 
-             Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho)) 
+             Context (l - 1) (Map.insert x t gamma) (Map.insert x xv rho)) 
           (cont xv)
 
   lookupLocal x = do 
@@ -77,7 +77,7 @@ instance MonadCxt NVal Env' CheckExprM where
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
     let xv  = NVar (n { A.uid = l }) t []
-    let cxt = Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho) 
+    let cxt = Context (l - 1) (Map.insert x t gamma) (Map.insert x xv rho) 
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
   lookupLocal n@(A.Name x _) = do 
@@ -127,7 +127,9 @@ instance PrettyM CheckDeclM NVal where
   prettyM = doCheckExpr . prettyM 
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
-checkDeclaration d = do checkDecl d
+checkDeclaration d = do
+  liftIO . putStrLn =<< showM d
+  checkDecl d
 
 checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations

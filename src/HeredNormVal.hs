@@ -145,24 +145,24 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
   
   
   
--- * substituation
+-- * substitution
 
 subst :: (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => NVal -> Env' -> m NVal
 subst nval env = case nval of
-  NVar x t vs         -> case lookup (uid x) env of
-                          Nothing -> (\z -> return $ NVar x t z) =<< (mapM (flip subst env) vs)
-                          Just v  -> appsR v =<< mapM (flip subst env) vs
-  NCon x t vs         -> (\z -> return $ NCon x t z) =<< mapM (flip subst env) vs
-  NDef x v t vs       -> (\z -> return $ NDef x v t z) =<< mapM (flip subst env) vs
-  NLam x v            -> if testUniqueness env (uid x)
-                            then
-                              if notMember (uid x) env
-                                then (\z -> return $ NLam x z) =<< (subst v env)
-                                else fail $ (show x) ++ " is a key in the current environment"
-                            else fail $ (show x) ++ " is mentioned in the current environment"
-                         -- note to self: care! x must not be in range(env), so this must be guaranteed! (however, if all names are unique anyway, 'deleteFromEnv' is not needed)
-  NK v                -> (\z -> return $ NK z) =<< (subst v env)
-  NFun a b            -> Util.appM2 (\s t -> return $ NFun s t) (subst a env) (subst b env)
+  NVar x t vs   -> case lookup (uid x) env of
+                    Nothing -> (\z -> return $ NVar x t z) =<< (mapM (flip subst env) vs)
+                    Just v  -> appsR v =<< mapM (flip subst env) vs
+  NCon x t vs   -> (\z -> return $ NCon x t z) =<< mapM (flip subst env) vs
+  NDef x v t vs -> (\z -> return $ NDef x v t z) =<< mapM (flip subst env) vs
+  NLam x v      -> if testUniqueness env (uid x)
+                      then
+                        if notMember (uid x) env
+                          then (\z -> return $ NLam x z) =<< (subst v env)
+                          else fail $ (show x) ++ " is a key in the current environment"
+                      else fail $ (show x) ++ " is mentioned in the current environment"
+                   -- note to self: care! x must not be in range(env), so this must be guaranteed! (however, if all names are unique anyway, 'deleteFromEnv' is not needed)
+  NK v          -> (\z -> return $ NK z) =<< (subst v env)
+  NFun a b      -> Util.appM2 (\s t -> return $ NFun s t) (subst a env) (subst b env)
 
   
 -- hopefully, this is not necessary thanks to unique names...
