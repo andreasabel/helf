@@ -101,6 +101,7 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
   -- apply :: HVal-> HVal -> m HVal
   apply f w =
     case f of
+      HBound k name vs            -> return $ HBound k name (w:vs)
       HVar x t vs                 -> return $ HVar x t (w:vs)
       HCon x t vs                 -> return $ HCon x t (w:vs)
       HDef x v t vs               -> return $ HDef x v t (w:vs)
