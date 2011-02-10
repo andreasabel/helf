@@ -4,8 +4,6 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 %%% parsing %%%
 %%% scope checking %%%
 %%% type checking %%%
-a : type.
-app : a -> a -> a = [x] [y] x y.
 error during typechecking:
 checking [x] [y] x y against a -> a -> a
   checking [y] x y against a -> a

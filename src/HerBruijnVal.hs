@@ -175,10 +175,10 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
         BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
         BSort sort  -> return $ HSort sort
         BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
-        
+-}        
+
   -- evaluate' :: Expr -> m HVal
   evaluate' = flip evaluate M.empty
--}
 
   abstractPi a (_, HVar x _ []) b = return $ HFun a $ HLam x $ bindx 0 b where
     bindx :: Int -> HVal -> HVal
