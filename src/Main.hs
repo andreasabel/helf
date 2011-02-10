@@ -16,23 +16,20 @@ import TheMonad
 import qualified Scoping 
 import qualified ScopeMonad as Scoping
 
+-- import ErrorExpected
 
+-- import OrderedComplex2
+-- import OrderedCom2
 
---import ErrorExpected
+-- import ClosVal
+-- import Closures
+-- import Monolith
 
---import OrderedComplex2
---import OrderedCom2
-
---import ClosVal
---import Closures
-
---import HeredNormVal
---import HeredNormal
+-- import HeredNormVal
+-- import HeredNormal
 
 import HerBruijnVal
 import HerBruijn
-
-
 
 import System
 import System.IO (stdout, hSetBuffering, BufferMode(..))
