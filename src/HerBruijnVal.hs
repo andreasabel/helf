@@ -28,15 +28,24 @@ import MapEnv as M hiding (mapM)
 
 import Data.Set (Set, empty, notMember, insert)
 
+-- * heads
+
+data Head
+  = HdBound Int A.Name  -- bound variable: de Bruijn index
+  | HdFree A.Name   -- free variable: name
+  | HdCon A.Name
+  | HdDef A.Name
+    deriving (Eq,Ord,Show)
+
 -- * de Bruijn Terms
 
 data BTm -- names are only used for quoting
-  = B Int A.Name
-  | BVar A.Name
+  = B Int A.Name  -- bound variable: de Bruijn index
+  | BVar A.Name   -- free variable: name
   | BCon A.Name
   | BDef A.Name
   | BApp BTm BTm
-  | BLam A.Name BTm
+  | BLam A.Name BTm  -- name irrelevant for execution
   | BConstLam BTm -- these are lambdas, but not counted
   | BSort Value.Sort
   | BPi BTm BTm
@@ -55,16 +64,16 @@ data HVal
   | HFun HVal HVal
   | HDontCare
 
-instance Value A.Name HVal where
+instance Value Head HVal where
   typ = HSort Type
   kind = HSort Kind
-  freeVar = var
+  freeVar (HdFree x) = var x
   valView v =
     case v of
-      HBound k name vs    -> VNe name HDontCare (reverse vs) 
-      HVar x t vs         -> VNe x t (reverse vs)
-      HCon x t vs         -> VNe x t (reverse vs)
-      HDef x v t vs       -> VDef x t (reverse vs)
+      HBound k name vs    -> VNe (HdBound k name) HDontCare (reverse vs)
+      HVar x t vs         -> VNe (HdFree x) t (reverse vs)
+      HCon x t vs         -> VNe (HdCon x) t (reverse vs)
+      HDef x v t vs       -> VDef (HdDef x) t (reverse vs)
       HLam _ _            -> VAbs
       HK _                -> VAbs
       HSort s             -> VSort s
@@ -144,10 +153,12 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
                       SigDef t v <- sigLookup' (uid x) <$> ask
                       return $ def x v t
         BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
-        BLam x t    -> (\z -> return $ HLam x z) =<< (evaluate' t env)
+        BLam x t    -> (\z -> return $ HLam x z) =<< (evaluate' t env) 
+                       -- HLam x <$> evaluate' t env
         BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
         BSort sort  -> return $ HSort sort
         BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
+                       -- HFun <$> evaluate' a env <*> evaluate' b env
         
 
 {- THIS IS ONLY FOR DEBUGGING -}
@@ -181,6 +192,8 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
   evaluate' = flip evaluate M.empty
 
   abstractPi a (_, HVar x _ []) b = return $ HFun a $ HLam x $ bindx 0 b where
+    -- INVARIANT in bindx k v: k is bigger than any index in k 
+    --   (if k is increased whenever stepping under a lambda)
     bindx :: Int -> HVal -> HVal
     -- debugging
     bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
