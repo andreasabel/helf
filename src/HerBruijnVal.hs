@@ -26,6 +26,7 @@ import Util hiding (lookupSafe)
 import Value
 import MapEnv as M hiding (mapM)
 
+import Data.Set (Set, empty, notMember, insert)
 
 -- * de Bruijn Terms
 
@@ -98,6 +99,7 @@ lookupVal v@(HVar x _ _) env = case lookup (uid x) env of
 
 instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => MonadEval HVal Env' m where
 
+{- THIS IS THE CORRECT CODE -}
   -- apply :: HVal-> HVal -> m HVal
   apply f w =
     case f of
@@ -108,6 +110,26 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
       HLam x v                    -> subst v w
       HK v                        -> return v
 
+{- ONLY FOR DEBUGGING 
+  -- apply :: HVal-> HVal -> m HVal
+  apply f w = 
+    let result = appl' f w
+    in 
+      (\correctVal -> if checkForPseudofree correctVal then return correctVal else fail $ "APPLY produced a value without unique names") =<< result
+    where appl' :: HVal -> HVal -> m HVal
+          appl' f w = 
+            if (checkForPseudofree f) && (checkForPseudofree w) then
+              case f of
+                HBound k name vs            -> return $ HBound k name (w:vs)
+                HVar x t vs                 -> return $ HVar x t (w:vs)
+                HCon x t vs                 -> return $ HCon x t (w:vs)
+                HDef x v t vs               -> return $ HDef x v t (w:vs)
+                HLam x v                    -> subst v w
+                HK v                        -> return v
+            else fail $ "APPLY found a value without unique names"
+-}
+            
+{- THIS IS THE CORRECT CODE -}
   -- evaluate :: Expr -> Env' -> m HVal
   evaluate expr env =
     let expr' = transform expr
@@ -127,23 +149,52 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
         BSort sort  -> return $ HSort sort
         BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
         
+
+{- THIS IS ONLY FOR DEBUGGING -}
+{-  -- evaluate :: Expr -> Env' -> m HVal
+  evaluate expr env =
+    let expr' = transform expr
+        result' = evaluate' expr' env
+    in 
+    (\correctVal -> if checkForPseudofree correctVal then return correctVal else fail $ "EVALUATE did not bind all variables correctly") =<< result'
+    where
+      -- evaluate' :: BTm -> Env' -> m HVal
+      evaluate' btm env = case btm of
+        B k n       -> return $ HBound k n []
+        BVar x      -> return $ lookupVal (var_ x) env
+        -- BCon x      -> con x . symbType . sigLookup' (uid x) <$> ask
+        -- debugging (above is the "normal" code):
+        BCon x      -> do
+                        result <- con x . symbType . sigLookup' (uid x) <$> ask
+                        if checkForPseudofree result then return result else fail $ "EVALUATE: pseudofree variables after BCon"
+        BDef x      -> do
+                      SigDef t v <- sigLookup' (uid x) <$> ask
+                      return $ def x v t
+        BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
+        BLam x t    -> (\z -> return $ HLam x z) =<< (evaluate' t env)
+        BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
+        BSort sort  -> return $ HSort sort
+        BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
+        
   -- evaluate' :: Expr -> m HVal
-  evaluate' = flip evaluate empty
+  evaluate' = flip evaluate M.empty
+-}
 
   abstractPi a (_, HVar x _ []) b = return $ HFun a $ HLam x $ bindx 0 b where
     bindx :: Int -> HVal -> HVal
-    bindx k (HBound i n vs) = HBound i n $ map (bindx k) vs
+    -- debugging
+    bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
     bindx k (HVar y t vs)   = (if  x==y 
                                 then HBound k x 
                                 else HVar y $ bindx k t) 
                                 $ map (bindx k) vs
     bindx k (HCon c t vs)   = HCon c t $ map (bindx k) vs
     bindx k (HDef y t d vs) = HDef y t d $ map (bindx k) vs
-    bindx k (HLam y t)      = HLam y $ bindx (k+1) t
+    bindx k (HLam y t)      = HLam y $ bindx (k+1) t -- wrong: if x==y then HLam y t else HLam y $ bindx (k+1) t
     bindx k (HK t)          = HK $ bindx k t
     bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
     bindx _ anything        = anything -- Sort, DontCare
-  abstractPi _ _ _                = fail $ "can only abstract a free variable"
+  abstractPi _ _ _          = fail $ "can only abstract a free variable"
 
   unfold v = 
     case v of
@@ -157,6 +208,25 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
 
   -- reify v = fail $ "not implemented yet"
   reify v = quote v A.initSysNameCounter 
+
+-- for debugging only:
+-- checks if a value contains a variable that actually should be bound. "True" means that everything is okay.
+checkForPseudofree :: HVal -> Bool
+checkForPseudofree = check Data.Set.empty where
+  check :: Set A.Name -> HVal -> Bool
+  check set v = case v of
+    HBound _ _ vs -> foldr (&&) True $ map (check set) vs
+    HVar x t vs   -> (notMember x set) && (check set t) && (foldr (&&) True $ map (check set) vs)
+    HCon x t vs   -> foldr (&&) True $ map (check set) vs
+    HDef x t d vs -> foldr (&&) True $ map (check set) vs
+    HLam x t      -> check (Data.Set.insert x set) t
+    HK t          -> check set t
+    HFun a b      -> (check set a) && (check set b)
+    _             -> True
+    
+
+
+
 
 
 
