@@ -11,6 +11,7 @@ import Control.Monad.Error hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State hiding (mapM)
 
+import qualified Data.List as List
 import Data.Traversable
 import Data.Map (Map) 
 import qualified Data.Map as Map
@@ -35,7 +36,7 @@ data Head
   | HdFree A.Name   -- free variable: name
   | HdCon A.Name
   | HdDef A.Name
-    deriving (Ord)
+    deriving (Ord, Show)
 
 instance Eq Head where
   HdBound i _ == HdBound i' _ = i == i'
@@ -69,6 +70,7 @@ data HVal
   | HSort Value.Sort
   | HFun HVal HVal
   | HDontCare
+    deriving (Show)
 
 instance Value Head HVal where
   typ = HSort Type
@@ -118,7 +120,7 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
   -- apply :: HVal-> HVal -> m HVal
   apply f w =
     case f of
-      HBound k name vs            -> return $ HBound k name (w:vs)
+--      HBound k name vs            -> return $ HBound k name (w:vs)
       HVar x t vs                 -> return $ HVar x t (w:vs)
       HCon x t vs                 -> return $ HCon x t (w:vs)
       HDef x v t vs               -> return $ HDef x v t (w:vs)
@@ -146,6 +148,44 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
             
 {- THIS IS THE CORRECT CODE -}
   -- evaluate :: Expr -> Env' -> m HVal
+  evaluate expr env = (\ w -> assertClosed w (return w)) =<< 
+    eval expr where
+      eval expr = case expr of
+        Ident (Var x) -> return $ maybe (var_ x) id $ M.lookup (A.uid x) env
+        Ident (Con x) -> con x . symbType . sigLookup' (uid x) <$> ask
+        Ident (Def x) -> do
+                      SigDef t v <- sigLookup' (uid x) <$> ask
+                      return $ def x v t
+        App e1 e2 -> Util.appM2 apply (eval e1) (eval e2)
+        Lam x _ e -> HLam x . bind x <$> eval e 
+        Typ       -> return $ HSort Type
+        Pi Nothing a b -> 
+          HFun <$> eval a <*> (HK <$> eval b)
+        Pi (Just x) a b -> 
+          HFun <$> eval a <*> (HLam x . bind x <$> eval b)
+{-  
+evaluate expr env =
+    eval expr [] where
+      eval expr bvars = case expr of
+        Ident (Var x) ->
+          case M.lookup (A.uid x) env of
+            Just v  -> return v
+            Nothing -> case List.elemIndex x bvars of
+              Just i -> return $ HBound i x []
+              Nothing -> fail "unbound variable"
+        Ident (Con x) -> con x . symbType . sigLookup' (uid x) <$> ask
+        Ident (Def x) -> do
+                      SigDef t v <- sigLookup' (uid x) <$> ask
+                      return $ def x v t
+        App e1 e2 -> Util.appM2 apply (eval e1 bvars) (eval e2 bvars)
+        Lam x _ e -> HLam x <$> eval e (x : bvars)
+        Typ       -> return $ HSort Type
+        Pi Nothing a b -> 
+          HFun <$> eval a bvars <*> (HK <$> eval b bvars)
+        Pi (Just x) a b -> 
+          HFun <$> eval a bvars <*> (HLam x <$> eval b (x : bvars))
+-}
+{-
   evaluate expr env =
     let expr' = transform expr
     in evaluate' expr' env
@@ -165,7 +205,7 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
         BSort sort  -> return $ HSort sort
         BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
                        -- HFun <$> evaluate' a env <*> evaluate' b env
-        
+  -}      
 
 {- THIS IS ONLY FOR DEBUGGING -}
 {-  -- evaluate :: Expr -> Env' -> m HVal
@@ -230,6 +270,29 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
   -- reify v = fail $ "not implemented yet"
   reify v = quote v A.initSysNameCounter 
 
+
+bind :: Name -> HVal -> HVal
+bind x v = bindx 0 v where
+    -- INVARIANT in bindx k v: k is bigger than any index in k 
+    --   (if k is increased whenever stepping under a lambda)
+    bindx :: Int -> HVal -> HVal
+    -- debugging
+    bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
+    bindx k (HVar y t vs)   = (if  x==y 
+                                then HBound k x 
+                                else HVar y $ bindx k t) 
+                                $ map (bindx k) vs
+    bindx k (HCon c t vs)   = HCon c t $ map (bindx k) vs
+    bindx k (HDef y t d vs) = HDef y t d $ map (bindx k) vs
+    bindx k (HLam y t)      = HLam y $ bindx (k+1) t -- wrong: if x==y then HLam y t else HLam y $ bindx (k+1) t
+    bindx k (HK t)          = HK $ bindx k t
+    bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
+    bindx k v@(HSort{})     = v 
+    bindx k v@HDontCare      = v 
+
+
+
+
 -- for debugging only:
 -- checks if a value contains a variable that actually should be bound. "True" means that everything is okay.
 checkForPseudofree :: HVal -> Bool
@@ -246,13 +309,27 @@ checkForPseudofree = check Data.Set.empty where
     _             -> True
     
 
+checkClosed :: Int -> HVal -> Bool
+checkClosed k v = -- check whether all indices in v are < k
+  case v of
+    HBound i n vs -> i < k && all (checkClosed k) vs
+    HVar x a vs   -> checkClosed 0 a && all (checkClosed k) vs
+    HCon c a vs   -> checkClosed 0 a && all (checkClosed k) vs
+    HDef c a w vs -> checkClosed 0 a && checkClosed 0 w && all (checkClosed k) vs
+    HLam x t      -> checkClosed (k+1) t
+    HK t          -> checkClosed k t
+    HFun a b      -> checkClosed k a && checkClosed k b
+    _             -> True
 
+assert :: Monad m => String -> Bool -> m a -> m a
+assert s True  cont = cont
+assert s False cont = fail s
 
-
-
+assertClosed w = assert (show w ++ " not closed") (checkClosed 0 w)
 
 subst :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => HVal -> HVal -> m HVal
-subst t w = sub 0 t where
+subst t w = assertClosed w $
+ sub 0 t where
   sub :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Int -> HVal -> m HVal
   sub k t = case t of
     HBound i n vs   -> if k==i 
@@ -261,11 +338,23 @@ subst t w = sub 0 t where
     HVar x a vs     -> HVar x a <$> mapM (sub k) vs
     HCon c a vs     -> HCon c a <$> mapM (sub k) vs
     HDef x a v vs   -> HDef x a v <$> mapM (sub k) vs
-    HLam x v        -> HLam x <$> sub (k+1) v
+    HLam x v        -> HLam x <$> sub (k+1) v   -- BUGGY!
     HK v            -> HK <$> sub k v
     HFun a b        -> HFun <$> sub k a <*> sub k b
     anything        -> return anything
 
+{-
+
+  [ K / x] (\ y. x y)
+= [(\ \ 1) / 0] (\ 1 0)
+= \ [(\ \ 1) / 1] (1 0)
+= \ (\ \ 1) @ 0
+= \ [0/0] (\ 1)
+= \ \ [0/1] 1    <-- problematic step (substituting a non-closed term under lambda)
+= \ \ 0
+= K*
+
+-}
     
 -- * supporting unfolds
 
