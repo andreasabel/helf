@@ -35,7 +35,13 @@ data Head
   | HdFree A.Name   -- free variable: name
   | HdCon A.Name
   | HdDef A.Name
-    deriving (Eq,Ord,Show)
+    deriving (Ord)
+
+instance Eq Head where
+  HdBound i _ == HdBound i' _ = i == i'
+  HdFree x == HdFree x' = x == x'
+  HdCon x == HdCon x' = x == x'
+  HdDef x == HdDef x' = x == x'
 
 -- * de Bruijn Terms
 
@@ -206,7 +212,9 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
     bindx k (HLam y t)      = HLam y $ bindx (k+1) t -- wrong: if x==y then HLam y t else HLam y $ bindx (k+1) t
     bindx k (HK t)          = HK $ bindx k t
     bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
-    bindx _ anything        = anything -- Sort, DontCare
+    bindx k v@(HSort{})     = v 
+    bindx k v@HDontCare      = v 
+    -- bindx _ anything        = anything -- Sort, DontCare
   abstractPi _ _ _          = fail $ "can only abstract a free variable"
 
   unfold v = 
@@ -276,9 +284,10 @@ apply' f v =
 
 -- quote :: NVal -> A.SysNameCounter -> EvalM A.Expr
 quote :: (Applicative m, Monad m, MonadEval HVal Env' m) => HVal -> A.SysNameCounter -> m A.Expr
+-- INVARIANT: i is negative, decreased for every lambda
 quote v i =
   case v of
-    HBound k n vs       -> foldr (flip A.App) (A.Ident $ A.Var n) <$> mapM (flip quote i) vs
+    HBound k n vs       -> foldr (flip A.App) (A.Ident $ A.Var (n {uid = k+i+1})) <$> mapM (flip quote i) vs
     HVar x _ vs         -> foldr (flip A.App) (A.Ident $ A.Var x) <$> mapM (flip quote i) vs
     HCon x _ vs         -> foldr (flip A.App) (A.Ident $ A.Con x) <$> mapM (flip quote i) vs
     HDef x _ _ vs       -> foldr (flip A.App) (A.Ident $ A.Def x) <$> mapM (flip quote i) vs
