@@ -1,0 +1,94 @@
+% Copyright (c) 2004 Princeton University
+%	$Id: logic.elf,v 1.17 2005/02/10 15:21:23 richards Exp $
+
+tp     : type.
+tm     : tp -> type.
+
+form   : tp.
+tform  : type = tm form. 
+
+pf     : tform -> type.
+
+
+% constructors:
+
+_forall : {T : tp} (tm T -> tform) -> tform.
+
+_forall_i : {T : tp}{A : tm T -> tform}
+  ({X : tm T} pf (A X)) -> 
+  pf (_forall T A).
+
+% def without type signature (needs abstraction)
+
+_forall2 : {T1 : tp}{T2 : tp}{f : tm T1 -> tm T2 -> tform} tform
+  = [T1 : tp][T2 : tp][f : tm T1 -> tm T2 -> tform]
+    _forall T1 [x : tm T1] 
+      _forall T2 (f x).
+
+% defs with type signature
+
+forall : {T:tp} (tm T -> tform) -> tform 
+  = [T:tp] [x3:tm T -> tform] 
+      _forall T ([x4:tm T] x3 x4).
+
+forall2 : {T1:tp} {T2:tp} (tm T1 -> tm T2 -> tform) -> tform 
+  = [T1:tp] [T2:tp] [x3:tm T1 -> tm T2 -> tform] 
+      _forall2 T1 T2 ([x4:tm T1] [x5:tm T2] x3 x4 x5).
+
+forall_i : {T:tp} {F:tm T -> tform} 
+  ({a:tm T} pf (F a)) -> 
+  pf (forall T ([x3:tm T] F x3)) 
+  = [T:tp] [F:tm T -> tform] [x3:{a:tm T} pf (F a)] 
+      _forall_i T ([x4:tm T] F x4) ([a:tm T] x3 a).
+
+forall2_i : {X1:tp} {X2:tp} {F:tm X1 -> tm X2 -> tform} 
+  ({a:tm X1} {b:tm X2} pf (F a b)) -> 
+
+  pf (forall2 X1 X2 ([x3:tm X1] [x4:tm X2] F x3 x4)) 
+
+  = [X1:tp] [X2:tp] [F:tm X1 -> tm X2 -> tform] 
+    [p1:{a:tm X1} {b:tm X2} pf (F a b)] 
+
+    forall_i X1 ([x3:tm X1] forall X2 ([x4:tm X2] F x3 x4)) 
+      ([x3:tm X1] forall_i X2 ([x4:tm X2] F x3 x4) ([a:tm X2] p1 x3 a)).
+
+%{
+  inferring type of 
+
+    forall_i X1 ([x3 : tm X1] forall X2 ([x4 : tm X2] F x3 x4)) 
+      ([x3 : tm X1] forall_i X2 ([x4 : tm X2] F x3 x4) ([a : tm X2] p1 x3 a))
+
+
+  forall_i =>  {T:tp} {F:tm T -> tform} 
+                 ({a:tm T} pf (F a)) -> pf (forall T ([x3:tm T] F x3))
+
+  forall_i X1 =>  {F:tm X1 -> tform} 
+                 ({a:tm X1} pf (F a)) -> pf (forall X1 ([x3:tm X1] F x3))
+
+  forall_i X1 ([x3 : tm X1] forall X2 ([x4 : tm X2] F x3 x4)) =>
+            [ ([x3 : tm X1] forall X2 ([x4 : tm X2] F x3 x4)) / F ]
+                 ({a:tm X1} pf (F a)) -> pf (forall X1 ([x3:tm X1] F x3))
+
+
+  checking 
+
+    [x3 : tm X1] forall_i X2 ([x4 : tm X2] F x3 x4) ([a : tm X2] p1 x3 a) 
+  against 
+    {a : tm X1} pf (forall X2 ([x4] F x4 x4))
+
+  checking 
+
+    forall_i X2 ([x4 : tm X2] F x3 x4) ([a : tm X2] p1 x3 a) 
+
+  against 
+
+    pf (forall X2 ([x4] F x4 x4))
+
+  checking wether 
+
+    pf (forall X2 ([x3'] F x3 x3')) 
+  equals 
+    pf (forall X2 ([x4] F x4 x4))
+
+  head mismatch x3 != 
+}%
