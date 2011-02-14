@@ -128,7 +128,8 @@ instance PrettyM CheckDeclM HVal where
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
-  liftIO . putStrLn =<< showM d
+  --output:
+  -- liftIO . putStrLn =<< showM d
   checkDecl d
 
 checkDeclarations :: A.Declarations -> CheckDeclM ()

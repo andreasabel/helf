@@ -1,5 +1,5 @@
 {-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
-    PatternGuards, TupleSections #-}
+    PatternGuards, TupleSections, MultiParamTypeClasses #-}
 
 module HerBruijnVal where
 
@@ -43,6 +43,7 @@ instance Eq Head where
   HdFree x == HdFree x' = x == x'
   HdCon x == HdCon x' = x == x'
   HdDef x == HdDef x' = x == x'
+  _ == _ = False
 
 -- * de Bruijn Terms
 
@@ -66,7 +67,7 @@ data HVal
   | HCon A.Name HVal  [HVal]       -- }-> Head
   | HDef A.Name HVal HVal [HVal]   -- }
   | HLam A.Name HVal
-  | HK HVal                        -- constant Lambda, not binding anything and therefor not counted by de Bruijn indices 
+  | HK HVal                        -- constant Lambda, not binding anything and therefore not counted by de Bruijn indices 
   | HSort Value.Sort
   | HFun HVal HVal
   | HDontCare
@@ -124,7 +125,7 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
       HVar x t vs                 -> return $ HVar x t (w:vs)
       HCon x t vs                 -> return $ HCon x t (w:vs)
       HDef x v t vs               -> return $ HDef x v t (w:vs)
-      HLam x v                    -> subst v w
+      HLam x v                    -> subst v w --here?!
       HK v                        -> return v
 
 {- ONLY FOR DEBUGGING 
@@ -249,12 +250,11 @@ evaluate expr env =
                                 $ map (bindx k) vs
     bindx k (HCon c t vs)   = HCon c t $ map (bindx k) vs
     bindx k (HDef y t d vs) = HDef y t d $ map (bindx k) vs
-    bindx k (HLam y t)      = HLam y $ bindx (k+1) t -- wrong: if x==y then HLam y t else HLam y $ bindx (k+1) t
+    bindx k (HLam y t)      = HLam y $ bindx (k+1) t 
     bindx k (HK t)          = HK $ bindx k t
     bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
     bindx k v@(HSort{})     = v 
-    bindx k v@HDontCare      = v 
-    -- bindx _ anything        = anything -- Sort, DontCare
+    bindx k v@HDontCare     = v 
   abstractPi _ _ _          = fail $ "can only abstract a free variable"
 
   unfold v = 
@@ -288,7 +288,7 @@ bind x v = bindx 0 v where
     bindx k (HK t)          = HK $ bindx k t
     bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
     bindx k v@(HSort{})     = v 
-    bindx k v@HDontCare      = v 
+    bindx k v@HDontCare     = v 
 
 
 
@@ -327,6 +327,7 @@ assert s False cont = fail s
 
 assertClosed w = assert (show w ++ " not closed") (checkClosed 0 w)
 
+{-
 subst :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => HVal -> HVal -> m HVal
 subst t w = assertClosed w $
  sub 0 t where
@@ -342,6 +343,47 @@ subst t w = assertClosed w $
     HK v            -> HK <$> sub k v
     HFun a b        -> HFun <$> sub k a <*> sub k b
     anything        -> return anything
+-}
+
+
+subst :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => HVal -> HVal -> m HVal
+subst t w = --assertClosed w $
+ sub 0 w t where
+  sub :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Int -> HVal -> HVal -> m HVal
+  sub k w t = --if True then fail "subst aufgerufen" else  
+    case t of   -- t[w/k]
+    HBound i n vs   -> if k==i -- i.e., i is to be replaced
+                        then appsR w =<< mapM (sub k w) vs 
+                        else if k < i -- i.e, i is bound to a \ which stands to the left of the eliminated \
+                          then HBound (i-1) n <$> mapM (sub k w) vs 
+                          else HBound i n <$> mapM (sub k w) vs 
+    HVar x a vs     -> HVar x a <$> mapM (sub k w) vs
+    HCon c a vs     -> HCon c a <$> mapM (sub k w) vs
+    HDef x a v vs   -> HDef x a v <$> mapM (sub k w) vs
+    HLam x v        -> HLam x <$> sub (k+1) (lifting w) v
+    HK v            -> HK <$> sub k w v
+    HFun a b        -> HFun <$> sub k w a <*> sub k w b
+    v@HSort{}       -> return v
+    v@HDontCare     -> return v
+
+    
+-- raise the index of bound, but locally unbound variables by one
+lifting :: HVal -> HVal
+lifting w = lift' 0 w where
+  lift' :: Int -> HVal -> HVal 
+  lift' k w = case w of -- k is the counter for lambdas in w
+    HBound i n vs -> (if i < k  -- i.e. if i is bound
+                      then HBound i n 
+                      else HBound (i+1) n) $ map (lift' k) vs
+    HVar x a vs   -> HVar x a $ map (lift' k) vs
+    HCon c a vs   -> HCon c a $ map (lift' k) vs
+    HDef x a v vs -> HDef x a v $ map (lift' k) vs
+    HLam x v      -> HLam x $ lift' (k+1) v
+    HK v          -> HK $ lift' k v
+    HFun a b      -> (HFun $ lift' k a) $ lift' k b
+    anything      -> anything
+
+
 
 {-
 
