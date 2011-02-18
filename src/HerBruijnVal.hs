@@ -117,11 +117,10 @@ lookupVal v@(HVar x _ _) env = case lookup (uid x) env of
 
 instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => MonadEval HVal Env' m where
 
-{- THIS IS THE CORRECT CODE -}
   -- apply :: HVal-> HVal -> m HVal
   apply f w =
     case f of
---      HBound k name vs            -> return $ HBound k name (w:vs)
+      HBound k name vs            -> return $ HBound k name (w:vs)
       HVar x t vs                 -> return $ HVar x t (w:vs)
       HCon x t vs                 -> return $ HCon x t (w:vs)
       HDef x v t vs               -> return $ HDef x v t (w:vs)
@@ -146,24 +145,9 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
                 HK v                        -> return v
             else fail $ "APPLY found a value without unique names"
 -}
+
+  evaluate = evaluate2 -- we have evaluate1 and evaluate2, the latter uses a transformation bevor the evaluation is actually started.
             
-{- THIS IS THE CORRECT CODE -}
-  -- evaluate :: Expr -> Env' -> m HVal
-  evaluate expr env = (\ w -> assertClosed w (return w)) =<< 
-    eval expr where
-      eval expr = case expr of
-        Ident (Var x) -> return $ maybe (var_ x) id $ M.lookup (A.uid x) env
-        Ident (Con x) -> con x . symbType . sigLookup' (uid x) <$> ask
-        Ident (Def x) -> do
-                      SigDef t v <- sigLookup' (uid x) <$> ask
-                      return $ def x v t
-        App e1 e2 -> Util.appM2 apply (eval e1) (eval e2)
-        Lam x _ e -> HLam x . bind x <$> eval e 
-        Typ       -> return $ HSort Type
-        Pi Nothing a b -> 
-          HFun <$> eval a <*> (HK <$> eval b)
-        Pi (Just x) a b -> 
-          HFun <$> eval a <*> (HLam x . bind x <$> eval b)
 {-  
 evaluate expr env =
     eval expr [] where
@@ -186,27 +170,7 @@ evaluate expr env =
         Pi (Just x) a b -> 
           HFun <$> eval a bvars <*> (HLam x <$> eval b (x : bvars))
 -}
-{-
-  evaluate expr env =
-    let expr' = transform expr
-    in evaluate' expr' env
-    where
-      -- evaluate' :: BTm -> Env' -> m HVal
-      evaluate' btm env = case btm of
-        B k n       -> return $ HBound k n []
-        BVar x      -> return $ lookupVal (var_ x) env
-        BCon x      -> con x . symbType . sigLookup' (uid x) <$> ask
-        BDef x      -> do
-                      SigDef t v <- sigLookup' (uid x) <$> ask
-                      return $ def x v t
-        BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
-        BLam x t    -> (\z -> return $ HLam x z) =<< (evaluate' t env) 
-                       -- HLam x <$> evaluate' t env
-        BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
-        BSort sort  -> return $ HSort sort
-        BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
-                       -- HFun <$> evaluate' a env <*> evaluate' b env
-  -}      
+      
 
 {- THIS IS ONLY FOR DEBUGGING -}
 {-  -- evaluate :: Expr -> Env' -> m HVal
@@ -243,7 +207,8 @@ evaluate expr env =
     --   (if k is increased whenever stepping under a lambda)
     bindx :: Int -> HVal -> HVal
     -- debugging
-    bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
+    -- bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
+    bindx k (HBound i n vs) = HBound i n $ map (bindx k) vs 
     bindx k (HVar y t vs)   = (if  x==y 
                                 then HBound k x 
                                 else HVar y $ bindx k t) 
@@ -271,13 +236,52 @@ evaluate expr env =
   reify v = quote v A.initSysNameCounter 
 
 
+-- we have two implementations of evaluate:
+-- evaluate :: Expr -> Env' -> m HVal
+evaluate1 expr env = -- (\ w -> assertClosed w (return w)) =<< 
+  eval expr where
+    eval expr = case expr of
+      Ident (Var x)   -> return $ maybe (var_ x) id $ M.lookup (A.uid x) env
+      Ident (Con x)   -> con x . symbType . sigLookup' (uid x) <$> ask
+      Ident (Def x)   -> do
+                        SigDef t v <- sigLookup' (uid x) <$> ask
+                        return $ def x v t
+      App e1 e2       -> Util.appM2 apply (eval e1) (eval e2)
+      Lam x _ e       -> HLam x . bind x <$> eval e -- inefficient?
+      Typ             -> return $ HSort Type
+      Pi Nothing a b  -> HFun <$> eval a <*> (HK <$> eval b)
+      Pi (Just x) a b -> HFun <$> eval a <*> (HLam x . bind x <$> eval b)
+
+-- old, uses transform: 
+evaluate2 expr env =
+  let expr' = transform expr
+  in evaluate' expr' env
+  where
+    -- evaluate' :: BTm -> Env' -> m HVal
+    evaluate' btm env = case btm of
+      B k n       -> return $ HBound k n []
+      BVar x      -> return $ lookupVal (var_ x) env
+      BCon x      -> con x . symbType . sigLookup' (uid x) <$> ask
+      BDef x      -> do
+                    SigDef t v <- sigLookup' (uid x) <$> ask
+                    return $ def x v t
+      BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
+      BLam x t    -> (\z -> return $ HLam x z) =<< (evaluate' t env) 
+                     -- HLam x <$> evaluate' t env
+      BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
+      BSort sort  -> return $ HSort sort
+      BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
+
+
+
 bind :: Name -> HVal -> HVal
 bind x v = bindx 0 v where
     -- INVARIANT in bindx k v: k is bigger than any index in k 
     --   (if k is increased whenever stepping under a lambda)
     bindx :: Int -> HVal -> HVal
     -- debugging
-    bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
+    -- bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
+    bindx k (HBound i n vs) = HBound i n $ map (bindx k) vs
     bindx k (HVar y t vs)   = (if  x==y 
                                 then HBound k x 
                                 else HVar y $ bindx k t) 
@@ -448,8 +452,7 @@ quoteFun f i = do
   v <- f `apply` (var_ x)
   (x,) <$> quote v i'
 
-
--- * transformation
+-- * transformation, only used for evaluate2
 
 -- maybe this should be transferred to Util.hs
 data (Ord name) => LocBoundList name = LBL {lblsize :: Int, bList :: (Map name Int)}
