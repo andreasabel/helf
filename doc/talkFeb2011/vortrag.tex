@@ -1,0 +1,483 @@
+\documentclass[12pt,pdflatex,hyperref={pdfkeywords={Einige Stichwörter},pdfstartview=Fit,bookmarks=true,bookmarksopen=true,pdfpagemode=None,colorlinks=true,linkcolor=unserblau,urlcolor=unserblau},notes=hide,t]{beamer}
+
+
+\usepackage[latin1]{inputenc}
+%\usepackage{beamerthemelined}
+\usetheme[width=2cm]{Goettingen}
+\usecolortheme{sidebartab}
+\setbeamercovered{highly dynamic} 
+\usepackage{xspace}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+
+\usepackage[english]{babel}
+%\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{multimedia}
+
+\definecolor{unserblau}{rgb}{0.21, 0.21, 0.70}
+
+\usepackage{booktabs}
+\usepackage[nobibnewpage,notocbib]{apacite}
+\usepackage[absolute,overlay,quiet]{textpos}
+\usepackage{ngerman}
+
+
+
+% own
+\newcommand{\la}{\lambda}
+\newcommand{\ovlam}[1]{\mathcal{\lambda}^{#1}}
+\newcommand{\be}{\beta}
+\newcommand{\pa}[1]{\left( #1 \right)}
+\newcommand{\sub}[2]{\left[ #1 / #2 \right]}
+\newcommand{\subs}[4]{\left[ #1 / #2 , #3 / #4 \right]}
+\newcommand{\bere}{\longrightarrow_\be}
+\newcommand{\re}{\longrightarrow}
+
+\newcommand{\type}{\mathsf{Type}}
+\newcommand{\kind}{\mathsf{Kind}}
+\newcommand{\sort}{\mathsf{Sort}}
+\newcommand{\head}{\mathsf{Head}}
+\newcommand{\ovpi}{\Pi}
+\newcommand{\ovar}{\mathord{\bullet}}
+\newcommand{\oapp}[1]{\,\oann{#1}}
+\newcommand{\olam}[1]{\lambda^{#1}.\,}
+\newcommand{\opi}[2]{\Pi\,#1\,^{#2}}
+\newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
+
+\newcommand{\ev}[3]{\llbracket{#1}\rrbracket^{#2}_{#3}}
+\newcommand{\ap}{@} % !! todo.
+
+
+
+
+
+
+% \author[H. Wurst \& V. Egal]{Hans Wurst \and Völlig Egal \\
+% 			    \href{mailto:(wurst|egal)@informatik.hu-berlin.de}{\texttt{(wurst|egal)@informatik.hu-berlin.de}}
+% }
+\author[Nicolai Kraus]{Nicolai Kraus}
+
+\institute{Institut für Informatik\\ Ludwig-Maximilians-Universität München}
+\date[2011-02-23]{23.02.2011}
+\title{Comparing Different Term Representations for Checking Dependent Types}
+\subtitle[TCS Oberseminar]{}
+
+% \pgfdeclareimage[width=2cm]{logo}{hulogo} \logo{\pgfuseimage{logo}}
+
+
+\addtobeamertemplate{sidebar right}{}{\vspace{-2cm}\insertlogo}
+\addtobeamertemplate{footline}{}{\vspace{-1cm}\hskip2pt(\insertframenumber/\inserttotalframenumber) \insertshortsubtitle{} -- \insertshortdate\vskip2.2pt}
+\setbeamercolor{footline}{fg=unserblau}
+%\setbeamercolor*{alerted text}{fg=unserblau}
+
+%\includeonlyframes{current}
+
+\begin{document}
+\frame{\titlepage}
+
+% \section*{Overview}
+% \frame[squeeze]{\frametitle{Overview}\tableofcontents}
+
+
+
+\section{Motivation}
+
+% spaces: \, \; \  \quad \qquad
+\frame{
+\frametitle{Motivation}
+\[
+\begin{array}{lr@{}l}
+&(\la x.\la y. \, a \, b \, y) & g \, f \\
+\\
+\visible<2->{
+\re &(\la y.\, a\, b \, y) & \sub g x f} \\
+\\
+\visible<3->{
+\re &      (a\, b\, y) & \subs g x f y} \\
+\\
+\visible<4->{
+\re &      \multicolumn 2 l {(a\, b)\subs g x f y ~ y\subs g x f y}} \\
+\\
+\visible<5->{
+\re &      \multicolumn 2 l {a\subs g x f y ~ b\subs g x f y ~ f} } \\
+\\
+\visible<6->{
+% \re &      a \, b \, f }
+\re &      \multicolumn 2 {c} {a \, b \, f} } \\
+\end{array}
+\]
+}
+
+% \frame{
+% \frametitle{Motivation}
+% \itemize{
+% \item A
+% \item b
+% \item c
+% }
+% }
+
+% \frame{
+% \frametitle{De Bruijn Indices}
+% \[
+% \begin{array}{lr@{}l}
+% &(\la x.\la y.aby) & gf \\ \\ \\
+% &(\la \la ab0) & gf
+% \end{array}
+% \]
+% }
+\frame{
+\frametitle{De Bruijn Indices}
+\[
+\begin{array}{r}
+\la x. \la y. \la z. xz\pa{yz} \\ \\ \\
+\la \la \la 20\pa{10}
+\end{array}
+\]
+}
+
+\section{Ordered Representation}
+\subsection{Ordered Terms}
+\frame{
+\frametitle{Ordered Terms}
+\[
+\begin{array}{lrlll}
+t,u & ::= 	\visible<2->{&       & x & \mbox{free variable (named $x$)} } \\
+			\visible<3->{&& \mid & \ovar & \mbox{bound variable (nameless)} } \\
+			\visible<4->{&& \mid & t \oapp k u & \mbox{application} } \\
+			\visible<5->{&& \mid & \olam {\vec k} t & \mbox{abstraction} } \\
+% 			&& \mid & \opi A k B  & \mbox{function type}  ??
+\end{array}
+\]
+\\
+\begin{flushright}$\visible<5->{\vec k = (k_1, k_2, \ldots, k_n)}$\end{flushright}
+}
+\frame{
+\frametitle{Example}
+\[
+\begin{array}{r}
+\la x. \la y. \la z. xz\pa{yz} \\ \\ \\
+\la \la \la 20\pa{10} \\ \\ \\
+\olam {\pa 0} \olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}
+\end{array}
+\]
+}
+\frame{
+\frametitle{Evaluation (example)}
+\[
+\begin{array}{lr@{}l}
+&(\olam {\pa 0} \olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & gfn \\
+\\
+\visible<2->{
+\re &(\olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g \right]fn} \\
+\\
+\visible<3->{
+\re &      (\olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g, f \right]n} \\
+\\
+\visible<4->{
+\re &      (\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g, n, f, n \right]} \\
+\\
+\visible<5->{
+\re &      (\ovar \oapp 1 \ovar)\left[ g, n \right]  (\ovar \oapp 1 \ovar)&\left[ f, n \right]                } \\
+\\
+\visible<6->{
+\re &      \ovar[g] \ovar[n] (\ovar[f] \ovar[n]) }& \\
+\\
+\visible<7->{
+\re &      gn (fn) & } 
+\end{array}
+\]
+}
+
+\subsection{Ordered Values}
+\frame{
+\frametitle{Ordered Values}
+\[ 
+\begin{array}{lrlll}
+v,w & ::= 	\visible<2->{& h \vec v & \mbox{large application}  \\ 
+&&& \mbox{($h$ is a free variable)} \\ }
+\\
+% 	\visible<3->{& \mid 	& \left( \ovlam {\vec k} t\right) \left[ \vec u \right] & \mbox{closure} } % !! really "closure" ??
+	\visible<3->{& \mid 	& \left( \ovlam {\vec k}
+            t\right)^{\mbox{$\eta$}}_{\mbox{$\vec u$}} & \mbox{closure} } % !! really "closure" ??
+\end{array}
+\]
+}
+
+\subsection{Ordered Evaluation}
+\frame{
+\frametitle{Ordered Evaluation}
+\[ 
+\begin{array}{llll}
+& \ev x \varrho {()} & = & \varrho(x) 
+\\[1em]
+\visible<2->{ & \ev \ovar \varrho {(v_1)} & = & v_1 }
+\\[1em]
+\visible<3->{ & \ev {\olam {\vec k} t}  \varrho {\vec v} & = & \pa{ \ovlam {\vec k} t}_{ \vec v }^\varrho }
+\\[1em]
+\visible<4->{ & \ev {t \oapp k u}  \varrho {(v_1, \ldots, v_n)} & = & {\ev t  \varrho {(v_1, \ldots, v_{n-k})}} \ap {\ev u  \varrho {(v_{n-k+1}, \ldots, v_n)}} }
+\\[2em]
+\visible<5->{ & \pa{h \vec v} \ap w & = & h (\vec v, w) }
+\\[1em]
+\visible<6->{ & \left( \ovlam {\vec k} t\right)_{ \vec u }^\eta  \ap  w & = & \ev t \eta {\vec {u'}}  \\
+\multicolumn 2 r {\mbox{where } \vec u} & = & (u_1, \ldots, u_n) \\
+\multicolumn 2 r {\vec {u'}} & = & (u_1, \ldots, u_{k_1}, w, u_{k_1+1}, \ldots, u_{k_1+k_2}, w, \ldots ) }
+% && \mbox{where } & \vec u = (u_1, \ldots, u_n) \\
+% &&               & \vec {u'} =  (u_1, \ldots, u_{k_1}, w, u_{k_1+1}, \ldots, u_{k_1+k_2}, w, \ldots ) }
+\end{array}
+\]
+}
+
+
+\subsection{Extension}
+\frame{
+\frametitle{Ordered Terms}
+\[
+\begin{array}{lrlll}
+t,u, A, B & ::= 	&       & x & \mbox{free variable (named $x$)}  \\
+			&& \mid & \ovar & \mbox{bound variable (nameless)}  \\
+			&& \mid & t \oapp k u & \mbox{application}  \\
+			&& \mid & \olam {\vec k} t & \mbox{abstraction}  \\
+\visible<2->{&& \mid & \opi A k B  & \mbox{function type}  } \\
+\visible<3->{&& \mid & \mathsf{constant}   }\\
+\visible<3->{&& \mid & \mathsf{definition}   }\\
+\visible<3->{&& \mid & \mathsf{Sort}   }
+\end{array}
+\]
+}
+
+\frame{
+\frametitle{Ordered Values}
+\[ 
+\begin{array}{lrlll}
+v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\ 
+&&& \mbox{($h$ is a free variable)} \\ }
+\\
+% 	\visible<3->{& \mid 	& \left( \ovlam {\vec k} t\right) \left[ \vec u \right] & \mbox{closure} } % !! really "closure" ??
+	\visible<1->{& \mid 	& \left( \ovlam {\vec k} t\right)^\eta_{\vec u} & \mbox{closure} } \\
+	\\
+	\visible<2->{& \mid 	& \left( \la x.v\right)^\eta & \mbox{abstraction} } \\
+	\\
+	\visible<3->{& \mid 	& \ovpi V W & \mbox{function type} } \\
+	\\
+	\visible<4->{& \mid 	& \mathsf{Sort} & \mbox{} } 
+\end{array}
+\]
+}
+
+\frame{
+\frametitle{Ordered Evaluation}
+\[ 
+\begin{array}{llll}
+
+\visible<1->{& \ev {\opi A k B}  \varrho {(v_1, \ldots, v_n)} & = & \ovpi \hspace{1ex} \ev{A} \varrho {(v_1, \ldots, v_{n-k})} \ev{B} \varrho {(v_{n-k+1}, \ldots, v_n)} } 
+\\[1em]
+\visible<2->{& \left( \la x.v\right)^\eta \ap w & = & \llparenthesis v \rrparenthesis^{\eta [x \mapsto w]}} 
+\\[1em]
+\\
+\visible<3->{& \llparenthesis \left( \la y.v'\right)^{\eta'} \rrparenthesis^\eta   & = &  \left( \la y.v'\right)^{\eta''}  } 
+\\[1em]
+\visible<4->{& \llparenthesis \left( \ovlam {\vec k} t\right)_{ \vec u }^{\eta'} \rrparenthesis^\eta   & = &  
+\left( \ovlam {\vec k} t\right)_{ \llparenthesis \vec u \rrparenthesis^\eta }^{\eta''} }
+\\[1em]
+\visible<5->{& \llparenthesis h \vec u \rrparenthesis^\eta   & = &
+  \mbox{apply } \eta(h) \mbox{ to } \llparenthesis \vec u
+  \rrparenthesis ^ \eta} \\
+\end{array}
+\]
+\\
+\[ \visible<3->{
+\eta''(x) = 
+\begin{cases} 
+\eta(x) & \text{if possible, i.e. if $x$ is mentioned in $\eta$}
+\\
+\llparenthesis \eta'(x) \rrparenthesis^\eta & \text{otherwise.}
+\end{cases}
+}
+\]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Simple Closures}
+
+\frame{
+% \frametitle{Simple Closures}
+Basic syntax:
+\[
+\begin{array}{lrll} % KIND / TYPE
+t,u,A,B & ::= & x & \mbox{variable (named $x$)} \\
+			                   & \mid & t u & \mbox{application} \\
+			                   & \mid & \la x.t & \mbox{abstraction} \\
+			                   & \mid & \Pi x^?:A.\,B  & \mbox{function type} \\
+			                   & \mid & \mathsf{constant} & \\
+			                   & \mid & \mathsf{definition} & 
+\end{array}
+\]
+}
+
+
+\subsection{Simple Closures - Values}
+\frame{
+\frametitle{Simple Closures - Values}
+
+
+\[
+\begin{array}{lrlll}
+v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\ 
+% &&& \mbox{($h$ is a free variable, constant or definition)} \\ }
+&&& \mbox{($h$ is a free variable, } \\
+&&& \mbox{constant or definition)} \\ }
+\\
+	\visible<2->{& \mid 	& \left( \la x^?. t\right)^\eta & \mbox{closure} } \\
+	\\
+	\visible<3->{& \mid 	& \left( \la x.v\right)^\eta & \mbox{abstraction} } \\
+	\\
+	\visible<4->{& \mid 	& \ovpi V W & \mbox{function type} } \\
+	\\
+	\visible<5->{& \mid 	& \mathsf{Sort} & \mbox{} } 
+\end{array}
+\]
+}
+
+
+\section{Beta normal values - Hereditary Substitution}
+\frame{
+\frametitle{Beta normal values - Hereditary Substitution}
+\begin{itemize}
+\item all values in beta normal form
+\item uses Hereditary Substitution
+\end{itemize}
+}
+
+% data HVal
+%   = HBound Int A.Name [HVal]       -- }   (bound head variable)
+%   | HVar A.Name HVal  [HVal]       -- }
+%   | HCon A.Name HVal  [HVal]       -- }-> Head
+%   | HDef A.Name HVal HVal [HVal]   -- }
+%   | HLam A.Name HVal
+%   | HK HVal                        -- constant Lambda, not binding anything and therefore not counted by de Bruijn indices 
+%   | HSort Value.Sort
+%   | HFun HVal HVal
+%   | HDontCare
+
+
+
+\section{Comparison}
+\frame{
+\frametitle{Typechecking}
+% \begin{itemize}
+% \item comparison of the implementations:
+% \item typechecking large Twelf-files using the 
+% \end{itemize}
+\begin{center}
+comparison of the implementations:\\ 
+
+typechecking large Twelf-files 
+\end{center}
+}
+
+\frame{
+\frametitle{Comparison - 6000.elf (3.8 MB) baerentatze}
+\begin{tabular}{| l || c | c |}
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered & 18.87 & 1111 \\
+\hline
+Simple Closures & 18.54 & 1152\\
+\hline
+Beta normal values & 27.62 & 2034\\
+\hline
+\end{tabular}
+}
+
+
+\frame{
+\frametitle{Comparison - 10000.elf (12.8 MB)}
+\begin{tabular}{| l || c | c |}
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered & 61.01 & 3230\\
+\hline
+Simple Closures & 59.96 & 3302\\
+\hline
+Beta normal values & 98.67 & 5878\\
+\hline
+\end{tabular}
+}
+
+
+
+\frame{
+\frametitle{Comparison - 12000.elf (17.8 MB)}
+\begin{tabular}{| l || c | c |}
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered & 84.31 & 5096 \\
+\hline
+Simple Closures & 83.63 & 5226 \\
+\hline
+Beta normal values & 137.73 & 8513 \\
+\hline
+\end{tabular}
+}
+
+
+\frame{
+\frametitle{Comparison - w32\_sig\_semant.elf (20.8 MB)}
+\begin{tabular}{| l || c | c |}
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered & 108.44 & 8877\\
+\hline
+Simple Closures & 94.34 & 5068 \\
+\hline
+Beta normal values & 169.76 & 9044  \\
+\hline
+(Twelf r1697) & (ca. 22) & (2720)  \\
+\hline
+\end{tabular}
+}
+
+
+
+
+
+
+
+% \frame{
+% \frametitle{THE END}
+% }
+
+
+
+% \section{Literatur}
+% \frame[squeeze]{
+% 	\frametitle{Literatur}
+% 	
+% 	%\nocite{bla}
+% 	%\bibliographystyle{apacite}
+% 	%\bibliography{vortrag}
+% }
+
+\end{document}
