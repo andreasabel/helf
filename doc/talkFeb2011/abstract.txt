@@ -1,0 +1,15 @@
+Nicolai Kraus,
+
+A Term Representation Based on Ordered Linear Logic 
+
+We introduce a nameless representation of lambda terms based on
+ordered logic.  Information about number and places of variables bound
+by a lambda is available without examining the whole term, thus making
+it possible to drop unneeded substitutions early to avoid memory
+leaks.
+
+We describe an implementation of this and other representations as
+well as suggested evaluation algotithms. These implementations were
+tested in Haskell by using them for typechecking large dependently
+typed terms of the logical framework (LF).  The different needs of
+time and space are documented and compared.
