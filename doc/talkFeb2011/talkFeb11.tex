@@ -1,4 +1,4 @@
-\documentclass[12pt,pdflatex,hyperref={pdfkeywords={Einige Stichwörter},pdfstartview=Fit,bookmarks=true,bookmarksopen=true,pdfpagemode=None,colorlinks=true,linkcolor=unserblau,urlcolor=unserblau},notes=hide,t]{beamer}
+\documentclass[12pt,pdflatex,hyperref={pdfkeywords={OrderedRepresentation Lambda},pdfstartview=Fit,bookmarks=true,bookmarksopen=true,pdfpagemode=None,colorlinks=true,linkcolor=unserblau,urlcolor=unserblau},notes=hide,t]{beamer}
 
 
 \usepackage[latin1]{inputenc}
@@ -48,9 +48,10 @@
 \newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
 
 \newcommand{\ev}[3]{\llbracket{#1}\rrbracket^{#2}_{#3}}
-\newcommand{\ap}{@} % !! todo.
+\newcommand{\ap}{\lspace @ \lspace} % !! todo.
 
-
+\newcommand{\sspace}{\,}
+\newcommand{\lspace}{\ \,}
 
 
 
@@ -62,7 +63,7 @@
 
 \institute{Institut für Informatik\\ Ludwig-Maximilians-Universität München}
 \date[2011-02-23]{23.02.2011}
-\title{Comparing Different Term Representations for Checking Dependent Types}
+\title{A Lambda Term Representation Based on Ordered Linear Logic}
 \subtitle[TCS Oberseminar]{}
 
 % \pgfdeclareimage[width=2cm]{logo}{hulogo} \logo{\pgfuseimage{logo}}
@@ -90,23 +91,23 @@
 \frametitle{Motivation}
 \[
 \begin{array}{lr@{}l}
-&(\la x.\la y. \, a \, b \, y) & g \, f \\
+&(\la x.\la y. \sspace a \sspace b \sspace y) \sspace & g \sspace f \\
 \\
 \visible<2->{
-\re &(\la y.\, a\, b \, y) & \sub g x f} \\
+\re &(\la y.\sspace a\sspace b \sspace y) & \sub g x \lspace f} \\
 \\
 \visible<3->{
-\re &      (a\, b\, y) & \subs g x f y} \\
+\re &      (a\sspace b\sspace y) & \subs g x f y} \\
 \\
 \visible<4->{
-\re &      \multicolumn 2 l {(a\, b)\subs g x f y ~ y\subs g x f y}} \\
+\re &      \multicolumn 2 l {(a\sspace b)\subs g x f y \lspace y\subs g x f y}} \\
 \\
 \visible<5->{
-\re &      \multicolumn 2 l {a\subs g x f y ~ b\subs g x f y ~ f} } \\
+\re &      \multicolumn 2 l {a\subs g x f y \lspace b\subs g x f y \lspace f} } \\
 \\
 \visible<6->{
 % \re &      a \, b \, f }
-\re &      \multicolumn 2 {c} {a \, b \, f} } \\
+\re &      \multicolumn 2 {c} {a \sspace b \sspace f} } \\
 \end{array}
 \]
 }
@@ -133,8 +134,8 @@
 \frametitle{De Bruijn Indices}
 \[
 \begin{array}{r}
-\la x. \la y. \la z. xz\pa{yz} \\ \\ \\
-\la \la \la 20\pa{10}
+\la x. \la y. \la z. \sspace x \sspace z \sspace \pa{y \sspace z} \\ \\ \\
+\la. \la. \la.  \sspace 2 \sspace 0 \sspace \pa{1 \sspace 0}
 \end{array}
 \]
 }
@@ -159,8 +160,8 @@ t,u & ::= 	\visible<2->{&       & x & \mbox{free variable (named $x$)} } \\
 \frametitle{Example}
 \[
 \begin{array}{r}
-\la x. \la y. \la z. xz\pa{yz} \\ \\ \\
-\la \la \la 20\pa{10} \\ \\ \\
+\la x. \la y. \la z. \sspace x \sspace z \sspace \pa{y \sspace z} \\ \\ \\
+\la. \la. \la.  \sspace 2 \sspace 0 \sspace \pa{1 \sspace 0} \\ \\ \\
 \olam {\pa 0} \olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}
 \end{array}
 \]
@@ -169,25 +170,25 @@ t,u & ::= 	\visible<2->{&       & x & \mbox{free variable (named $x$)} } \\
 \frametitle{Evaluation (example)}
 \[
 \begin{array}{lr@{}l}
-&(\olam {\pa 0} \olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & gfn \\
+&(\olam {\pa 0} \olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) &  \sspace g \sspace f \sspace n \\
 \\
 \visible<2->{
-\re &(\olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g \right]fn} \\
+\re &(\olam {\pa 1} \olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g \right] \lspace f \sspace n} \\
 \\
 \visible<3->{
-\re &      (\olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g, f \right]n} \\
+\re &      (\olam {\pa{1,1}} \ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g, f \right] \lspace n} \\
 \\
 \visible<4->{
 \re &      (\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}) & \left[ g, n, f, n \right]} \\
 \\
 \visible<5->{
-\re &      (\ovar \oapp 1 \ovar)\left[ g, n \right]  (\ovar \oapp 1 \ovar)&\left[ f, n \right]                } \\
+\re &      (\ovar \oapp 1 \ovar)\left[ g, n \right] \lspace (\ovar \oapp 1 \ovar)&\left[ f, n \right]                } \\
 \\
 \visible<6->{
-\re &      \ovar[g] \ovar[n] (\ovar[f] \ovar[n]) }& \\
+\re &      \ovar[g]  \lspace \ovar[n]  \lspace (\ovar[f]  \lspace \ovar[n]) }& \\
 \\
 \visible<7->{
-\re &      gn (fn) & } 
+\re &      g \sspace n  \sspace (f \sspace n) & } 
 \end{array}
 \]
 }
@@ -202,7 +203,7 @@ v,w & ::= 	\visible<2->{& h \vec v & \mbox{large application}  \\
 \\
 % 	\visible<3->{& \mid 	& \left( \ovlam {\vec k} t\right) \left[ \vec u \right] & \mbox{closure} } % !! really "closure" ??
 	\visible<3->{& \mid 	& \left( \ovlam {\vec k}
-            t\right)^{\mbox{$\eta$}}_{\mbox{$\vec u$}} & \mbox{closure} } % !! really "closure" ??
+            t\right)^{\mbox{$\eta$}}_{\mbox{$\vec v$}} & \mbox{closure} } % !! really "closure" ??
 \end{array}
 \]
 }
@@ -220,11 +221,11 @@ v,w & ::= 	\visible<2->{& h \vec v & \mbox{large application}  \\
 \\[1em]
 \visible<4->{ & \ev {t \oapp k u}  \varrho {(v_1, \ldots, v_n)} & = & {\ev t  \varrho {(v_1, \ldots, v_{n-k})}} \ap {\ev u  \varrho {(v_{n-k+1}, \ldots, v_n)}} }
 \\[2em]
-\visible<5->{ & \pa{h \vec v} \ap w & = & h (\vec v, w) }
+\visible<5->{ & \pa{h \vec v} \ap w & = & h \sspace \sspace (\vec v, w) }
 \\[1em]
-\visible<6->{ & \left( \ovlam {\vec k} t\right)_{ \vec u }^\eta  \ap  w & = & \ev t \eta {\vec {u'}}  \\
-\multicolumn 2 r {\mbox{where } \vec u} & = & (u_1, \ldots, u_n) \\
-\multicolumn 2 r {\vec {u'}} & = & (u_1, \ldots, u_{k_1}, w, u_{k_1+1}, \ldots, u_{k_1+k_2}, w, \ldots ) }
+\visible<6->{ & \left( \ovlam {\vec k} t\right)_{ \vec v }^\eta  \ap  w & = & \ev t \eta {\vec {v'}}  \\
+\multicolumn 2 r {\mbox{where } \vec v} & = & (v_1, \ldots, v_n) \\
+\multicolumn 2 r {\vec {v'}} & = & (v_1, \ldots, v_{k_1}, w, v_{k_1+1}, \ldots, v_{k_1+k_2}, w, \ldots ) }
 % && \mbox{where } & \vec u = (u_1, \ldots, u_n) \\
 % &&               & \vec {u'} =  (u_1, \ldots, u_{k_1}, w, u_{k_1+1}, \ldots, u_{k_1+k_2}, w, \ldots ) }
 \end{array}
@@ -234,7 +235,7 @@ v,w & ::= 	\visible<2->{& h \vec v & \mbox{large application}  \\
 
 \subsection{Extension}
 \frame{
-\frametitle{Ordered Terms}
+\frametitle{Ordered Terms (Extension)}
 \[
 \begin{array}{lrlll}
 t,u, A, B & ::= 	&       & x & \mbox{free variable (named $x$)}  \\
@@ -250,14 +251,14 @@ t,u, A, B & ::= 	&       & x & \mbox{free variable (named $x$)}  \\
 }
 
 \frame{
-\frametitle{Ordered Values}
+\frametitle{Ordered Values (Extension)}
 \[ 
 \begin{array}{lrlll}
 v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\ 
 &&& \mbox{($h$ is a free variable)} \\ }
 \\
 % 	\visible<3->{& \mid 	& \left( \ovlam {\vec k} t\right) \left[ \vec u \right] & \mbox{closure} } % !! really "closure" ??
-	\visible<1->{& \mid 	& \left( \ovlam {\vec k} t\right)^\eta_{\vec u} & \mbox{closure} } \\
+	\visible<1->{& \mid 	& \left( \ovlam {\vec k} t\right)^\eta_{\vec v} & \mbox{closure} } \\
 	\\
 	\visible<2->{& \mid 	& \left( \la x.v\right)^\eta & \mbox{abstraction} } \\
 	\\
@@ -269,7 +270,7 @@ v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\
 }
 
 \frame{
-\frametitle{Ordered Evaluation}
+\frametitle{Ordered Evaluation (Extension)}
 \[ 
 \begin{array}{llll}
 
@@ -280,11 +281,11 @@ v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\
 \\
 \visible<3->{& \llparenthesis \left( \la y.v'\right)^{\eta'} \rrparenthesis^\eta   & = &  \left( \la y.v'\right)^{\eta''}  } 
 \\[1em]
-\visible<4->{& \llparenthesis \left( \ovlam {\vec k} t\right)_{ \vec u }^{\eta'} \rrparenthesis^\eta   & = &  
-\left( \ovlam {\vec k} t\right)_{ \llparenthesis \vec u \rrparenthesis^\eta }^{\eta''} }
+\visible<4->{& \llparenthesis \left( \ovlam {\vec k} t\right)_{ \vec v }^{\eta'} \rrparenthesis^\eta   & = &  
+\left( \ovlam {\vec k} t\right)_{ \llparenthesis \vec v \rrparenthesis^\eta }^{\eta''} }
 \\[1em]
-\visible<5->{& \llparenthesis h \vec u \rrparenthesis^\eta   & = &
-  \mbox{apply } \eta(h) \mbox{ to } \llparenthesis \vec u
+\visible<5->{& \llparenthesis h \vec v \rrparenthesis^\eta   & = &
+  \mbox{apply } \eta(h) \mbox{ to } \llparenthesis \vec v
   \rrparenthesis ^ \eta} \\
 \end{array}
 \]
@@ -321,7 +322,8 @@ Basic syntax:
 t,u,A,B & ::= & x & \mbox{variable (named $x$)} \\
 			                   & \mid & t u & \mbox{application} \\
 			                   & \mid & \la x.t & \mbox{abstraction} \\
-			                   & \mid & \Pi x^?:A.\,B  & \mbox{function type} \\
+% 			                   & \mid & \Pi x^?:A.\,B  & \mbox{function type} \\
+			                   & \mid & \Pi x:A.\,B  & \mbox{function type} \\
 			                   & \mid & \mathsf{constant} & \\
 			                   & \mid & \mathsf{definition} & 
 \end{array}
@@ -336,12 +338,13 @@ t,u,A,B & ::= & x & \mbox{variable (named $x$)} \\
 
 \[
 \begin{array}{lrlll}
-v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\ 
+v,w,V,W & ::= 	\visible<1->{& h \sspace \vec v & \mbox{large application}  \\ 
 % &&& \mbox{($h$ is a free variable, constant or definition)} \\ }
 &&& \mbox{($h$ is a free variable, } \\
 &&& \mbox{constant or definition)} \\ }
 \\
-	\visible<2->{& \mid 	& \left( \la x^?. t\right)^\eta & \mbox{closure} } \\
+% 	\visible<2->{& \mid 	& \left( \la x^?. t\right)^\eta & \mbox{closure} } \\
+	\visible<2->{& \mid 	& \left( \la x. t\right)^\eta & \mbox{closure} } \\
 	\\
 	\visible<3->{& \mid 	& \left( \la x.v\right)^\eta & \mbox{abstraction} } \\
 	\\
@@ -353,13 +356,18 @@ v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\
 }
 
 
-\section{Beta normal values - Hereditary Substitution}
+\section{Beta Normal Values - Hereditary Substitution}
 \frame{
-\frametitle{Beta normal values - Hereditary Substitution}
+\frametitle{Beta Normal Values - Hereditary Substitution}
 \begin{itemize}
 \item all values in beta normal form
-\item uses Hereditary Substitution
+\item uses Hereditary Substitution$^{(*)}$\\[2em]
 \end{itemize}
+
+% $^{(*)}$ K. Watkins, I. Cervesato, F. Pfenning, D. Walker\\
+%  A Concurrent Logical Framework:
+% The Propositional Fragment
+$^{(*)}$ K. Watkins, I. Cervesato, F. Pfenning, D. Walker (2003). \emph{A Concurrent Logical Framework: The Propositional Fragment}
 }
 
 % data HVal
@@ -385,12 +393,12 @@ v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\
 \begin{center}
 comparison of the implementations:\\ 
 
-typechecking large Twelf-files 
+typechecking large LF terms 
 \end{center}
 }
 
 \frame{
-\frametitle{Comparison - 6000.elf (3.8 MB) baerentatze}
+\frametitle{Comparison - 6000.elf $^{(*)}$ (3.8 MB)}
 \begin{tabular}{| l || c | c |}
 \hline
 & time (sec) & space (MB) \\
@@ -400,14 +408,19 @@ Ordered & 18.87 & 1111 \\
 \hline
 Simple Closures & 18.54 & 1152\\
 \hline
-Beta normal values & 27.62 & 2034\\
+Beta Normal Values & 27.62 & 2034\\
 \hline
 \end{tabular}
+\\[2em]
+baerentatze \\
+7999 MiB, AMD Phenom II X4 B95
+\\[2em]
+$^{(*)}$ kindly provided by Andrew W. Appel, Princeton University
 }
 
 
 \frame{
-\frametitle{Comparison - 10000.elf (12.8 MB)}
+\frametitle{Comparison - 10000.elf $^{(*)}$ (12.8 MB)}
 \begin{tabular}{| l || c | c |}
 \hline
 & time (sec) & space (MB) \\
@@ -417,15 +430,20 @@ Ordered & 61.01 & 3230\\
 \hline
 Simple Closures & 59.96 & 3302\\
 \hline
-Beta normal values & 98.67 & 5878\\
+Beta Normal Values & 98.67 & 5878\\
 \hline
 \end{tabular}
+\\[2em]
+baerentatze \\
+7999 MiB, AMD Phenom II X4 B95
+\\[2em]
+$^{(*)}$ kindly provided by Andrew W. Appel, Princeton University
 }
 
 
 
 \frame{
-\frametitle{Comparison - 12000.elf (17.8 MB)}
+\frametitle{Comparison - 12000.elf $^{(*)}$ (17.8 MB)}
 \begin{tabular}{| l || c | c |}
 \hline
 & time (sec) & space (MB) \\
@@ -435,14 +453,19 @@ Ordered & 84.31 & 5096 \\
 \hline
 Simple Closures & 83.63 & 5226 \\
 \hline
-Beta normal values & 137.73 & 8513 \\
+Beta Normal Values & 137.73 & 8513 \\
 \hline
 \end{tabular}
+\\[2em]
+baerentatze \\
+7999 MiB, AMD Phenom II X4 B95
+\\[2em]
+$^{(*)}$ kindly provided by Andrew W. Appel, Princeton University
 }
 
 
 \frame{
-\frametitle{Comparison - w32\_sig\_semant.elf (20.8 MB)}
+\frametitle{Comparison - w32\_sig\_semant.elf $^{(*)}$ (20.8 MB)}
 \begin{tabular}{| l || c | c |}
 \hline
 & time (sec) & space (MB) \\
@@ -452,11 +475,16 @@ Ordered & 108.44 & 8877\\
 \hline
 Simple Closures & 94.34 & 5068 \\
 \hline
-Beta normal values & 169.76 & 9044  \\
+Beta Normal Values & 169.76 & 9044  \\
 \hline
 (Twelf r1697) & (ca. 22) & (2720)  \\
 \hline
 \end{tabular}
+\\[2em]
+baerentatze \\
+7999 MiB, AMD Phenom II X4 B95
+\\[2em]
+$^{(*)}$ kindly provided by Andrew W. Appel, Princeton University
 }
 
 
