@@ -1,6 +1,6 @@
 -- a simplified version of DynArray. get, insert, split, join are all O(log n).
 
-module DatastrucImpl.SimpleDynArray where
+module DatastrucImpl.StrictDynArray where
 
 import Prelude hiding (repeat)
 import qualified Data.List as List
@@ -10,29 +10,31 @@ import qualified Text.PrettyPrint as PP
 
 import Debug.Trace
 
-import DataStructure
+import qualified DataStructure as DS
 
-instance DataStruc DynArray a where
+instance DS.DataStruc DynArray a where
   -- show = render . pretty
-  empty             = DatastrucImpl.SimpleDynArray.empty
-  insert            = DatastrucImpl.SimpleDynArray.insert
-  multiinsert       = DatastrucImpl.SimpleDynArray.multiinsert
-  get               = DatastrucImpl.SimpleDynArray.get
-  split i datastruc = DatastrucImpl.SimpleDynArray.split datastruc i
-  join              = DatastrucImpl.SimpleDynArray.join
+  empty             = DatastrucImpl.StrictDynArray.empty
+  insert            = DatastrucImpl.StrictDynArray.insert
+  multiinsert       = DatastrucImpl.StrictDynArray.multiinsert
+  get               = DatastrucImpl.StrictDynArray.get
+  split i datastruc = DatastrucImpl.StrictDynArray.split datastruc i
+  join              = DatastrucImpl.StrictDynArray.join
   size              = len
-  mapMonad          = DatastrucImpl.SimpleDynArray.mapMonad
+  mapMonad          = DatastrucImpl.StrictDynArray.mapMonad
 
 data DynArr a 
   = Leaf { entry   :: a }      -- ^ an array filled with element @entry@ 
-  | Node { leftLen :: Int      -- ^ length of left part
-         , left    :: DynArr a -- ^ left part
-         , right   :: DynArr a -- ^ right part
+  | Node { leftLen :: -- {-# UNPACK #-} 
+                      !Int        -- ^ length of left part
+         , left    :: !(DynArr a) -- ^ left part
+         , right   :: !(DynArr a) -- ^ right part
          }
  -- | Empty                     -- ^ not allowed as part of a nonempty tree !
     deriving (Eq,Ord,Show)
 
-data DynArray a = DynArray { len :: Int, array :: DynArr a }
+data DynArray a = DynArray -- {-# UNPACK #-} 
+                           { len :: !Int, array :: !(DynArr a) }
     deriving (Eq,Ord)
   
 pretty :: Show a => DynArray a -> Doc
@@ -52,7 +54,7 @@ leaf :: a -> DynArray a
 leaf = DynArray 1 . Leaf
 
 empty :: DynArray a 
-empty = DynArray 0 $ error "empty DynArray"
+empty = DynArray 0 $ Leaf $ error "DatastrucImpl.StrictDynArray: empty DynArray"
 
 -- | Array lookup with bounds checking. O(log n).
 get :: DynArray a -> Int -> a
@@ -72,8 +74,8 @@ get' (Leaf a) _ = error "Leaf cannot contain more than one element"
 -- | Splitting the array. O(log n).
 split :: DynArray a -> Int -> (DynArray a, DynArray a)
 split arr i 
-  | i <= 0 = (DatastrucImpl.SimpleDynArray.empty, arr)
-  | i >= len arr = (arr, DatastrucImpl.SimpleDynArray.empty)
+  | i <= 0 = (DatastrucImpl.StrictDynArray.empty, arr)
+  | i >= len arr = (arr, DatastrucImpl.StrictDynArray.empty)
   | otherwise = split' arr i
 
 -- Note that with Leaves holding no more than one information, we never have to split a Leaf. We would never try to split empty Arrays as well.
@@ -84,10 +86,10 @@ split' (DynArray len (Node llen left right)) i =
     else if i < llen
       then
         let (left', right') = split' (DynArray llen left) i
-        in (left', right' `DatastrucImpl.SimpleDynArray.join` (DynArray (len-llen) right))
+        in (left', right' `DatastrucImpl.StrictDynArray.join` (DynArray (len-llen) right))
       else
         let (left', right') = split' (DynArray (len-llen) right) (i-llen)
-        in ((DynArray llen left) `DatastrucImpl.SimpleDynArray.join` left', right')
+        in ((DynArray llen left) `DatastrucImpl.StrictDynArray.join` left', right')
 
 
 
@@ -106,7 +108,7 @@ join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = -- trace ("join " ++ Prelude.sh
     LeftTooBig n11 a11 a12 ->
       -- a_1 >> a_2 , a11+a12 = a_1 , a11 ~ a12
       -- recursively join middle and right part
-      let DynArray _ a2'@(Node n21' a21' a22') = DynArray (n1 - n11) a12 `DatastrucImpl.SimpleDynArray.join` a_2
+      let DynArray _ a2'@(Node n21' a21' a22') = DynArray (n1 - n11) a12 `DatastrucImpl.StrictDynArray.join` a_2
       -- a21'+a22' = a12+a_2 , a21' ~ a22'
       in  if balanced n11 (n - n11) 
           then DynArray n (Node n11 a11 a2')
@@ -122,7 +124,7 @@ join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = -- trace ("join " ++ Prelude.sh
                     Node n211' a211' a212' -> join4 n11 a11 n211' a211' (n21' - n211') a212' a22'
                     -- a21' cannot be a Leaf
     RightTooBig n21 a21 a22 ->
-      let DynArray _ a1'@(Node n11' a11' a12') = a_1 `DatastrucImpl.SimpleDynArray.join` DynArray n21 a21
+      let DynArray _ a1'@(Node n11' a11' a12') = a_1 `DatastrucImpl.StrictDynArray.join` DynArray n21 a21
       in  if balanced (n1 + n21) (n2 - n21) 
            then DynArray n (Node (n1 + n21) a1' a22)
            else
@@ -164,10 +166,10 @@ insert x i a                           = insert' x i a
 insert' :: a -> Int -> DynArray a -> DynArray a
 insert' x i a@(DynArray k arr) =
   let
-  (left, right) = DatastrucImpl.SimpleDynArray.split a i
-  left' = left `DatastrucImpl.SimpleDynArray.join` (DynArray 1 (Leaf x))
+  (left, right) = DatastrucImpl.StrictDynArray.split a i
+  left' = left `DatastrucImpl.StrictDynArray.join` (DynArray 1 (Leaf x))
   in
-  left' `DatastrucImpl.SimpleDynArray.join` right
+  left' `DatastrucImpl.StrictDynArray.join` right
 
 
 -- injects a given value at the given places
@@ -176,11 +178,11 @@ multiinsert:: a -> [Int] -> DynArray a -> DynArray a
 multiinsert _ [] dyn = dyn
 multiinsert x (k:klist) dyn = 
   let
-  (left, right) = DatastrucImpl.SimpleDynArray.split dyn k
-  left' = left `DatastrucImpl.SimpleDynArray.join` (DynArray 1 (Leaf x))
-  dyn' = DatastrucImpl.SimpleDynArray.multiinsert x klist right
+  (left, right) = DatastrucImpl.StrictDynArray.split dyn k
+  left' = left `DatastrucImpl.StrictDynArray.join` (DynArray 1 (Leaf x))
+  dyn' = DatastrucImpl.StrictDynArray.multiinsert x klist right
   in
-  left' `DatastrucImpl.SimpleDynArray.join` dyn'
+  left' `DatastrucImpl.StrictDynArray.join` dyn'
 
 
 mapMonad :: (Monad m) => (a -> m b) -> DynArray a -> m (DynArray b) 
@@ -192,4 +194,5 @@ mapMonad' f (Node llen l r) = do
                                 l' <- mapMonad' f l
                                 r' <- mapMonad' f r
                                 return $ Node llen l' r'
+
 
