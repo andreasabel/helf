@@ -58,8 +58,9 @@ data Val
 
 -- * ordered substitutions and environments
 
---type OSubst = DatastrucImpl.SimpleDynArray.DynArray Val
-type OSubst = DatastrucImpl.StrictDynArray.DynArray Val
+-- type OSubst = DatastrucImpl.SimpleDynArray.DynArray Val
+-- type OSubst = DatastrucImpl.StrictDynArray.DynArray Val
+type OSubst = [Val]
 type Env = Map A.UID Val
 
 --type E = Map UID Val
