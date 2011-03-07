@@ -18,8 +18,8 @@ import qualified ScopeMonad as Scoping
 
 -- import ErrorExpected
 
--- import OrderedComplex2
--- import OrderedCom2
+import OrderedComplex2
+import OrderedCom2
 
 -- import ClosVal
 -- import Closures
@@ -28,8 +28,8 @@ import qualified ScopeMonad as Scoping
 -- import HeredNormVal
 -- import HeredNormal
 
-import HerBruijnVal
-import HerBruijn
+-- import HerBruijnVal
+-- import HerBruijn
 
 import System
 import System.IO (stdout, hSetBuffering, BufferMode(..))

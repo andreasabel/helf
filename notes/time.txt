@@ -637,3 +637,95 @@ doEval_a6AM                    Closures               0.9    1.5
 valView_a1uz                   ClosVal                0.8    1.7
 alexGetChar                    Lexer                  0.7    2.4
 alexMove                       Lexer                  0.2    1.5
+
+
+
+Twelf 1.5R3   is much slower that Twelf (r1697)
+-----------
+
+abel@siena:~/bib/authors/AppelAndrew/lfterms/ltal-package$ %% OK %%
+	Command being timed: "twelf-batch -q ltal_sig2.elf dumpsemant.elf"
+	User time (seconds): 1162.46
+	System time (seconds): 282.70
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 24:06.66
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2959616
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 99599430
+	Voluntary context switches: 57
+	Involuntary context switches: 37518
+	Swaps: 0
+	File system inputs: 42688
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+2011-02-22 MLTON version
+
+paloalto:ltal-package abel$ twelf-batch -q ltal_sig2.elf dumpsemant.elf 
+Twelf version Auto (Subversion r1697)
+%% OK %%
+%% OK %%
+%% OK %%
+%% OK %%
+Parsing       : Real =  11.008, Run =   4.749 (  3.718 usr,  1.269 gc)
+Reconstruction: Real =  15.774, Run =  15.071 ( 11.752 usr,  5.471 gc)
+Abstraction   : Real =   1.831, Run =   1.499 (  1.020 usr,  0.048 gc)
+Checking      : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Modes         : Real =   0.109, Run =   0.036 (  0.023 usr,  0.000 gc)
+Subordination : Real =   0.276, Run =   0.132 (  0.090 usr,  0.028 gc)
+Termination   : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Printing      : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Compiling     : Real =   0.104, Run =   0.031 (  0.019 usr,  0.000 gc)
+Solving       : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Coverage      : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Worlds        : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+ProofRecon    : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Filling       : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Filling Tabled: Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Splitting     : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Recursion     : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Inference     : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Delphin       : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Total         : Real =  29.103, Run =  21.518 ( 16.622 usr,  6.816 gc)
+Remember that the success continuation counts into Solving!
+%% OK %%
+
+SML/NJ version
+
+abel@siena:~/bib/authors/AppelAndrew/lfterms/ltal-package$ twelf-batch -q ltal_sig2.elf  dumpsemant.elf 
+Twelf 1.5R3, Aug 30, 2005 (%trustme)
+%% OK %%
+%% OK %%
+%% OK %%
+%% OK %%
+Parsing       : Real = 395.409, Run = 705.660 (629.420 usr, 311.320 gc)
+Reconstruction: Real = 864.787, Run = 1540.880 (1372.560 usr, 679.040 gc)
+Abstraction   : Real = 145.256, Run = 254.400 (225.680 usr, 113.290 gc)
+Checking      : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Modes         : Real =   2.613, Run =   3.050 (  2.810 usr,  2.150 gc)
+Subordination : Real =  13.198, Run =  13.420 ( 12.070 usr,  7.360 gc)
+Termination   : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Printing      : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Compiling     : Real =   9.034, Run =   2.770 (  2.400 usr,  4.150 gc)
+Solving       : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Coverage      : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Worlds        : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+ProofRecon    : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Filling       : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Filling Tabled: Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Splitting     : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Recursion     : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Inference     : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Delphin       : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
+Total         : Real = 1430.297, Run = 2520.180 (2244.940 usr, 1117.310 gc)
+Remember that the success continuation counts into Solving!
+%% OK %%
