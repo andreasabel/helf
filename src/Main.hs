@@ -2,7 +2,10 @@
 
 module Main where
 
+import Control.Monad.Error	( MonadError(..) )
 import Control.Bifunctor
+
+import qualified Data.List as List
 
 import Lexer (alexScanTokens)
 import qualified Parser as HappyParser
@@ -18,22 +21,97 @@ import qualified ScopeMonad as Scoping
 
 -- import ErrorExpected
 
-import OrderedComplex2
-import OrderedCom2
-
--- import ClosVal
--- import Closures
--- import Monolith
-
--- import HeredNormVal
--- import HeredNormal
-
--- import HerBruijnVal
--- import HerBruijn
+-- Engines
+import qualified OrderedCom2 as Ordered
+import qualified Closures
+import qualified Monolith
+import qualified HerBruijn
 
 import System
 import System.IO (stdout, hSetBuffering, BufferMode(..))
+import System.Console.GetOpt (getOpt, usageInfo, ArgOrder(Permute,ReturnInOrder)
+			     , OptDescr(..), ArgDescr(..)
+			     )
 
+data Engine = Closures | Ordered | HerBruijn | Monolith
+  deriving (Eq,Show,Enum,Bounded,Read)
+
+engines :: [Engine]
+engines = [minBound..maxBound]
+
+defaultEngine = Closures
+
+{-
+data Options = Options
+  { optEngine    :: Engine
+--  , optInputFile :: Maybe FilePath
+  }
+
+defaultOptions :: Options
+defaultOptions = Options
+  { optEngine    = defaultEngine
+--  , optInputFile = Nothing
+  }
+
+{- | @f :: Flag opts@  is an action on the option record that results from
+     parsing an option.  @f opts@ produces either an error message or an
+     updated options record
+-}
+type Flag opts = opts -> opts -- Either String opts
+-}
+{-
+inputFlag :: FilePath -> Flag Options
+inputFlag f o =
+    case optInputFile o of
+	Nothing  -> return $ o { optInputFile = Just f }
+	Just _	 -> throwError "only one input file allowed"
+-}
+
+data Flag = Engine Engine
+          deriving Show
+
+engineFlag :: String -> Flag
+engineFlag arg = 
+  let engine :: Engine
+      engine = read arg
+  in  Engine engine
+
+options :: [OptDescr Flag]
+options = 
+  [ Option ['e'] ["engine"] (ReqArg engineFlag "ENGINE") 
+      ("set lambda engine (default = " ++ show defaultEngine ++ "), possible values: " ++ show engines)
+  ] 
+
+{-
+
+engineFlag :: String -> Flag Options
+engineFlag arg o = 
+  let engine :: Engine
+      engine = read arg
+  in o { optEngine = engine }
+
+
+
+options :: [OptDescr (Flag Options)]
+options = 
+  [ Option ['e'] ["engine"] (ReqArg engineFlag "ENGINE") 
+      ("set lambda engine (default = " ++ show defaultEngine ++ "), possible values: " ++ show engines)
+  ] 
+-- | Don't export
+parseOptions' ::
+  [String] -> [OptDescr (Flag opts)] -> (String -> Flag opts) -> Flag opts
+parseOptions' argv opts = \defaults ->
+    case getOpt (Permute) opts argv of
+	(o,_,[])    -> foldl (>>=) (return defaults) o
+	(_,_,errs)  -> throwError $ concat errs
+
+
+-- | Parse the standard options.
+parseOptions :: [String] -> Either String Options
+parseOptions argv =
+  -- checkOpts =<<
+    parseOptions' argv options inputFlag defaultOptions
+-}
 
 main :: IO ()
 main = do
@@ -41,10 +119,20 @@ main = do
   putStrLn $ "HELF - Haskell implementation of the Edinburgh Logical Framework"
   putStrLn $ "(C) Andreas Abel and Nicolai Kraus"
   args <- getArgs
-  mapM_ mainFile args
+  (o,files) <- case getOpt Permute options args of
+                 (o,files,[]) -> return (o,files)
+                 (_,_,errs)   -> do
+                   putStrLn ("error during parsing commandline:" ++ show errs)
+                   exitFailure
+  let isEngine (Engine _) = True
+      isEngine (_)        = False
+  let engine = case List.find isEngine o of
+               Nothing -> defaultEngine
+               Just (Engine e) -> e
+  mapM_ (mainFile engine) files
 
-mainFile :: String -> IO ()
-mainFile fileName = do
+mainFile :: Engine -> String -> IO ()
+mainFile engine fileName = do
   putStrLn $ "%%% opening " ++ show fileName ++ " %%%"
   file <- readFile fileName
 --  putStrLn "%%% lexing %%%"
@@ -62,13 +150,18 @@ mainFile fileName = do
   cdecls <- return $ runSRM (Scoping.unparse adecls) st
   putStrLn . show $ cdecls
 -}
-  putStrLn $ "%%% type checking %%%"
-  doTypeCheck st adecls
+  putStrLn $ "%%% type checking with engine " ++ show engine ++ " %%%"
+  doTypeCheck engine st adecls
   putStrLn $ "%%% closing " ++ show fileName ++ " %%%"
 
-doTypeCheck :: Scoping.ScopeState -> A.Declarations -> IO ()
-doTypeCheck st decls = do
-  res <- runCheckDecls decls 
+runCheckDecls Closures = Closures.runCheckDecls
+runCheckDecls Ordered  = Ordered.runCheckDecls
+runCheckDecls HerBruijn = HerBruijn.runCheckDecls
+runCheckDecls Monolith = Monolith.runCheckDecls
+
+doTypeCheck :: Engine -> Scoping.ScopeState -> A.Declarations -> IO ()
+doTypeCheck engine st decls = do
+  res <- runCheckDecls engine decls 
   case res of
     Left err -> do 
       putStrLn $ "error during typechecking:\n" ++  err
