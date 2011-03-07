@@ -25,9 +25,10 @@ import Util
 import Value
 
 import DataStructure as DS
-import DatastrucImpl.SimpleDynArray (DynArray)
+-- import DatastrucImpl.SimplDynArray (DynArray)
+import DatastrucImpl.StrictDynArray (DynArray)
 import DatastrucImpl.List (List)
-import DatastrucImpl.DynArrayInstance
+-- import DatastrucImpl.DynArrayInstance
 
 ----------------------------------------------
 
@@ -57,7 +58,8 @@ data Val
 
 -- * ordered substitutions and environments
 
-type OSubst = DatastrucImpl.SimpleDynArray.DynArray Val
+--type OSubst = DatastrucImpl.SimpleDynArray.DynArray Val
+type OSubst = DatastrucImpl.StrictDynArray.DynArray Val
 type Env = Map A.UID Val
 
 --type E = Map UID Val
