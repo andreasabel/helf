@@ -1,6 +1,6 @@
 Nicolai Kraus,
 
-A Term Representation Based on Ordered Linear Logic 
+A Lambda Term Representation Based on Ordered Linear Logic 
 
 We introduce a nameless representation of lambda terms based on
 ordered logic.  Information about number and places of variables bound
