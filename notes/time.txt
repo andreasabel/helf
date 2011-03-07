@@ -729,3 +729,153 @@ Delphin       : Real =   0.000, Run =   0.000 (  0.000 usr,  0.000 gc)
 Total         : Real = 1430.297, Run = 2520.180 (2244.940 usr, 1117.310 gc)
 Remember that the success continuation counts into Solving!
 %% OK %%
+
+2011-03-07 ordered rep with lazy maps
+-------------------------------------
+
+abel@siena:~/helf/examples/ltal$ helf w32_sig_semant.elf +RTS -s
+helf w32_sig_semant.elf +RTS -s 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking %%%
+%%% closing "w32_sig_semant.elf" %%%
+  64,454,973,536 bytes allocated in the heap
+  22,755,213,312 bytes copied during GC
+   4,272,025,048 bytes maximum residency (19 sample(s))
+      33,933,264 bytes maximum slop
+            8747 MB total memory in use (136 MB lost due to fragmentation)
+
+  Generation 0: 122923 collections,     0 parallel, 33.11s, 33.84s elapsed
+  Generation 1:    19 collections,     0 parallel, 35.01s, 40.37s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   76.33s  ( 76.00s elapsed)
+  GC    time   68.12s  ( 74.21s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  144.46s  (150.21s elapsed)
+
+  %GC time      47.2%  (49.4% elapsed)
+
+  Alloc rate    844,314,560 bytes per MUT second
+
+  Productivity  52.8% of total user, 50.8% of total elapsed
+
+2011-03-07 ordered rep with strict maps (as in Data.Map implementation)
+---------------------------------------
+
+abel@siena:~/helf/examples/ltal$ helf w32_sig_semant.elf +RTS -s
+helf w32_sig_semant.elf +RTS -s 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking %%%
+%%% closing "w32_sig_semant.elf" %%%
+  64,340,172,568 bytes allocated in the heap
+  22,760,503,696 bytes copied during GC
+   4,288,510,736 bytes maximum residency (19 sample(s))
+      34,038,080 bytes maximum slop
+            8777 MB total memory in use (137 MB lost due to fragmentation)
+
+  Generation 0: 122704 collections,     0 parallel, 34.59s, 34.10s elapsed
+  Generation 1:    19 collections,     0 parallel, 34.50s, 39.90s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   78.24s  ( 78.92s elapsed)
+  GC    time   69.09s  ( 74.00s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  147.34s  (152.92s elapsed)
+
+  %GC time      46.9%  (48.4% elapsed)
+
+  Alloc rate    822,238,627 bytes per MUT second
+
+  Productivity  53.1% of total user, 51.2% of total elapsed
+
+2011-03-07 ordered rep with environments as lists
+-------------------------------------------------
+
+abel@siena:~/helf/examples/ltal$ helf w32_sig_semant.elf +RTS -s
+helf w32_sig_semant.elf +RTS -s 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking %%%
+%%% closing "w32_sig_semant.elf" %%%
+  64,516,453,424 bytes allocated in the heap
+  22,743,467,080 bytes copied during GC
+   4,292,817,312 bytes maximum residency (19 sample(s))
+      34,063,168 bytes maximum slop
+            8780 MB total memory in use (137 MB lost due to fragmentation)
+
+  Generation 0: 123040 collections,     0 parallel, 34.03s, 33.55s elapsed
+  Generation 1:    19 collections,     0 parallel, 34.47s, 39.81s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   75.34s  ( 76.15s elapsed)
+  GC    time   68.50s  ( 73.36s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time  143.85s  (149.51s elapsed)
+
+  %GC time      47.6%  (49.1% elapsed)
+
+  Alloc rate    856,223,668 bytes per MUT second
+
+  Productivity  52.4% of total user, 50.4% of total elapsed
+
+paloalto has not enough memory
+------------------------------
+
+paloalto:ltal abel$ helf w32_sig_semant.elf +RTS -s
+helf w32_sig_semant.elf +RTS -s 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking %%%
+helf: memory allocation failed (requested 2097152 bytes)
+
+CIP (ordered with lists)
+------------------------
+
+milchbraetling:~/helf/examples/ltal> helf w32_sig_semant.elf +RTS -s
+helf w32_sig_semant.elf +RTS -s 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking %%%
+%%% closing "w32_sig_semant.elf" %%%
+  73,306,183,720 bytes allocated in the heap
+  22,887,194,584 bytes copied during GC
+   3,848,585,912 bytes maximum residency (17 sample(s))
+      32,825,176 bytes maximum slop
+            7929 MB total memory in use (124 MB lost due to fragmentation)
+
+  Generation 0: 139811 collections,     0 parallel, 26.97s, 28.73s elapsed
+  Generation 1:    17 collections,     0 parallel, 23.80s, 56.00s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   51.85s  ( 53.92s elapsed)
+  GC    time   50.77s  ( 84.73s elapsed)
+  EXIT  time    0.00s  (  0.04s elapsed)
+  Total time  102.63s  (138.68s elapsed)
+
+  %GC time      49.5%  (61.1% elapsed)
+
+  Alloc rate    1,413,539,986 bytes per MUT second
+
+  Productivity  50.5% of total user, 37.4% of total elapsed
+
+
+
+
+
