@@ -1314,4 +1314,74 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
   Productivity  56.8% of total user, 55.6% of total elapsed
 
 
+revision 100
+------------
+krausni@champignon:helf/examples/ltal (0) [11:14:09] % make
+for engine in Closures Ordered HerBruijn; do ../../bin/helf +RTS -sstderr -RTS -e $engine w32_sig_semant.elf; done
+../../bin/helf -e Closures w32_sig_semant.elf +RTS -sstderr 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking with engine Closures %%%
+%%% closing "w32_sig_semant.elf" %%%
+  58,696,440,048 bytes allocated in the heap
+  18,237,220,784 bytes copied during GC
+   2,446,422,976 bytes maximum residency (18 sample(s))
+      31,805,240 bytes maximum slop
+            4994 MB total memory in use (78 MB lost due to fragmentation)
+
+  Generation 0: 111939 collections,     0 parallel, 26.47s, 26.06s elapsed
+  Generation 1:    18 collections,     0 parallel, 14.03s, 16.13s elapsed
+
+  INIT  time    0.00s  (  0.00s elapsed)
+  MUT   time   52.62s  ( 53.73s elapsed)
+  GC    time   40.50s  ( 42.19s elapsed)
+  EXIT  time    0.00s  (  0.00s elapsed)
+  Total time   93.12s  ( 95.92s elapsed)
+
+  %GC time      43.5%  (44.0% elapsed)
+
+  Alloc rate    1,115,477,766 bytes per MUT second
+
+  Productivity  56.5% of total user, 54.9% of total elapsed
+
+../../bin/helf -e Ordered w32_sig_semant.elf +RTS -sstderr 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking with engine Ordered %%%
+%%% closing "w32_sig_semant.elf" %%%
+  64,516,543,360 bytes allocated in the heap
+  22,743,451,488 bytes copied during GC
+   4,291,316,792 bytes maximum residency (19 sample(s))
+      33,850,632 bytes maximum slop
+            8777 MB total memory in use (137 MB lost due to fragmentation)
+
+  Generation 0: 123040 collections,     0 parallel, 28.37s, 36.53s elapsed
+  Generation 1:    19 collections,     0 parallel, 26.72s, 144.58s elapsed
+
+  INIT  time    0.01s  (  0.00s elapsed)
+  MUT   time   58.05s  ( 60.22s elapsed)
+  GC    time   55.09s  (181.10s elapsed)
+  EXIT  time    0.00s  (  0.35s elapsed)
+  Total time  113.15s  (241.51s elapsed)
+
+  %GC time      48.7%  (75.0% elapsed)
+
+  Alloc rate    1,111,204,673 bytes per MUT second
+
+  Productivity  51.3% of total user, 24.0% of total elapsed
+
+../../bin/helf -e HerBruijn w32_sig_semant.elf +RTS -sstderr 
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "w32_sig_semant.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+%%% type checking with engine HerBruijn %%%
+Killed
 
