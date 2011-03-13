@@ -1,0 +1,833 @@
+% \documentclass[12pt, a4paper, titlepage, twoside]{article}
+\documentclass[12pt, a4paper, titlepage]{article}
+
+\usepackage{xspace}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{amsthm}
+\usepackage{stmaryrd}
+%\usepackage[all]{xy}
+%\usepackage{txfonts} 
+
+% \newtheorem{theorem}{Theorem}
+%\newtheorem*{theorem*}{Theorem}
+% \newtheorem{proposition}[theorem]{Proposition}
+% \newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{corollary}[theorem]{Corollary}
+% \newtheorem{conjecture}[theorem]{Conjecture}
+% \newtheorem{definition}[theorem]{Definition}
+% \newtheorem{remark}[theorem]{Remark}
+% \newtheorem{example}[theorem]{Example}
+
+\newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
+\newcommand{\ovar}{\mathord{\bullet}}
+% \newcommand{\institute}[1]{}
+
+% own
+% general
+\newcommand{\sspace}{\,}
+\newcommand{\lspace}{\ \,}
+\newcommand{\shspace}{\vspace{1ex}}
+
+% also general
+\newcommand{\type}{\mathsf{Type}}
+\newcommand{\kind}{\mathsf{Kind}}
+\newcommand{\sort}{\mathsf{Sort}}
+\newcommand{\la}{\lambda}
+\newcommand{\emptyVec}{[]}
+\newcommand{\ve}[1]{[#1]}
+\newcommand{\emphSec}[1]{#1}
+\newcommand{\dom}[1]{\mathsf{dom}\left(#1\right)}
+
+% abstract syntax:
+\newcommand{\ApA}[2]{#1 \sspace #2}
+\newcommand{\LaA}[2]{\la {#1}. \sspace #2}
+\newcommand{\LaAT}[3]{\la {#1}:{#2}. \sspace #3}
+\newcommand{\PiA}[3]{\Pi \sspace #1:#2 . \sspace #3}
+
+% ordered terms: 
+\newcommand{\ApO}[3]{#1 \sspace ^{#2} \sspace #3}
+\newcommand{\oapp}[1]{\sspace ^{#1} \sspace}
+\newcommand{\LaO}[2]{\la ^{#1} . \sspace #2}
+\newcommand{\PiO}[3]{\Pi \sspace #1 \sspace ^{#2} \sspace #3}
+
+% ordered values:
+\newcommand{\ClosO}[4]{\left(\la^{#1} . \sspace {#2} \right)^{#3}_{#4}}
+\newcommand{\AbsO}[3]{\left( \la {#1}. \sspace {#2} \right)^{#3}}
+\newcommand{\FunO}[2]{\Pi \sspace #1 \sspace #2}
+
+% ordered transformation:
+\newcommand{\transO}[3]{ {#1}^{\mathcal{T}\left({#2}, \sspace {#3}\right)}}
+\newcommand{\upch}[1]{\Uparrow^{#1}}
+\newcommand{\result}[3]{\left( \, {#1}, \sspace {#2}, \sspace {#3} \, \right)}
+
+% simple closures values:
+\newcommand{\ClosS}[3]{\left(\la {#1}. \sspace #2 \right)^{#3}}
+\newcommand{\KS}[2]{\left(\la . \sspace #1 \right)^{#2}}
+\newcommand{\FunS}[2]{\Pi \sspace #1 \sspace #2}
+\newcommand{\AbsS}[3]{\left( \la^{#1}. \sspace {#2} \right)^{#3}}
+
+%  hereditary terms:
+\newcommand{\LaH}[1]{\la . \sspace #1}
+\newcommand{\KH}[1]{\la^c . \sspace #1}
+\newcommand{\ApH}[2]{#1 \sspace #2}
+\newcommand{\PiH}[2]{\Pi \sspace #1 \sspace #2}
+
+% hereditary values:
+\newcommand{\LaVH}[1]{\LaH #1} % same as the term
+\newcommand{\KVH}[1]{\KH #1} % same
+\newcommand{\FunH}[2]{\PiH #1 #2}
+
+%hereditary subs:
+% \newcommand{\hersub}[3]{{#1}\ll^{#2} {#3}}
+\newcommand{\hersub}[3]{{#1}\,[{#3}/{#2}]}
+\newcommand{\lift}[2]{ #2 \uparrow^{#1}}
+
+% \newcommand{\ovlam}[1]{\mathcal{\lambda}^{#1}}
+\newcommand{\be}{\beta}
+\newcommand{\pa}[1]{\left( #1 \right)}
+\newcommand{\sub}[2]{\left[ #1 / #2 \right]}
+\newcommand{\subs}[4]{\left[ #1 / #2 , #3 / #4 \right]}
+\newcommand{\bere}{\longrightarrow_\be}
+\newcommand{\re}{\longrightarrow}
+
+\newcommand{\head}{\mathsf{Head}}
+
+\newcommand{\ev}[3]{\llbracket{#1}\rrbracket^{#2}_{#3}}
+\newcommand{\ap}{\,@\,} 
+\newcommand{\valsub}[2]{\llparenthesis {\,#1\,} \rrparenthesis^{#2}} 
+
+\newcommand{\comment}[1]{} % hack, useful in some cases.
+
+\parindent 0pt
+\parskip 12pt
+\linespread {1.0}
+
+% special:
+% new page for new sections:
+\let\stdsection\section
+\renewcommand\section{\newpage\stdsection}
+
+
+% \title{A Lambda Term Representation Based on Linear Ordered Logic}
+% \author{Nicolai Kraus}
+% \institute{
+%   Department of Computer Science \\
+%   Ludwig-Maximilians-University Munich \\ 
+%   \email{krausni@cip.ifi.lmu.de}
+% }
+% \date{14 March 2011}
+
+\begin{document}
+
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+
+{\Large{Ludwig-Maximilians-Universit\"at M\"unchen\\[0.3cm] Department of Computer Science}}\\[4.5cm]
+{\textsc{\LARGE{A Lambda Term Representation \\[0.5cm] Based on \\[0.9cm] Linear Ordered Logic}}}\\[2.0cm]
+{\Large Nicolai Kraus}\\[0.5cm]
+{\Large 14th March 2011}\\[6cm]
+{\Large Bachelor Thesis}\\[0.5cm]
+{\Large Supervisor: Dr. Andreas Abel}
+
+\end{center}
+\end{titlepage}
+
+\comment{
+% declaration of independent work / authorship:
+\clearpage
+\thispagestyle{empty}
+\begin{center}
+Declaration of Authorship
+\end{center}
+\vspace{20mm}   
+ 
+I hereby declare that this thesis is my own work and and I have not used any sources except as stated in the text. 
+\vspace{25mm}
+
+\hspace{0.6cm} Munich, 14th March 2011  \hspace{5.0cm} Signature
+\vspace{10cm}
+
+Special thanks to Andreas Abel for all the kind help, motivating discussions and general support.
+\clearpage
+}
+
+\begin{abstract}
+We introduce a nameless representation of lambda terms based on ordered logic. Information about number and places of variables bound by a lambda is available without examining the whole term, thus making it possible to drop unneeded substitutions early to avoid memory leaks.\\
+We describe an implementation of this and other representations as well as suggested evaluation algorithms. These implementations were tested in Haskell by using them for typechecking large dependently typed terms of the logical framework (LF). The different needs of time and space are documented and compared.
+\end{abstract}
+
+
+\thispagestyle{empty}
+\tableofcontents
+\clearpage
+
+\setcounter{page}{1}
+
+\section{Motivation}
+
+Suppose we have the term $(\LaA x {\LaA y {\ApA{\ApA a b} y}}) \sspace g \sspace f$ and want to get rid of the beta redexes. Assuming we already know that beta reduction is (in the case of our term) strongly normalizing, we could just reduce in the way shown below. By writing $\sub t x$, we want to express that the variable $x$ has to be substituted by the term $t$. Such a substitution list always applies only to the directly preceding term:
+\[
+\begin{array}{lr@{}l}
+\shspace &(\LaA x {\LaA y {\ApA{\ApA a b} y}}) & \sspace g \sspace f \\ 
+\shspace\re &(\LaA y {\ApA{\ApA a b} y}) & \sub g x \lspace f \\ 
+\shspace\re &      (\ApA{\ApA a b} y) & \subs g x f y \\ 
+\shspace\re &      \multicolumn 2 l {(a\sspace b)\subs g x f y \lspace y\subs g x f y} \\ 
+\shspace\re &      \multicolumn 2 l {a\subs g x f y \lspace b\subs g x f y \lspace f} \\ 
+\shspace\re &      \multicolumn 2 {c} {a \sspace b \sspace f}  \\ 
+\end{array}
+\]
+Actually, the substitution $\sub g x$ could be dropped instantly and there is no need to apply the other substitution $\sub f y$ to the term $\ApA a b$. However, the algorithm used above has no possibility to know this in the standard term representation.
+
+
+% \section{Term Representations and Evaluation Strategies}\label{mainsec} % unfortunately, this is headline is too long.
+\section{Term Representations and Evaluation}\label{mainsec}
+
+Motivated by the example above, we want to describe three different term representations and the according evaluation 
+algorithms in the context of typechecking dependent types. Then, we can compare their needs of time and space. 
+Here, ``evaluation'' means transforming the term into a special form (``value'') which is mainly done by eliminating beta redexes.\\
+While the second and third representation are standard,
+the first one is a new representation which was originally suggested by Andreas Abel. It addresses the problem shown in the first paragraph and should be considered the main part of this thesis. We also specify the most important implementation parts. 
+
+As a common basis, we use terms which are built according to the grammar
+\[
+\begin{array}{lllrll}
+\mathsf{Terms}       & \ni & t,u & ::= & x & \mbox{variable (named $x$)} \\
+			                   &&& \mid & \ApA t u & \mbox{application} \\
+			                   &&& \mid & \LaA x t & \mbox{abstraction} 
+\end{array}
+\]
+These are the standard ``core'' constructs. All \emph{variables} are denoted by their names, \emph{application} and \emph{lambda abstraction} are as usual. 
+Note that the latter could have a type annotation, which is not relevant for the evaluation and therefore omitted. As we want to use our evaluation strategies for checking dependent types, we alse need a (dependent) \emph{function type} $\PiA{x}{A}{B}$: For all $x$ of type $A$, $B$ (i.e. $B(x)$) is a type. We write $\PiA{x^?}{A}{B}$ to include the possibility that no variable name is given, which means that $B$ does not depend on this variable of type $A$ (i.e. we have the ``normal'' type $A \rightarrow B$). This may increase an implementation's performance.
+\\
+As our implementation uses \emph{constants}, \emph{definition} and the special term \emph{Type}, we include these for completion. The idea is that the meaning of (global) constants and definitions can be looked up in an environment, while $\type$ is just a type's type. This means, our complete basic grammar is
+\[
+\begin{array}{lllrll}
+\mathsf{Terms}       & \ni & t,u, A, B & ::= & x & \mbox{variable (named $x$)} \\
+			                   &&& \mid & \ApA t u & \mbox{application} \\
+			                   &&& \mid & \LaA x t & \mbox{abstraction} \\
+			                   &&& \mid & \PiA {x^?} A B & \mbox{function type} \\ 
+					   &&& \mid & c \mid d \mid \type \\
+\mathsf{Constants}   & \ni & c &&&  \\
+\mathsf{Definitions} & \ni & d &&& 
+\end{array}
+\]
+Now, each suggested term representation and evaluation strategy should come with a couple of specifications. 
+First of all, we have to state which constructs we want to allow as values. Values are basically the result of an evaluation process that also has to be defined. Furthermore, we need to describe how a function, which is a value already, can be applied to another value in order to produce a new one. Finally, it is necessary to be able to abstract a variable from a value, thereby making it possible to build a dependent function type.
+Unfortunately, this last operation will become quite awkward in our suggested new term representation (we will explain this in detail in section \ref{simplification}). 
+
+
+
+
+
+\subsection{Ordered Representation}
+
+The idea to avoid the effect described at the very beginning is to use an approach that could be described as reversed De Bruijn indices. 
+Using those indices, the $S$ combinator $\LaA x {\LaA y {\LaA z {\ApA x z \sspace \pa {\ApA y z}}}}$ looks like $\la \la \la\sspace {\ApA 2 0} \sspace \pa{\ApA 1 0}$. Now, a variable "knows" by which $\la$ it is bound while the $\la$ "knows" nothing. Concerning the problem discussed earlier, this does not provide any advantage: It is still not possible to know whether a substitution is redundant without examining the whole term. We represent a term the other way round: A bound variable should not "know" anything, while a $\la$ "knows" everything. 
+
+
+\subsubsection{Terms}
+
+First, we want to give a formal definition of the terms used in this representation. They are given by the following grammar:
+\[
+\begin{array}{lllrll@{\qquad}}
+\mathsf{Ordered\,Terms}       & \ni & t,u,A,B & ::= & x & \mbox{free variable (named $x$)} \\
+			                   &&& \mid & \ovar & \mbox{bound variable (nameless)} \\
+			                   &&& \mid & \ApO t k u & \mbox{application} \\
+			                   &&& \mid & \LaO {\vec k} t & \mbox{abstraction} \\
+\noalign{\medskip}
+			                   &&& \mid & \PiO A k B  & \mbox{function type} \\
+			                   &&& \mid & c \mid d  & \mbox{constant or definition} \\
+			                   &&& \mid & s  & \mbox{sort} 
+\end{array}
+\]
+The first four are our ``core'' constructs: \emph{Free variables} are still denoted by their name. \emph{Bound variables}, however, are just denoted by a dot $\ovar$, which does not carry any information beside the fact that it is a bound variable. This, for example, means that if $\left(\ApO \ovar 1 \ovar \right)$ is a subterm, it is not possible to tell whether we have two different variables or two times the same one without looking at the whole term.\footnote{However, the latter possibility could not be well-typed.} 
+In the case of an \emph{application}, there is a first term and a second term. Additionally, the number of dots $\ovar$ in the second term which are not bound by lambdas in the second term itself should be denoted by the integer $k$. This will be important for the evaluation. 
+The most interesting part is the \emph{abstraction} $\LaO {\vec k} t$. The vector $\vec k = \ve{k_1, k_2, \ldots, k_n}$ (where $n$ is the length of $\vec k$) determines which dots are bound by the $\la$ in the following way: Consider all $\ovar$'s in the term $t$ which are not bound in $t$ itself. Now, the first $k_1$ of these are not bound by the $\la$, the next one is, the following $k_2$ are again not bound and so on. For example, the $S$ combinator would be written as $\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ApO {\ApO \ovar 1 \ovar} 2 {\pa{\ApO \ovar 1 \ovar}}}}}$.
+\\
+As a further example, the term 
+\[
+(\LaA x {\LaA y {\ApA{\ApA a b} y}}) \sspace g \sspace f
+\]
+from the very beginning would be represented as
+\[
+\ApO{\left(\ApO {\LaO{\emptyVec}{\LaO{\ve 0}{\ApO{\ApO{a}{0}{b}}{1}{\ovar}}}\right)}  0 f } 0 g
+\]
+(note that applications are still left-associative). Now, we can see that the first $\la$ does not bind anything as it is annotated with the empty vector $\emptyVec$, while this is less obvious when it is written as $\la x$.
+
+$\PiO A k B$ is the \emph{function type}.
+This means that $B$ has to be a lambda abstraction, i.e. can be written as $\LaO {\vec m} C$, where the $\la$ binds a variable of type $A$ (if $\vec m \not= \emptyVec$). The index $k$ works similarly to the index used in the application: It just denotes the number of $\ovar$'s in $B$ which are not bound by lambdas in $B$. There is no reason to differentiate between ``real'' dependent types and ``normal'' types (which was expressed by the sign ``?'' in $\PiA {x^?} A B$) as this information is weaker than the one carried by $\vec m$ anyway. \emph{Constants} and \emph{definitions} are the same as in our general basic syntax.
+
+Finally, we use \emph{sorts} in our implementation. The idea is simple. A sort $s$ is given by the grammar
+\[
+\begin{array}{lllrll@{\qquad}}
+\sort       & \ni & s & ::= & \type \mid \kind, &
+\end{array}
+\]
+where $\type$ is a type's type and has itself type $\kind$.
+
+Before specifying values and evaluation formally, we want to give an example to demonstrate how the information carried by a lambda should be used. Suppose we have the term
+\[
+\left(\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}}\right) \sspace g \sspace f \sspace n, \\ 
+\]
+i.e. the $S$ combinator which is first applied to a constant $g$, then to $f$ and finally to $n$. If we want to get rid of the beta redexes, we would start by eliminating the first one. The outermost $\la$ is decorated with the vector $\ve 0$ of length one. Now, the single variable bound by this $\la$ should be replaced by $g$, so we start a substitution list and insert a single $g$:
+\[
+\left(\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}\right) \left[ g \right] \lspace f \sspace n
+\]
+The first remaining $\la$ is $\la^{\ve 1}$, so it does not bind the first variable (which means, $g$ stays on the first place of the substitution list), but the second one. Consequently, we add an $f$ after the $g$:
+\[
+\left(\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}\right)  \left[ g, f \right] \lspace n
+\]
+Now the situation becomes more interesting. The only remaining $\la$ is now decorated with the vector $\ve{1,1}$, so one $n$ has to be inserted after the first entry (which is $g$), another one must be placed after the following entry:
+\[
+\left(\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}\right)  \left[ g, n, f, n \right]
+\]
+Finally, all $\la$ are eliminated. The applications' indices tell us how the substitution list should be devided between the terms:
+\[
+\left(\ovar \oapp 1 \ovar\right)\left[ g, n \right] \lspace \left(\ovar \oapp 1 \ovar\right) \left[ f, n \right]
+\]
+Same step once more:
+\[
+\ovar[g]  \lspace \ovar[n]  \lspace \left(\ovar[f]  \lspace \ovar[n]\right)
+\]
+The only thing left to be done is to apply the substitutions in the obvious way:
+\[
+g \sspace n  \sspace (f \sspace n)
+\]
+
+Note that we only used the ``core constructs'' of the usual lambda calculus in this example (cf. section \ref{simplification}). In fact, the approach can be expanded to the rest of our terms in a more or less obvious way, so no new idea is required.
+
+
+
+\subsubsection{Values} \label{ovalues}
+
+As mentioned above, a value is the result of an evaluation process which, in our case, eliminates beta redexes.
+We may rely on the fact that in the case of our terms, beta reduction is strongly normalizing as they are all well-typed.
+Thus, the only thing we need to worry about is performance. \\
+We choose to stop evaluation when we know that the term's final beta normal form is a lambda abstraction, i.e. of the form $\LaA x t$ (written in our basic syntax). Consequently, a value is not necessarily 
+in beta normal form.
+There might be quite a lot cases where this is enough, so time could be saved. 
+This means that if we get a term like $\LaO {\vec k} t$ during evaluation (not as first term of an application), we will not even look at the the term $t$. Instead, we just want to keep $\LaO {\vec k} t$. \\
+A value should always be closed, i.e. unbound variables (named or nameless) have to get a meaning from environments. 
+Consequently, a value which is a lambda abstraction may come with a list of substitutions for the inner variables. 
+A painful fact is that we have two kinds of substitution lists now: One, which is basically mapping variable names to values as usual (we want to use the symbol $\eta$ for this one) and another one, which is an ordered list containing the values by which the $\ovar$'s have to be replaced.
+
+Hence, our values are: 
+\[ 
+\begin{array}{lllrll@{\qquad}}
+\mathsf{Ordered\,Values}       & \ni & v,w,V,W & ::= & h \sspace \vec v & \mbox{large application} \\ 
+\noalign{\medskip}
+			                   &&& \mid & \ClosO {\vec k} t \eta {\vec v} & \mbox{closure} \\ 
+\noalign{\medskip}
+			                   &&& \mid & \AbsO x v \eta & \mbox{abstraction} \\
+\noalign{\medskip}
+			                   &&& \mid & \FunO V W & \mbox{function type} \\
+\noalign{\medskip}
+			                   &&& \mid & s & \mbox{sort},
+\end{array}
+\]
+where $t$ is an $\mathsf{Ordered\,Term}$ and $h$ is a $\head$:
+\[
+\begin{array}{lllrll}
+\mathsf{Heads}       & \ni & h & ::= & x \mid c \mid d & \mbox{free variable, constant or definition}  
+\end{array}
+\]
+The \emph{large application} consists of a head $h$ and a vector $\ve{v_1, v_2, \ldots, v_m}$ of values which is to be read as a left-associative application, i.e. as $\pa{\pa{h \, v_1} v_2 \ldots } v_m$. 
+Note that it is not necessarily ``large''. Quite the contrary, it often only consists of the head (and the vector of values is empty).\\
+A \emph{closure} $\ClosO {\vec k} t \eta {\vec v}$ is more complicated. The main part, $\LaO {\vec k} t$, is nothing other than a lambda abstraction in the syntax of ordered terms ($t \in \mathsf{Ordered\,Terms}$). $\eta$ is a substitution which maps variable names on values. $\eta$ (only) applies to the free named variables in $t$. In contrast, the ordered substitution list $\vec v$ is a list of values. Its length is exactly the number of unbound $\ovar$'s in $\LaO {\vec k} t$ and the idea is that the $i^{th}$ unbound $\ovar$ is to be replaced by $v_i$.\footnote{This means that the inequality $\sum_{j} k_j \leq \pa{\mathsf{length}\, \vec v}$ is always true. 
+It is also possible to extend the vector $\vec k$ by appending one more number to force equality, but this does not seem to provide any advantage apart from debugging the implementation.} It is not effected by $\eta$.
+\\
+In an \emph{abstraction} $\AbsO x v \eta$, the lambda binds variables with a concrete name $x$ as in the standard representation. $\eta$ has the same meaning as above and an ordered substitution list is not needed, as $v$ already is a value and therefore closed. Using abstractions, it is easy to fulfil the demanded possibility to abstract a free variable from a value.
+\\
+There is nothing new to say about the \emph{function type} $\FunO V W$ as it is the same as in the grammar for Ordered Terms except that $V$ and $W$ are values now (i.e. closed, so the index is not needed).\\
+Finally, \emph{sorts} are exactly the same as above.
+
+\subsubsection{Evaluation} \label{ordeval}
+
+When we want to evaluate an ordered term to get a value, it should be possible to look up the meaning of constants and definitions. To simplify the notation, we do not specify these cases and environments and focus on the interesting cases instead. However, we have to mention the environment which is used to look free variables up as this one can change during evaluation. A sort does not change during evaluation and is therefore omitted as well.\\
+We define the evaluation function $\ev {\cdot} {\cdot} {\cdot}$ which takes an ordered term, an environment (mapping variable names on values) as well as an ordered substitution list (a list of values) and returns a value. The ordered substitution list must always satisfy the following invariant: Its length equals
+exactly the number of $\ovar$'s which are unbound in the term. In other words, the list carries neither too less nor redundant information.\\
+At the start of the evaluation, the ordered substitution list is empty. \\
+Additionally, we specify the application $\cdot \ap \cdot$ of two values, which also returns a value and does not need any environments.
+\[ 
+\begin{array}{llll}
+& \ev x \varrho {\emptyVec} & = & \varrho(x) \\ \\
+& \ev \ovar \varrho {\ve{v_1}} & = & v_1 \\ \\
+& \ev {t \oapp k u}  \varrho {\ve{v_1, \ldots, v_n}} & = & {\ev t  \varrho {\ve{v_1, \ldots, v_{n-k}}}} \ap {\ev u  \varrho {\ve{v_{n-k+1}, \ldots, v_n}}} \\ \\
+& \ev {\LaO {\vec k} t}  \varrho {\vec v} & = & \ClosO {\vec k} t \varrho {\vec v} \\ \\
+& \ev {\PiO A k B}  \varrho {\ve{v_1, \ldots, v_n}} & = & \FunO {\ev{A} \varrho {\ve{v_1, \ldots, v_{n-k}}}} {\ev{B} \varrho {\ve{v_{n-k+1}, \ldots, v_n}}}
+\end{array}
+\]
+First, if we want to evaluate a free variable, we just look it up in the environment. The ordered substitution list must be empty as the invariant would be violated otherwise. \\
+Second, in the case of a $\ovar$, the ordered list must have exactly one entry. This entry is the result of the evaluation. \\
+If we evaluate an application, we evaluate the left and the right term. Each of those uses the environment $\eta$, but the ordered substitution list has to be split. The application's index enables us to split at the right position. Then, we have to apply the first result to the second. \\ 
+Surprisingly, evaluating an abstraction is very simple. We just need to keep the substitutions to build a closure. \\
+Function types are like applications, but simpler (as $\ap$ is not needed).
+
+We define the function $\cdot \ap \cdot$ by: 
+\[ 
+\begin{array}{llll}
+& \pa{h \sspace \vec v} \ap w & = & h \sspace \ve{\vec v, w} 
+\\ \\
+& \ClosO {\vec k} t {\eta}{\vec v}    \ap  w & = & \ev t \eta {\vec {v'}}  
+\\ \\
+&& 
+\multicolumn 2 l{
+\begin{array}{llcl}
+\mbox{where } & \vec v & = & \ve{v_1, \ldots, v_n} \\
+              & \vec {v'} & = & \ve{v_1, \ldots, v_{k_1}, w, v_{k_1+1}, \ldots, v_{k_1+k_2}, w, \ldots }
+\end{array}
+} \\ \\
+& \AbsO x v \eta \ap w & = & \valsub{v}{\eta [x \mapsto w]}
+\end{array}
+\]
+If we want to apply a \emphSec{large application} to a value $w$, we just append $w$ to the vector of values (we write $\ve{\vec v, w}$ for $\ve{v_1, \ldots, v_n, w}$). 
+The case of a \emphSec{closure} $\ClosO {\vec k} t {\eta}{\vec v}$ is less simple. $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list $\vec v$: The new list $\vec {v'}$ is build by inserting $w$ after the first $k_1$ values, after the next $k_2$ values and so on. In total, $w$ is used $(\mathsf{length}\, \vec k)$ times. Then, $t$ is evaluated. \\
+Applying an \emphSec{abstraction} to $w$ means that we have to apply the substitution $\eta [x \mapsto w]$ (with $\eta [x \mapsto w] (y) = w$ if $y = x$, else $\eta(y)$) to the value $v$. Of course, $\valsub \cdot \cdot$ can be defined recursively like $\cdot \ap \cdot$ and $\ev \cdot \cdot \cdot$ above. In fact, it can be seen as an evaluation function for values. \\
+By writing $\valsub{\vec v}{\eta}$, we mean that $\valsub{\cdot}{\eta}$ is applied seperately to each $v_i$. 
+In addition, $f \ap {\vec v}$ is a shortcut for the result of applying $f$ sequently to each $v_i$, i.e. $f \ap v_1 \ap \ldots \ap v_n$ ($\ap$ is left-associative): 
+\[ 
+\begin{array}{llll}
+& \valsub{h \sspace \vec v}{\eta} & = & 
+\begin{cases} 
+\eta(h) \ap \valsub{\vec v}{\eta} &\text{if $h$ is a free variable and $h \in \dom {\eta}$}  \\ h \, \valsub{\vec v}{\eta} &\text{otherwise} 
+\end{cases}
+\\ \\
+\noalign{\medskip}
+& \valsub{\ClosO {\vec k} t {\eta'}{\vec v}}{\eta} & = & \ClosO {\vec k} t {\eta''} {\valsub{\vec v}{\eta}}
+\\ \\
+& \valsub{\AbsO y v {\eta'}}{\eta} & = & \AbsO y v {\eta''}
+\\ \\
+&& 
+\multicolumn{2}{l}{\dom{\eta''} = \dom{\eta} \cup \dom{\eta'}}\\ 
+\noalign{\medskip}
+&&
+\multicolumn 2 l{
+\eta''(x) = 
+\begin{cases} 
+\valsub {\eta'(x)} \eta & \text{if $x \in \dom {\eta'}$} 
+\\
+\eta(x) &\text{otherwise.}
+\end{cases}
+} \\
+\\
+& \valsub{\FunO V W}{\eta} & = & \FunO {\valsub{V}{\eta}} {\valsub{W}{\eta}}
+\end{array}
+\]
+Applying a substitution $\eta$ to a \emphSec{large application} is easy as long as its head $h$ is not a free variable: We just apply the substitution to each value. 
+However, if it is a free variable $x$, $x \in \dom{\eta}$ 
+(and $\eta(x)$ not a head), it is, in addition, necessary to apply $\eta(x)$ to the (new) vector of values. 
+\\
+If we have a \emphSec{closure}, we just need to modify both the environment and the ordered list as specified above. The \emphSec{abstraction} is even easier. Applying $\eta$ on a \emphSec{function type} consists of applying it on both values. A \emphSec{sort} is not influenced by $\eta$ (that is why it is omitted again).
+
+
+\subsubsection{Transformation}
+As the syntax for ordered terms differs from the basic standard syntax we gave at the beginning of section \ref{mainsec}, we have to transform the term before we can start evaluating. We use a recursive algorithm that adds the correct vectors to the lambdas and replaces all bound variables by $\ovar$ while going only once over the whole term. 
+
+Basically, our algorithm works as follows: \\
+First, of course, it takes a term in basic syntax. \\
+Second, it uses a map $\alpha$. 
+The keys are the names of variables which were bound by any $\la$. The map should know how many variables already have been bound. We call this number $|\alpha|$. Note that $|\alpha|$ is not really the map's size as we count each variable as often as it is bound (i.e. $x$ can be counted twice, so $|\alpha|$ can be larger than the actual key set). $\alpha(x)$ is an integer, namely the number of the $\la$ which binds $x$ (``number'' refers to the term's tree structure, so, if we encounter an $x$, $|\alpha| - \alpha(x)$ would be the De Bruijn index of $x$). \\
+Third, our algorithm takes a list $\vec l$ of vectors of integers. These vectors are ``work in progress'' and become, when they are completed, the vectors which are attached to the lambdas. \\
+Our algorithm returns the transformed term, the number of yet unbound $\ovar$'s and a new list $\vec {l'}$ of vectors.\\
+Clearly, at the beginning of the transformation, $\alpha$ is the empty map and $\vec l$ is the empty list. 
+If $\vec l$ is a list of vectors of natural numbers, where $\vec l$ has at least length $n$ and each vector has at least length $1$, we write $\upch n {\vec l}$ 
+for the list which is constructed by adding $1$ to the first vector element of the first $n-1$ vectors of $\vec l$ and appending a $0$ at the beginning of the $n^{th}$ vector. All other vectors are kept unchanged.
+
+For better readability of the specification of the transform function $\transO{\cdot}{\cdot}{\cdot}$, we use Haskell-like syntax:
+\[ 
+\begin{array}{lllll}
+& \transO{x}{\alpha}{\vec l} & = & 
+\multicolumn{2}{l}{
+\begin{cases} 
+\result x 0 {\vec l} & \text{if $x$ is not a key in $\alpha$} \\ 
+\noalign{\medskip}
+\result {\ovar} 1 {\upch {|\alpha| - \alpha(x)} {\vec l}} & \text{if it is one.}  
+\end{cases}
+}\\ \\
+& \transO{\left(\ApA t u\right)}{\alpha}{\vec l} & = & \mbox{let } &\result{t_1}{i_1}{\vec{l_1}} := \transO{t}{\alpha}{\vec l} \\
+\noalign{\medskip}
+				      &&&             &\result{u_2}{i_2}{\vec{l_2}} := \transO{u}{\alpha}{\vec{l_1}} \\
+\noalign{\medskip}
+				      &&& \mbox{in }  &\result{\ApO {t_1} {i_2} {u_2}}{i_1 + i_2}{\vec {l_2}}
+\\
+\\
+& \transO{\left(\LaA x t\right)}{\alpha}{\vec l} & = &  \mbox{let } &\result{t'}{i}{(m : l_1) : \vec{l'}} := \transO{t}{\alpha'}{\ve 0 : \vec l} \\
+\noalign{\medskip}
+				      &&& \mbox{in }  &\result{\LaO {\mathsf{reverse} \, l_1} {t'}}{i - \mathsf{length}\, l_1}{\vec {l'}}
+\\ \\
+				      &&& \mbox{where }  &\begin{cases}
+							   \dom{\alpha'} = \dom{\alpha} \cup \{ x \} \\
+% \noalign{\medskip}
+							   |\alpha'| := |\alpha| + 1 \\
+% \noalign{\medskip}
+				                           \alpha'(x) := |\alpha'| \\
+% \noalign{\medskip}
+				                           \alpha'(y) := \alpha(y) \mbox{ for all } y \not=x  
+				                          \end{cases}
+\\
+\\
+& \transO{\left( \PiA {x} A B\right)}{\alpha}{\vec l} & = & \mbox{let } &\result{A_1}{i_1}{\vec{l_1}} := \transO{A}{\alpha}{\vec l} \\
+\noalign{\medskip}
+				      &&&             &\result{B_2}{i_2}{\vec{l_2}} := \transO{\left(\LaA x B\right)}{\alpha}{\vec{l_1}} \\
+\noalign{\medskip}
+				      &&& \mbox{in }  &\result{\PiO {A_1} {i_2} {B_2}}{i_1 + i_2}{\vec {l_2}}
+\\
+\\
+\multicolumn{5}{l}{\mbox{If we allow ``independent'' function types, we transform them like this:}} \\ \\
+& \transO{\left( A \rightarrow B \right)}{\alpha}{\vec l} & = & \mbox{let } &\result{A_1}{i_1}{\vec{l_1}} := \transO{A}{\alpha}{\vec l} \\
+\noalign{\medskip}
+				      &&&             &\result{B_2}{i_2}{\vec{l_2}} := \transO{B}{\alpha}{\vec{l_1}} \\
+\noalign{\medskip}
+				      &&& \mbox{in }  &\result{\PiO {A_1} {i_2} \left({\LaO \emptyVec B_2}\right)}{i_1 + i_2}{\vec {l_2}}
+\\
+\\
+\multicolumn{5}{l}{\mbox{Finally, if $t$ is a $\mathsf{constant}, \mathsf{definition}$ or the special term $\type$:}} \\
+\noalign{\medskip}
+& \transO{t}{\alpha}{\vec l} & = & \result{t}{0}{\vec l}
+\end{array}
+\]
+In Haskell, $\alpha$ and $\vec l$ can be realized by using a Reader and a State Monad. If we want to transform a term $t$, we execute $\transO{t}{\varepsilon}{\emptyVec}$, where $\varepsilon$ is the empty map with $|\varepsilon| = 0$.
+
+The algorithms runs smoothly over the term. However, in our implementation, its time complexity is not better than $O(\mathsf{term\, length}^2)$.
+In a term like 
+\[
+\LaA y {\LaA {x_1} {\LaA {x_2} {\ldots \LaA {x_n} { \underbrace{y \sspace y \sspace \ldots \sspace y}_{n}    }    }}},
+\]
+we would, for each $y$, increase the first element of each vector of the lambdas binding the $x_i$ by $1$, hence increase $n^2$ times. 
+\\
+In our tests, this time complexity was no problem anyway. The transform function took less than 2\% of the total time of the whole process.
+
+\subsubsection{Implementation of Ordered Substitution Lists}
+Implementing the ordered substitution lists as real lists does not appear to be a good idea. The fact that we have to split it and insert values at concrete positions makes trees a more reasonable decision. Our implementation can do all used operations in logarithmic runtime (or better). Why and how this can be done can be deduced from the explanations in \cite{adams}. 
+
+However, practical tests do not always obey theoretical considerations. In our tests (cf. section \ref{resultsection}), standard Haskell lists perform much better than our trees. Probably, this is due to the fact that the substitution lists do not become large enough to justify the more complicated operations on trees (or our tree implementation has some hidden weaknesses). 
+
+\subsubsection{Simplification}\label{simplification}
+
+The evaluation strategy above was designed to be used for checking dependent types. Because of this, several aspects are very special and needless for other applications. Obviously, this is the case for the whole idea of sorts. Those are, however, harmless. It is much more important to discuss \emphSec{abstractions} like $\AbsO{x}{v}{\eta}$. They are created whenever we have to infer the type of a term like $\LaAT x A t$. Using our strategies, we can evaluate $A$ and (knowing the type of $x$) infer the type $B$ of $t$. Now, we would like to build a \emphSec{function type}, but searching all the $x$ in $B$ would be too costly. That's why we have to use values like $\AbsO{x}{v}{ }$. Unfortunately, this also means that we will need environments for free variables like $\eta$ now. Otherwise, e.g. in the case $\AbsO{x}{v}{ } \ap w$, it would not be possible to store the information $x \mapsto w$. Consequently, we would have to go over the whole value $v$ and substitute $x$ by $w$, which, again, would be too costly. \emphSec{Function types}, \emphSec{constants} and \emphSec{definitions} are not always important as well.\\
+Therefore, it is worth summarizing shortly how representation and evaluation works for the basic lambda calculus.
+
+As terms, we only need free variables, bound variables, applications and lambda abstractions:
+\[
+ t, u ::= x \ \mid \ \ovar \ \mid \ \ApO t k u \ \mid \ \LaO {\vec k} t
+\]
+The number of values we need is even lower. We only need large applications, headed by a free variable, and simplified closures: 
+\[
+ v, w ::= x \, \vec v \ \mid \ \ClosO{\vec k}{t}{}{\vec v}
+\]
+Now, evaluation works without environments for free variables:
+\[ 
+\begin{array}{llll}
+& \ev x {} {\emptyVec} & = & x \\ \noalign{\medskip}
+& \ev \ovar {} {\ve{v_1}} & = & v_1 \\  \noalign{\medskip}
+& \ev {t \oapp k u}  {} {\ve{v_1, \ldots, v_n}} & = & {\ev t  {} {\ve{v_1, \ldots, v_{n-k}}}} \ap {\ev u  {} {\ve{v_{n-k+1}, \ldots, v_n}}} \\  \noalign{\medskip}
+& \ev {\LaO {\vec k} t}  {} {\vec v} & = & \ClosO {\vec k} t {} {\vec v} \\  
+\\ 
+& \pa{h \sspace \vec v} \ap w & = & h \sspace \ve{\vec v, w} 
+\\ \noalign{\medskip}
+& \ClosO {\vec k} t {}{\vec v}    \ap  w & = & \ev t {} {\vec {v'}}   \\
+&& 
+  \multicolumn 2 l{
+  \begin{array}{llcl}
+  \mbox{where } & \vec v & = & \ve{v_1, \ldots, v_n} \\
+                & \vec {v'} & = & \ve{v_1, \ldots, v_{k_1}, w, v_{k_1+1}, \ldots, v_{k_1+k_2}, w, \ldots }
+  \end{array}
+  }
+\end{array}
+\]
+Nothing more than the above is necessary for evaluating standard lambda terms. 
+
+
+
+
+
+\subsection{Simple Closures} 
+
+Our second suggestion of a term representation and evaluation strategy is much plainer. % than the Ordered Representation above. 
+In fact, it can be regarded as a simplification of the Ordered Representation above.
+Basically, we give up the whole idea of ordered substitutions, replace them by normal ones (i.e. just mapping variable names on values) and keep the rest. This means that we do not need to change the basic syntax for terms that was given at the start of section \ref{mainsec}. Similarly, the values are simplified:
+\[
+\begin{array}{lllrll}
+\mathsf{Simple \, Closures \, (Values)}      & \ni & v,w,V,W & ::= & h \sspace \vec v & \mbox{large application} \\ 
+\noalign{\medskip}
+			                   &&& \mid & \ClosS x t {\eta} & \mbox{closure} \\ 
+\noalign{\medskip}
+			                   &&& \mid & \KS t \eta & \mbox{constant closure} \\ 
+\noalign{\medskip}
+			                   &&& \mid & \AbsS x v \eta & \mbox{abstraction} \\
+\noalign{\medskip}
+			                   &&& \mid & \FunS V W & \mbox{function type} \\
+\noalign{\medskip}
+			                   &&& \mid & s & \mbox{sort}
+\end{array}
+\]
+The \emph{large application}, the \emph{abstraction}, the \emph{function type} and the \emph{sort} are exactly like our ordered values from section \ref{ovalues}. The \emph{closure} is also nearly the same, but we do not have the ordered substitution list any longer and all variables have explicit names. To increase the performance, we now use the \emph{constant closure} which, basically, is the same as a \emphSec{closure}, but the outermost $\la$ does not bind a variable.
+
+The evaluation process is completely analogous to the evaluation of ordered terms. For this reason, we skip it.
+
+
+\subsection{Beta Normal Values - Hereditary Substitutions}
+
+Our last evaluation strategy uses beta normal values (and, like the second one, no ordered evaluation). In the previous strategies, we were satisfied when the ``outer'' beta redexes were cleared. Now, we evaluate until we really get the beta normal form (which is unique, as beta reduction is confluent).
+
+Consequently, we have to eliminate ``inner'' beta redexes now. That's why we use De Bruijn indices for bound variables here. Handling the indices is quite costly, but probably still better than having to pay attention to potentially ambiguous variable names all the time. To ensure that we always get beta normal forms, we use Hereditary Substitution, which was originally described in \cite{watkins}. We also used the clearer presentation in \cite{abel}.
+
+\subsubsection{Terms} 
+
+Now, our terms are:
+\[
+\begin{array}{llrll} 
+       & t,u,A,B & ::= & x & \mbox{free variable (named $x$)} \\
+\noalign{\medskip}
+			                   && \mid & n & \mbox{bound variable (De Bruijn index, $n \in \mathbb{N}$)} \\
+\noalign{\medskip}
+			                   && \mid & \ApH t u & \mbox{application} \\
+\noalign{\medskip}
+			                   && \mid & \LaH t & \mbox{lambda abstraction} \\
+\noalign{\medskip}
+			                   && \mid & \KH t & \mbox{constant lambda} \\
+\noalign{\medskip}
+			                   && \mid & \PiH A B  & \mbox{function type} \\
+\noalign{\medskip}
+			                   && \mid & c \mid d  & \mbox{constant or definition} \\
+\noalign{\medskip}
+			                   && \mid & s  & \mbox{sort} 
+\end{array}
+\]
+Everything is quite clear: We have named \emph{free variables}, \emph{bound variables} are represented by De Bruijn indices, \emph{applications} and \emph{lambda abstractions} are as usual (in De Bruijn representation). Again, we add the \emph{constant lambda} which is annotated with a $c$ and does not bind a variable. \emph{Function type}, \emph{constant}, \emph{definition} and \emph{sort} are nothing new.
+
+Transforming a term in standard syntax into the syntax above is possible by using an algorithm similar to our first transformation algorithm. Here, it is even easier as we only have to replace variable names by the correct indices.
+
+\subsubsection{Values}
+
+We use a grammar that ensures that values are always in beta normal form:
+\[
+\begin{array}{lllrll}
+\mathsf{Beta \, Normal \, Values}      & \ni & v,w,V,W & ::= & h \sspace \vec v & \mbox{large application} \\ 
+\noalign{\medskip}
+			                   &&& \mid & \LaVH v & \mbox{lambda abstraction} \\
+\noalign{\medskip}
+			                   &&& \mid & \KVH v & \mbox{constant lambda} \\ 
+\noalign{\medskip}
+			                   &&& \mid & \FunH V W & \mbox{function type} \\
+\noalign{\medskip}
+			                   &&& \mid & s & \mbox{sort}
+\end{array}
+\]
+Here, the \emphSec{head} $h$ in our \emphSec{large application} does not always have to be a variable name, a constant or a definition. It might be a De Bruijn index, representing a bound variable, as well. Both of the other evaluation strategies allow abstracting a concrete variable name from a value. However, we do not want this here for the same reason we use De Bruijn indices. Consequently, here, we really do have to go over the whole value and replace free variables' names by indices whenever we have to abstract such a free variable. 
+
+
+\subsubsection{Evaluation}
+
+Using an environment where \emphSec{free variables} are looked up, we can evaluate a term to a beta normal value. \emphSec{Constants}, \emphSec{definitions} and \emphSec{bound variables} become \emphSec{heads}. If we want to evaluate a \emphSec{lambda abstraction} $\LaH t$ or $\KH t$, we keep the $\la$ and evaluate $t$. Evaluating a \emphSec{function type} $\PiH A B$ is done simply by evaluating $A$ as well as $B$ and building a new \emphSec{function type}. \emphSec{Sorts} are kept as usual. 
+\\
+The interesting situation is the \emphSec{application} $\ApH t u$. Basically, it is the same as in the other two evaluation algorithms: We evaluate $t$ as well as $u$ and apply the first to the second by using an appropriate function $\cdot \ap \cdot$. In most cases, this is no problem either. However, applying $\LaVH{v}$ to $w$ is more complicated. The result is $\hersub{v}{0}{w}$, which means, more or less, ``take $v$ and replace all indices $0$ by $w$''. Of course, diving under lambdas may influcene the indices, so we have to pay attention. We define the function by:\footnote{Again, $\mathsf{sorts}$ are ommited as they do nothing special. 
+$\hersub{\vec v}{k}{w}$ is used as $\valsub{\vec v}{\eta}$ was used in section \ref{ordeval}: $\hersub{\cdot}{k}{w}$ is applied to each $v_i$.
+}
+\[ 
+\begin{array}{llll}
+\multicolumn{4}{l}{\text{large application with a De Bruijn index as head:}}
+\\
+\noalign{\medskip}
+& \hersub{\left( n \sspace \vec v \right) }{k}{w} & = &  
+\begin{cases}
+ w \ap \left( \hersub{\vec v}{k}{w} \right) & \text{if $n = k$} \\
+ n \sspace \left(\hersub {\vec v} k w\right) & \text{if $n < k$} \\
+ (n-1) \sspace \left(\hersub {\vec v} k w\right) & \text{if $n > k$} \\
+\end{cases}\\
+\\
+\multicolumn{4}{l}{\text{any other head:}} \\
+\noalign{\medskip}
+& \hersub{ \left( h \sspace \vec v \right) }{k}{w} & = & h \sspace \left(\hersub {\vec v} k w\right) \\
+% \noalign{\medskip}
+\\
+& \hersub{ \left( \LaVH v \right) }{k}{w} & = & \LaVH{ \left(\hersub{v}{k+1}{\left( \lift 0 w \right)}\right)}
+\\
+\noalign{\medskip}
+& \hersub{ \left( \KVH v \right) }{k}{w} & = & \KVH{ \left(\hersub{v}{k}{w}\right)} 
+\\
+\noalign{\medskip}
+& \hersub{ \left( \FunH V W \right) }{k}{w}  & = & \FunH { ( \hersub{V}{k}{w} ) } { ( \hersub{W}{k}{w} ) }
+\end{array}
+\]
+Note that \emphSec{constant lambdas} are irrelevant for De Bruijn indices. However, in certain cases, it is necessary to increase them, which is done by the lifting function $\lift{j}{\cdot}$. This happens, for example, if we evaluate the term $\LaH{ \ApH {\left( \LaH{\LaH{1}} \right)}{0} }$: We want to eliminate the beta redex, i.e. substitute the first variable ($1$) with the second variable ($0$). However, careless replacement would result in the wrong term $\LaVH{\LaVH 0}$. As we cross a $\la$ during the substitution, we have to lift the index and get the correct value $\LaVH{\LaVH 1}$. 
+In most cases, nothing special is to be done, so we specify only the interesting situations:
+\[ 
+\begin{array}{llll}
+& \lift{j}{\left( n \sspace \vec v \right) } & = &  
+\begin{cases}
+ n \sspace \left( \lift{j}{\vec v}\right) & \text{if $n < j$,} \\ & \mbox{i.e. $n$ is bound by a ``near'' $\la$} \\
+ (n+1) \sspace \left( \lift{j}{\vec v}\right) & \text{otherwise.} \\
+\end{cases}\\
+\noalign{\medskip}
+& \lift{j}{\LaVH v} & = & \LaVH{\left( \lift{j+1}{v} \right) }
+\end{array}
+\]
+
+
+
+\section{Performance Tests}\label{resultsection}
+
+In this final section, we want to present some concrete results of our performance tests. Our evaluation strategies were used by a typechecker written by Andreas Abel. We tested it on dependently typed terms of the logical framework which were kindly provided by Andrew W. Appel (Princeton University). 
+Our main test file \textsf{w32\_sig\_semant.elf} with a size of approximately 21 megabytes contains a proof described in \cite{appel}. 
+
+All tests listet below were executed on the same server\footnote{``baerentatze'', Ludwig-Maximilians-Universit\"at M\"unchen, Department of Computer Science} working with a CPU of type \emph{AMD Phenom II X4 B95} (only one core used, 3000 MHz) and 7999 MiB system memory.
+\\
+We also tested the first $6.000$, $10.000$ and $12.000$ lines (terms) of our main file without the rest (named \textsf{6000.elf} and so on). Later terms tend to be larger, so the tests with fewer lines needed much less time. 
+
+Below, the total used average processing time and memory are compared for the different evaluation strategies. In the case of the \emph{Ordered Representation}, we list the values for both the implementations of ordered substitutions as trees and as lists. Next come our \emph{Simple Closures} and finally the \emph{Beta Normal Values} which use hereditary substitution. The memory is only measured pointwise and therefore not completely accurate (which may explain why the stated total memory is, in one case, larger for a smaller file).
+
+% rounded:
+\begin{center}
+
+\begin{tabular}{| l || c | c |}
+\multicolumn{3}{c}{\textsf{6000.elf} (file size: 3.8 MB)}\\
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered (trees) & 18.9 & 1111 \\
+\hline
+Ordered (lists) & 18.6 & 1114\\
+\hline
+Simple Closures & 18.5 & 1152\\
+\hline
+Beta Normal Values & 27.6 & 2034\\
+\hline
+\end{tabular}
+
+\begin{tabular}{| l || c | c |}
+\multicolumn{3}{c}{\textsf{10000.elf} (file size: 12.9 MB)}\\
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered (trees) & 61.0 & 3230\\
+\hline
+Ordered (lists) & 60.6 & 3237\\
+\hline
+Simple Closures & 60.0 & 3302\\
+\hline
+Beta Normal Values & 98.7 & 5878\\
+\hline
+\end{tabular}
+
+\begin{tabular}{| l || c | c |}
+\multicolumn{3}{c}{\textsf{12000.elf} (file size: 17.8 MB)}\\
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered (trees) & 84.3 & 5096 \\
+\hline
+Ordered (lists) & 83.8 & 5103 \\
+\hline
+Simple Closures & 83.6 & 5226 \\
+\hline
+Beta Normal Values & 137.7 & 8513 \\
+\hline
+\end{tabular}
+\end{center}
+Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during typechecking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. \\
+None of the other strategies exhibited any shortcomings in the comparisons above. However, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures: 
+\begin{center}
+ \begin{tabular}{| l || c | c |}
+\multicolumn{3}{c}{\textsf{w32\_sig\_semant.elf} (file size: 20.9 MB)}\\
+\hline
+& time (sec) & space (MB) \\
+\hline
+\hline
+Ordered (trees) & 108.4 & 8877\\
+\hline
+Ordered (lists) & 94.8 & 4948\\ % average, 4 values.
+\hline
+Simple Closures & 94.3 & 5068 \\ % some more tests: 92.42 , 4994 (?!); 94.17, 5068; 94.97, 5068; 93.75, 4994
+\hline
+Beta Normal Values & 169.8 & 9044  \\
+\hline
+\end{tabular}
+\end{center}
+Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind. 
+\\
+In comparison, the typechecker of the Twelf project, \emph{Twelf r1697} (written in \emph{Standard ML}) does the job nearly five times faster with only 2720 megabytes of memory.
+
+Unfortunately, the idea of ordered substitution lists does not really pay off within the context of typechecking in our tests. 
+On the other hand, it can compete with the simple standard implementation. This offers hope that there might be some applications that benefit more from our suggested strategy. 
+
+
+\clearpage
+
+\begin{thebibliography}{4} \addcontentsline{toc}{section}{References}
+  
+\bibitem{adams}
+  Stephen Adams. \emph{Implementing Sets Efficiently in a Functional Language}.\\
+  % Technical Report, 
+  Department of Electronics, University of Southampton, 1992.
+  
+\bibitem{watkins}
+  Kevin Watkins, Iliano Cervesato, Frank Pfenning, David Walker. \emph{A concurrent logical framework I: Judgements and properties}.\\
+  % Technical Report, 
+  School of Computer Science, Carnegie Mellon University, Pittsburgh, 2003.
+
+% @TechReport{      watkins:concurrentlftr,
+%  author        = {Kevin Watkins and Iliano Cervesato and Frank Pfenning and
+%                  David Walker},
+%  title         = {A concurrent logical framework {I}: Judgements and
+%                  properties},
+%  institution   = {School of Computer Science, Carnegie Mellon University,
+%                  Pittsburgh},
+%  year          = 2003,
+%  key           = {CMU-CS02-101},
+%  postscript    = {authors/WatkinsKevin/CLF-TR1.ps.gz}
+% }
+
+\bibitem{abel}
+  Andreas Abel, \emph{Implementing a Normalizer Using Sized Heterogeneous Types}.\\
+  Journal of Functional Programming 2009, Issue 3-4, MSFP'06 special issue. Cambridge University Press. 
+
+\bibitem{appel} 
+  Amal Ahmed, Andrew W. Appel, Christopher D. Richards, Kedar N. Swadi, Gang Tan, Daniel C. Wang. \emph{Semantic foundations for typed assembly languages}.\\
+  ACM Trans. Program. Lang. Syst., volume 32, number 3, 2010.
+
+% @article{DBLP:journals/toplas/AhmedARSTW10,
+%  author    = {Amal Ahmed and
+%               Andrew W. Appel and
+%               Christopher D. Richards and
+%               Kedar N. Swadi and
+%               Gang Tan and
+%               Daniel C. Wang},
+%  title     = {Semantic foundations for typed assembly languages},
+%  journal   = {ACM Trans. Program. Lang. Syst.},
+%  volume    = {32},
+%  number    = {3},
+%  year      = {2010},
+%  ee        = {http://doi.acm.org/10.1145/1709093.1709094},
+%  bibsource = {DBLP, http://dblp.uni-trier.de}
+% }
+
+\end{thebibliography}
+
+
+% declaration of independent work / authorship:
+\clearpage
+
+% \thispagestyle{empty}
+\begin{center}
+Declaration of Authorship \addcontentsline{toc}{section}{Declaration of Authorship}
+\end{center}
+\vspace{20mm}   
+ 
+I hereby declare that this thesis is my own work and and I have not used any sources except as stated in the text. 
+\vspace{25mm}
+
+\hspace{0.6cm} Munich, 14th March 2011  \hspace{5.0cm} Signature
+\vspace{10cm}
+
+Special thanks to Andreas Abel for all the kind help, motivating discussions and general support.
+
+
+\end{document}
+
