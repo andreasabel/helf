@@ -1,0 +1,97 @@
+\usepackage{xspace}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{amsthm}
+\usepackage{stmaryrd}
+%\usepackage[all]{xy}
+%\usepackage{txfonts} 
+
+% \newtheorem{theorem}{Theorem}
+%\newtheorem*{theorem*}{Theorem}
+% \newtheorem{proposition}[theorem]{Proposition}
+% \newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{corollary}[theorem]{Corollary}
+% \newtheorem{conjecture}[theorem]{Conjecture}
+% \newtheorem{definition}[theorem]{Definition}
+% \newtheorem{remark}[theorem]{Remark}
+% \newtheorem{example}[theorem]{Example}
+
+\newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
+\newcommand{\ovar}{\mathord{\bullet}}
+% \newcommand{\institute}[1]{}
+
+% own
+% general
+\newcommand{\sspace}{\,}
+\newcommand{\lspace}{\ \,}
+\newcommand{\shspace}{\vspace{1ex}}
+
+% also general
+\newcommand{\type}{\mathsf{Type}}
+\newcommand{\kind}{\mathsf{Kind}}
+\newcommand{\sort}{\mathsf{Sort}}
+\newcommand{\la}{\lambda}
+\newcommand{\emptyVec}{[]}
+\newcommand{\ve}[1]{[#1]}
+\newcommand{\emphSec}[1]{#1}
+\newcommand{\dom}[1]{\mathsf{dom}\left(#1\right)}
+
+% abstract syntax:
+\newcommand{\ApA}[2]{#1 \sspace #2}
+\newcommand{\LaA}[2]{\la {#1}. \sspace #2}
+\newcommand{\LaAT}[3]{\la {#1}:{#2}. \sspace #3}
+\newcommand{\PiA}[3]{\Pi \sspace #1:#2 . \sspace #3}
+
+% ordered terms: 
+\newcommand{\ApO}[3]{#1 \sspace ^{#2} \sspace #3}
+\newcommand{\oapp}[1]{\sspace ^{#1} \sspace}
+\newcommand{\LaO}[2]{\la ^{#1} . \sspace #2}
+\newcommand{\PiO}[3]{\Pi \sspace #1 \sspace ^{#2} \sspace #3}
+
+% ordered values:
+\newcommand{\ClosO}[4]{\left(\la^{#1} . \sspace {#2} \right)^{#3}_{#4}}
+\newcommand{\AbsO}[3]{\left( \la {#1}. \sspace {#2} \right)^{#3}}
+\newcommand{\FunO}[2]{\Pi \sspace #1 \sspace #2}
+
+% ordered transformation:
+\newcommand{\transO}[3]{ {#1}^{\mathcal{T}\left({#2}, \sspace {#3}\right)}}
+\newcommand{\upch}[1]{\Uparrow^{#1}}
+\newcommand{\result}[3]{\left( \, {#1}, \sspace {#2}, \sspace {#3} \, \right)}
+
+% simple closures values:
+\newcommand{\ClosS}[3]{\left(\la {#1}. \sspace #2 \right)^{#3}}
+\newcommand{\KS}[2]{\left(\la . \sspace #1 \right)^{#2}}
+\newcommand{\FunS}[2]{\Pi \sspace #1 \sspace #2}
+\newcommand{\AbsS}[3]{\left( \la^{#1}. \sspace {#2} \right)^{#3}}
+
+%  hereditary terms:
+\newcommand{\LaH}[1]{\la . \sspace #1}
+\newcommand{\KH}[1]{\la^c . \sspace #1}
+\newcommand{\ApH}[2]{#1 \sspace #2}
+\newcommand{\PiH}[2]{\Pi \sspace #1 \sspace #2}
+
+% hereditary values:
+\newcommand{\LaVH}[1]{\LaH #1} % same as the term
+\newcommand{\KVH}[1]{\KH #1} % same
+\newcommand{\FunH}[2]{\PiH #1 #2}
+
+%hereditary subs:
+% \newcommand{\hersub}[3]{{#1}\ll^{#2} {#3}}
+\newcommand{\hersub}[3]{{#1}\,[{#3}/{#2}]}
+\newcommand{\lift}[2]{ #2 \uparrow^{#1}}
+
+% \newcommand{\ovlam}[1]{\mathcal{\lambda}^{#1}}
+\newcommand{\be}{\beta}
+\newcommand{\pa}[1]{\left( #1 \right)}
+\newcommand{\sub}[2]{\left[ #1 / #2 \right]}
+\newcommand{\subs}[4]{\left[ #1 / #2 , #3 / #4 \right]}
+\newcommand{\multisubs}[4]{\left[ #1 / #2 , \ldots, #3 / #4 \right]}
+\newcommand{\bere}{\longrightarrow_\be}
+\newcommand{\re}{\longrightarrow}
+
+\newcommand{\head}{\mathsf{Head}}
+
+\newcommand{\ev}[3]{\llbracket{#1}\rrbracket^{#2}_{#3}}
+\newcommand{\ap}{\,@\,} 
+\newcommand{\valsub}[2]{\llparenthesis {\,#1\,} \rrparenthesis^{#2}} 

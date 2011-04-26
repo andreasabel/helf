@@ -1,0 +1,106 @@
+\documentclass[submission,copyright,creativecommons]{eptcs}
+\providecommand{\event}{LFMTP'11} % Name of the event you are submitting to
+% \usepackage{breakurl}             % Not needed if you use pdflatex only.
+
+
+\input{mymacros}
+
+
+\title{A Lambda Term Representation Based on Linear Ordered Logic}
+\author{Andreas Abel
+\institute{
+Theoretical Computer Science\\
+Institut f\"ur Informatik\\
+Ludwig-Maximilians-Universit\"at\\
+M\"unchen, Germany}
+\email{andreas.abel@ifi.lmu.de}
+\and
+Nicolai Kraus
+\institute{
+Functional Programming Laboratory\\
+School of Computer Science\\
+University of Nottingham\\
+Nottingham, United Kingdom}
+\email{ngk@cs.nott.ac.uk}
+}
+\def\titlerunning{A Lambda Term Representation Based on Linear Ordered Logic}
+\def\authorrunning{Andreas Abel, Nicolai Kraus}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We introduce a nameless representation of lambda terms based on ordered logic. 
+Information about number and places of variables bound by a lambda is available without examining the whole term, thus making it possible to drop unneeded substitutions early to avoid memory leaks.\\
+% We describe an implementation of this and other representations as well as suggested evaluation algorithms. These implementations were tested in Haskell by using them for typechecking large dependently typed terms of the logical framework (LF). The different needs of time and space are documented and compared.\\
+We also describe our implementation experiments and present some results.
+\end{abstract}
+
+\section{Introduction}
+
+Betareduction is an important part of evaluating in many functional programming languages, proof assistants and other formal systems. However, implementations often involve the risk of memory leaks and inefficiency. Here, we assume that all of our terms are well-typed and betareduction is therefore strongly normalizing. \\
+To demonstrate the problem we want to deal with, we consider the term $(\LaA x {\LaA y {\ApA{\ApA a b} y}}) \sspace g \sspace f$ in standard syntax. 
+If we want to get rid of the beta redexes, we could reduce it in the way shown below. By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
+\[
+\begin{array}{lr@{}l}
+\shspace &(\LaA x {\LaA y {\ApA{\ApA a b} y}}) & \sspace g \sspace f \\ 
+\shspace\re &(\LaA y {\ApA{\ApA a b} y}) & \sub g x \lspace f \\ 
+\shspace\re &      (\ApA{\ApA a b} y) & \subs g x f y \\ 
+\shspace\re &      \multicolumn 2 l {(a\sspace b)\subs g x f y \lspace y\subs g x f y} \\ 
+\shspace\re &      \multicolumn 2 l {a\subs g x f y \lspace b\subs g x f y \lspace f} \\ 
+\shspace\re &      \multicolumn 2 {c} {a \sspace b \sspace f}  \\ 
+\end{array}
+\]
+Actually, the substitution $\sub g x$ could be dropped instantly and there is no need to apply the other substitution $\sub f y$ to the term $\ApA a b$. However, the algorithm used above does not have this information and this is a problem that many representations come along with. Motivated by this observation, we want to describe an alternative.
+
+\section{Syntax}
+
+Here, we only cover the core constructs of the lambda calculus, but we do not see any limitations for probably needed extensions. We first define preterms, which are terms if they satisfy a condition discussed below:
+\[
+\begin{array}{lllrll@{\qquad}}
+\mathsf{preterms}       & \ni & t,u & ::= & x & \mbox{free variable (named $x$)} \\
+			                   &&& \mid & \ovar & \mbox{bound variable (nameless)} \\
+			                   &&& \mid & \ApO t k u & \mbox{application} \\
+			                   &&& \mid & \LaO {\vec k} t & \mbox{abstraction} \\
+\end{array}
+\]
+\emph{Free variables} are denoted by their name like in the standard syntax. \emph{Bound variables}, however, are just denoted by a dot $\ovar$, which does not carry any information beside the fact that it is a bound variable. 
+% This, for example, means that if $\left(\ApO \ovar 1 \ovar \right)$ is a subterm, it is not possible to tell whether we have two different variables or two times the same one without looking at the whole term.\footnote{However, the latter possibility could not be well-typed.} 
+In the case of an \emph{application}, there is a first term and a second term as usual. Additionally, the number of dots $\ovar$ in the second term which are not bound by lambdas in the second term itself should be denoted by the integer $k$. % COMMENT - there is no reason anymore to prefer the second to the first term. It might be a good idea to use the first term instead!?
+This will be important for the evaluation process. 
+The most interesting part is the \emph{abstraction} $\LaO {\vec k} t$. The vector $\vec k = \ve{k_1, k_2, \ldots, k_n}$ (where $n$ is the length of $\vec k$) determines which dots $\ovar$ are bound by the $\la$ in the following way: Consider all $\ovar$ in the term $t$ which are not bound in $t$ itself. Now, the first $k_1$ of these are not bound by the $\la$, the next one is, the following $k_2$ are again not bound and so on. For example, the $S$ combinator 
+\[
+\LaA x {\LaA y {\LaA z {\ApA x z \sspace \pa {\ApA y z}}}}
+\]
+would be written as 
+\[\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ApO {\ApO \ovar 1 \ovar} 2 {\pa{\ApO \ovar 1 \ovar}}}}}.
+\]
+As a further example, the term 
+\[
+(\LaA x {\LaA y {\ApA{\ApA a b} y}}) \sspace g \sspace f
+\]
+from the very beginning would be represented as
+\[
+\ApO{\left(\ApO {\LaO{\emptyVec}{\LaO{\ve 0}{\ApO{\ApO{a}{0}{b}}{1}{\ovar}}}\right)}  0 f } 0 g
+\]
+(note that applications are still left-associative). Now, we can see that the first $\la$ does not bind anything as it is annotated with the empty vector $\emptyVec$, while this is less obvious when it is written as $\la x$.
+
+
+
+\vspace{10pt}
+
+---------------Gliederungsvorschlag---------------
+
+\vspace{10pt}
+
+1. Introduction (wie oben?) \\
+2. Syntax angeben (wie oben?); Terme sind Preterme, in denen fuer alle Subterme $\LaO {\ve {k_1, \ldots k_n}} t$ die Ungleichung ``$n + \sum_{j} k_j \leq \mbox{Zahl der ungebundenen dots in $t$}$`` (letzteres spezifizieren) erfuellt ist \\
+3. Werte spezifizieren \\
+4. Auswertung spezifizieren. Beispiel angeben (eines?). \\
+5. Parsing und Printing angeben. Zeigen, dass sie inverse Bijektionen zwischen (Terme in Standardsyntax modulo alpha) und (Terme in neuer Syntax vereinigt mit Werte in neuer Syntax) sind; das stimmt so aber gar nicht, es ist zwar ''Printing $\circ$ Parsing = id``, aber nicht andersrum, weil man aus Werten Terme macht; muss ich noch genauer machen, wird aber kein grosses Problem \\
+Zeigen, dass jede Verknuepfung der Form (Printing $\circ$ Auswerten $\circ$ Parsing) sich auch durch Betareduktion in normaler Syntax erreichen laesst. Das heisst, man macht nichts falsches. Dann noch zeigen, dass (Printing $\circ$ AuswertenBisZumWert $\circ$ Parsing) tatsaechlich die Info liefert, die man haben will (''wie beginnt die Normalform des Terms``), d.h. man macht nicht zu wenig. \\
+6. Experiment beschreiben, Ergebnisse praesentieren \\
+7. Related work (dazu kann ich nichts schreiben) \\
+
+Was meinst du? Wenn ich es so mache wie oben, wird das vermutlich zu lang, da muss ich mich wohl kuerzer fassen.
+
+\end{document}
