@@ -88,7 +88,7 @@ instance MonadCxt HVal Env' CheckExprM where
 
 
 
-instance MonadCheckExpr HVal Env' EvalM CheckExprM where  
+instance MonadCheckExpr Head HVal Env' EvalM CheckExprM where  
 
   doEval comp    = runReader comp <$> asks globals
 
@@ -118,7 +118,7 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt M.empty emptyContext
 
 type CheckDeclM = StateT (MapSig HVal) (ErrorT String IO)
 
-instance MonadCheckDecl HVal Env' EvalM CheckExprM CheckDeclM where
+instance MonadCheckDecl Head HVal Env' EvalM CheckExprM CheckDeclM where
 
   doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get where
      sigCxt sig = SigCxt sig emptyContext

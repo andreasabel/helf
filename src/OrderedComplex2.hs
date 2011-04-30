@@ -34,6 +34,8 @@ import DatastrucImpl.List (List)
 
 -- * ordered terms
 
+type Head = A.Name
+
 data OTm -- names are only used for quoting
   = O
   | OVar A.Name
@@ -62,26 +64,6 @@ data Val
 -- type OSubst = DatastrucImpl.StrictDynArray.DynArray Val
 type OSubst = [Val]
 type Env = Map A.UID Val
-
---type E = Map UID Val
-
--- * 
-
-instance Value A.Name Val where
-  typ  = Sort Type 
-  kind = Sort Kind
-  freeVar = var
-
-  valView v =
-    case v of
-      HVar x t vs         -> VNe x t (reverse vs)
-      HCon x t vs         -> VNe x t (reverse vs)
-      HDef x v t vs       -> VDef x t (reverse vs)
-      CLam _ _ _ _ _      -> VAbs
-      Abs _ _ _           -> VAbs
-      Sort s              -> VSort s
-      Fun a b             -> VPi a b
-      -- DontCare         -> error "Cannot view DontCare Value"
 
 -- * smart constructors
 
@@ -121,7 +103,22 @@ updateSubst osubst k v = DS.insert v k osubst
 
 -- * evaluation
 
-instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val Env m where
+instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Head Val Env m where
+
+  typ  = return $ Sort Type 
+  kind = return $ Sort Kind
+  freeVar h t = return $ var h t
+
+  valView v = return $ 
+    case v of
+      HVar x t vs         -> VNe x t (reverse vs)
+      HCon x t vs         -> VNe x t (reverse vs)
+      HDef x v t vs       -> VDef x t (reverse vs)
+      CLam _ _ _ _ _      -> VAbs
+      Abs _ _ _           -> VAbs
+      Sort s              -> VSort s
+      Fun a b             -> VPi a b
+      -- DontCare         -> error "Cannot view DontCare Value"
 
   -- apply :: Val -> Val -> m Val
   apply f w =
@@ -184,9 +181,9 @@ evalTerm t env osubst =
                                  b <- evalTerm t2 env osubst2
                                  return $ Fun a b
     
-substs :: (Applicative m, Monad m, MonadEval Val Env m) => Env -> Val -> m Val 
+substs :: (Applicative m, Monad m, MonadEval Head Val Env m) => Env -> Val -> m Val 
 substs env = subst where
-  subst :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> m Val 
   subst value = case value of
     HVar x t vs                 -> case lookupEnv (uid x) env of
                                       Just w  -> appsR w =<< mapM subst vs
@@ -201,7 +198,7 @@ substs env = subst where
     
 -- * quoting (reify)
 
-quote :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> A.SysNameCounter -> m A.Expr
+quote :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> A.SysNameCounter -> m A.Expr
 quote v i =
   case v of
     HVar name _ vs                -> foldr (flip App) (Ident $ Var name) <$> mapM (flip quote i) vs
@@ -221,7 +218,7 @@ quote v i =
                                       return $ Lam x Nothing e
     
 -- | @quoteFun n v@ expects @v@ to be a function and returns and its body as an expression.
-quoteFun :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> A.SysNameCounter -> m (A.Name, A.Expr)
+quoteFun :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> A.SysNameCounter -> m (A.Name, A.Expr)
 quoteFun f i = do
   let n = case f of
           CLam (Just name) _ _ _ _ -> name
@@ -243,7 +240,7 @@ insert_lbl n (LBL k m) = LBL (k+1) (Map.insert n k m) -- note that it does NOT m
 type LambdaLists = [[Int]]
 incrKaddZero :: Int -> LambdaLists -> LambdaLists
 incrKaddZero 0 (l:ll) = (0:l):ll
-incrKaddZero (k+1) ((i:l):ll) = ((i+1):l) : incrKaddZero k ll
+incrKaddZero k ((i:l):ll) = ((i+1):l) : incrKaddZero (k-1) ll
 
 --type Transform a = LocBoundList Name -> LambdaLists -> (a, LambdaLists)
 type Transform = ReaderT (LocBoundList Name) (State LambdaLists)
@@ -287,10 +284,10 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
 
 -- * supporting unfolds
 
-appsR' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> [Val] -> m Val 
+appsR' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> [Val] -> m Val 
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
-apply' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> Val -> m Val
+apply' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> Val -> m Val
 apply' f v =
     case f of
       HDef d w t []   -> apply' w v

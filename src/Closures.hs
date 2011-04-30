@@ -91,7 +91,7 @@ instance MonadCxt Val Env CheckExprM where
 
   getEnv = asks $ valEnv . locals
 
-instance MonadCheckExpr Val Env EvalM CheckExprM where  
+instance MonadCheckExpr Head Val Env EvalM CheckExprM where  
 
   doEval comp    = runReader comp <$> asks globals
 
@@ -145,7 +145,7 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 -- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
 type CheckDeclM = StateT (MapSig Val) (ErrorT String IO)
 
-instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
+instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
 {-
   doCheckExpr cont = do
     sig <- get 

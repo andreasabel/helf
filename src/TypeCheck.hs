@@ -55,9 +55,9 @@ instance PrettyM m val => PrettyM m (TypeTrace val) where
 
 class (Monad m, -- Scoping.Scope m, 
        Alternative m, 
-       MonadEval val env me, 
+       MonadEval fvar val env me, 
        MonadCxt val env m) =>
-  MonadCheckExpr val env me m | m -> me where
+  MonadCheckExpr fvar val env me m | m -> me where
 
   -- evaluation stuff
   doEval       :: me a -> m a      -- ^ run evaluation
@@ -72,6 +72,8 @@ class (Monad m, -- Scoping.Scope m,
   unfold1 v     = doEval $ unfold v
   abstrPi      :: val -> (Name, val) -> val -> m val  -- ^ pi a x b
   abstrPi a x b = doEval $ abstractPi a x b
+  view         :: val -> m (ValView fvar val)
+  view          = doEval . valView
 {-
   doCxt        :: mx a -> m a
   addLocal     :: Name -> val -> (val -> m a) -> m a
@@ -103,13 +105,13 @@ class (Monad m, -- Scoping.Scope m,
    -----------------------    ----------------- Gamma |- t = t'
    Gamma |- \xe <=: Pi a b    Gamma |- e <=: t
 -}
-check :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> tyVal -> m ()  
+check :: (MonadCheckExpr fvar tyVal env me m) => Expr -> tyVal -> m ()  
 check e t = typeTrace (Check e t) $
   case e of
 --    Abs x e -> 
     Lam x mt e -> do
-      t' <- force t       -- if t is a definition unfold it to expose Pi
-      case valView t' of
+      t' <- view =<< force t       -- if t is a definition unfold it to expose Pi
+      case t' of
         VPi a b -> do
           whenMaybe mt $ \ t -> do
             checkType t
@@ -136,7 +138,7 @@ check e t = typeTrace (Check e t) $
    ----------------------     ------------------------------------------------
    Gamma |- type :=> kind     Gamma |- Pi x:e. e' :=> s  
 -}
-infer :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m tyVal
+infer :: (MonadCheckExpr fvar tyVal env me m) => Expr -> m tyVal
 infer e = typeTrace (Infer e) $ 
   case e of
 --    Var x -> lookupVar x
@@ -149,13 +151,13 @@ infer e = typeTrace (Infer e) $
         abstrPi a (x,xv) bx        
     App f e -> do
       t  <- infer f
-      t' <- force t
-      case valView t' of
+      t' <- view =<< force t
+      case t' of
         VPi a b -> do
           check e a
           app b =<< eval e
         _ -> typeError $ NotFunType t
-    Typ -> return $ kind
+    Typ -> doEval $ kind
 {-
     Sort Type -> return $ kind
     Sort Kind -> fail $ "internal error: infer Kind"
@@ -169,32 +171,34 @@ infer e = typeTrace (Infer e) $
     _ -> typeError $ NotInferable e
 --    _ -> failDoc $ text "cannot infer type of" <+> prettyM e
         
-checkType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m ()
+checkType :: (MonadCheckExpr fvar tyVal env me m) => Expr -> m ()
 checkType e = newError (NotAType e) $ isType =<< infer e
 
-inferType :: (Value fvar tyVal, MonadCheckExpr tyVal env me m) => Expr -> m Sort
+inferType :: (MonadCheckExpr fvar tyVal env me m) => Expr -> m Sort
 inferType e = do
   t  <- infer e
-  t' <- force t
-  case valView t' of
+  t' <- view =<< force t
+  case t' of
     VSort s -> return s
     _       -> typeError $ NotSort t
 
-isType :: (Value fvar val, MonadCheckExpr val env me m) => val -> m ()
+isType :: (MonadCheckExpr fvar val env me m) => val -> m ()
 isType t = do
-  t' <- force t
-  case valView t' of
+  t' <- view =<< force t
+  case t' of
     VSort Type -> return ()
     _          -> typeError $ NotType t
  
 -- | Equality of types.
-equalType ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
+equalType ::  (MonadCheckExpr fvar val env me m) => val -> val -> m ()
 equalType t1 t2 = typeTrace (EqualType t1 t2) $ equalBase t1 t2
 
 -- | Equality at base type/sort.
-equalBase ::  (Value fvar val, MonadCheckExpr val env me m) => val -> val -> m ()
-equalBase v1 v2 = 
-  case (valView v1, valView v2) of
+equalBase ::  (MonadCheckExpr fvar val env me m) => val -> val -> m ()
+equalBase v1 v2 = do
+  w1 <- view v1
+  w2 <- view v2
+  case (w1, w2) of
     (VSort s1, VSort s2) | s1 == s2 -> return ()
     (VPi a1 b1, VPi a2 b2) -> do
       equalBase a1 a2
@@ -214,23 +218,23 @@ equalBase v1 v2 =
     _ -> typeError $ UnequalTypes v1 v2
 
 -- | Pointwise equality of spines.
-equalApp :: (Value fvar val, MonadCheckExpr val env me m) => [val] -> [val] -> val -> m val
+equalApp :: (MonadCheckExpr fvar val env me m) => [val] -> [val] -> val -> m val
 equalApp vs1 vs2 t =
   case (vs1, vs2) of
     ([], []) -> return t
     (v1:vs1, v2:vs2) -> do
-      t <- force t
-      case valView t of
+      t <- view =<< force t
+      case t of
         VPi a b -> do
           equalTm v1 v2 a
           equalApp vs1 vs2 =<< app b v1
     _ -> typeError $ UnequalSpines vs1 vs2
 
 -- | Type directed equality of terms.
-equalTm :: (Value fvar val, MonadCheckExpr val env me m) => val -> val -> val -> m ()
+equalTm :: (MonadCheckExpr fvar val env me m) => val -> val -> val -> m ()
 equalTm v1 v2 t = do
-  t <- force t
-  case valView t of
+  w <- view =<< force t
+  case w of
     VPi a b -> addLocal' b a $ \ xv -> 
       appM3 equalTm (v1 `app` xv) (v2 `app` xv) (b `app` xv)
     _ -> equalBase v1 v2 
@@ -241,9 +245,9 @@ equalTm v1 v2 t = do
 
 class (Monad m, -- Scoping.Scope m, 
        MonadSig  val m, 
-       MonadEval val env me, 
-       MonadCheckExpr val env me mc) => 
-  MonadCheckDecl val env me mc m | m -> mc, m -> me where
+       MonadEval fvar val env me, 
+       MonadCheckExpr fvar val env me mc) => 
+  MonadCheckDecl fvar val env me mc m | m -> mc, m -> me where
 
   doCheckExpr :: mc a -> m a -- ^ monad lifting
   {-# INLINE doCheckExpr #-}
@@ -266,7 +270,7 @@ class (Monad m, -- Scoping.Scope m,
   Sigma |- (d : t = e) => (Sigma, d:[|t|]=[|e|])
 
 -}
-checkDecl :: (Value fvar val, MonadCheckDecl val env me mc m) => Declaration -> m ()
+checkDecl :: (MonadCheckDecl fvar val env me mc m) => Declaration -> m ()
 checkDecl d = 
   case d of
     TypeSig n t -> do

@@ -46,6 +46,7 @@ data Val
   | Fun  Val  Val                    -- ^ @Pi a ((\xe)rho)@
   | DontCare
 
+{-
 instance Value Head Val where
   typ  = Sort Type 
   kind = Sort Kind
@@ -59,6 +60,7 @@ instance Value Head Val where
 --      Ne h@Def{} t vs -> VDef h t (reverse vs)
       Df x v t vs     -> VDef (A.Def x) t (reverse vs)
       _               -> VAbs
+-}
 
 -- * smart constructors
 
@@ -101,9 +103,20 @@ lookupSubst = Env.lookup
 
 -- * Evaluation
   
--- instance (Applicative m, Monad m, MonadReader (MapSig Val) m) => MonadEval Val Env m where
--- instance MonadEval Val Env EvalM where
-instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val Env m where
+instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => 
+  MonadEval Head Val Env m where
+
+  typ  = return $ Sort Type 
+  kind = return $ Sort Kind
+  freeVar h t = return $ Ne h t []
+
+  valView v = return $
+    case v of
+      Fun a b -> VPi a b
+      Sort s  -> VSort s
+      Ne h       t vs -> VNe  h t (reverse vs)
+      Df x v t vs     -> VDef (A.Def x) t (reverse vs)
+      _               -> VAbs
 
   apply f v =
     case f of
@@ -126,7 +139,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       A.Pi mx e e' -> Fun <$> (evaluate e rho) <*> case mx of
                         Just x  -> return $ CLam x e' rho
                         Nothing -> K <$> evaluate e' rho 
-      A.Typ        -> return typ
+      A.Typ        -> typ
 
   evaluate' e = evaluate e Env.empty
 
@@ -148,15 +161,15 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
 
 -- | @substFree v x w = [v/x]w@
 -- substFree :: Val -> Var -> Val -> EvalM Val
-substFree :: (Applicative m, Monad m, MonadEval Val Env m) =>
+substFree :: (Applicative m, Monad m, MonadEval Head Val Env m) =>
              Val -> Var -> Val -> m Val 
 substFree w x = substs (sgSubst w x)
 
 -- substs :: Subst -> Val -> EvalM Val
-substs :: (Applicative m, Monad m, MonadEval Val Env m) => 
+substs :: (Applicative m, Monad m, MonadEval Head Val Env m) => 
           Subst -> Val -> m Val 
 substs sigma = subst where
-  subst :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> m Val 
   subst (Ne h@(A.Var y) a vs) = case lookupSubst (A.uid y) sigma of
     Just w  -> appsR w =<< mapM subst vs
     Nothing -> Ne h <$> subst a <*> mapM subst vs
@@ -183,11 +196,11 @@ apps f vs = foldl (\ mf v -> mf >>= \ f -> apply f v) (return f) vs
 
 -- | Unfold head definitions during applying.
 -- appsR' :: Val -> [Val] -> EvalM Val
-appsR' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> [Val] -> m Val 
+appsR' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> [Val] -> m Val 
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
 -- apply' :: Val -> Val -> EvalM Val 
-apply' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> Val -> m Val
+apply' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> Val -> m Val
 apply' f v =
     case f of
       K w               -> return $ w
@@ -200,7 +213,7 @@ apply' f v =
 -- * Reification
 
 -- quote :: Val -> A.SysNameCounter -> EvalM A.Expr
-quote :: (Applicative m, Monad m, MonadEval Val Env m) =>
+quote :: (Applicative m, Monad m, MonadEval Head Val Env m) =>
          Val -> A.SysNameCounter -> m A.Expr
 quote v i =
   case v of
@@ -221,7 +234,7 @@ quote v i =
 -- | @quoteFun n v@ expects @v@ to be a function and returns and its
 --   body as an expression.
 -- quoteFun :: Val -> A.SysNameCounter -> EvalM (A.Name, A.Expr)
-quoteFun :: (Applicative m, Monad m, MonadEval Val Env m) =>
+quoteFun :: (Applicative m, Monad m, MonadEval Head Val Env m) =>
             Val -> A.SysNameCounter -> m (A.Name, A.Expr)
 quoteFun f i = do
   let n = boundName f

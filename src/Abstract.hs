@@ -87,7 +87,14 @@ data Expression id
   | Pi   (Maybe Name) (TypeExpr id) (TypeExpr id)   -- ^ @A -> B@ or @{x:A} B@
   | Lam  Name (Maybe (TypeExpr id)) (Expression id) -- ^ @[x:A] E@ or @[x]E@
   | App  (Expression id) (Expression id)            -- ^ @E1 E2@ 
-  deriving (Show,Functor,Foldable,Traversable)
+  deriving (Eq,Ord,Show,Functor,Foldable,Traversable)
+
+-- * Spine view
+
+revAppView :: Expr -> (Expr, [Expr])
+revAppView = loop [] where
+  loop acc (App f e) = loop (e : acc) f
+  loop acc f         = (f, acc)
 
 -- * Queries
 

@@ -5,7 +5,7 @@
 module Signature where
 
 import Control.Applicative
-import Control.Bifunctor
+-- import Control.Bifunctor
 
 import Control.Monad.Error
 -- import Control.Monad.Reader
