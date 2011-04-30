@@ -73,6 +73,7 @@ data HVal
   | HDontCare
     deriving (Show)
 
+{-
 instance Value Head HVal where
   typ = HSort Type
   kind = HSort Kind
@@ -88,7 +89,7 @@ instance Value Head HVal where
       HSort s             -> VSort s
       HFun a b            -> VPi a b
       -- HDontCare        -> error "Cannot view DontCare Value"
-      
+-}      
       
 -- * smart constructors
 
@@ -115,7 +116,22 @@ lookupVal v@(HVar x _ _) env = case lookup (uid x) env of
       _       -> v
 
 
-instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => MonadEval HVal Env' m where
+instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => MonadEval Head HVal Env' m where
+
+  typ                = return $ HSort Type
+  kind               = return $ HSort Kind
+  freeVar (HdFree x) = return . var x
+  valView v          = return $ 
+    case v of
+      HBound k name vs    -> VNe (HdBound k name) HDontCare (reverse vs)
+      HVar x t vs         -> VNe (HdFree x) t (reverse vs)
+      HCon x t vs         -> VNe (HdCon x) t (reverse vs)
+      HDef x v t vs       -> VDef (HdDef x) t (reverse vs)
+      HLam _ _            -> VAbs
+      HK _                -> VAbs
+      HSort s             -> VSort s
+      HFun a b            -> VPi a b
+      -- HDontCare        -> error "Cannot view DontCare Value"
 
   -- apply :: HVal-> HVal -> m HVal
   apply f w =
@@ -404,10 +420,10 @@ lifting w = lift' 0 w where
     
 -- * supporting unfolds
 
-appsR' :: (Applicative m, Monad m, MonadEval HVal Env' m) => HVal -> [HVal] -> m HVal 
+appsR' :: (Applicative m, Monad m, MonadEval Head HVal Env' m) => HVal -> [HVal] -> m HVal 
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
-apply' :: (Applicative m, Monad m, MonadEval HVal Env' m) => HVal -> HVal -> m HVal
+apply' :: (Applicative m, Monad m, MonadEval Head HVal Env' m) => HVal -> HVal -> m HVal
 apply' f v =
     case f of
       HDef d w t []   -> apply' w v
@@ -418,7 +434,7 @@ apply' f v =
 -- * Reification
 
 -- quote :: NVal -> A.SysNameCounter -> EvalM A.Expr
-quote :: (Applicative m, Monad m, MonadEval HVal Env' m) => HVal -> A.SysNameCounter -> m A.Expr
+quote :: (Applicative m, Monad m, MonadEval Head HVal Env' m) => HVal -> A.SysNameCounter -> m A.Expr
 -- INVARIANT: i is negative, decreased for every lambda
 quote v i =
   case v of
@@ -442,7 +458,7 @@ quote v i =
   
 
 -- quoteFun :: HVal -> A.SysNameCounter -> EvalM (A.Name, A.Expr)
-quoteFun :: (Applicative m, Monad m, MonadEval HVal Env' m) =>
+quoteFun :: (Applicative m, Monad m, MonadEval Head HVal Env' m) =>
             HVal -> A.SysNameCounter -> m (A.Name, A.Expr)
 quoteFun f i = do
   let n = case f of

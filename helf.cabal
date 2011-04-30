@@ -21,7 +21,7 @@ executable helf
                     containers == 0.3.*,
                     haskell98 >= 1.0 && < 1.2,
                     mtl == 2.0.*,
-                    category-extras == 0.44.*,
+                    -- category-extras == 0.44.*,
                     -- fclabels >= 0.9.1 && < 0.12,
                     pretty == 1.0.*,
                     QuickCheck == 2.4.*

@@ -3,7 +3,7 @@
 module Main where
 
 import Control.Monad.Error	( MonadError(..) )
-import Control.Bifunctor
+-- import Control.Bifunctor
 
 import qualified Data.List as List
 
@@ -26,6 +26,7 @@ import qualified OrderedCom2 as Ordered
 import qualified Closures
 import qualified Monolith
 import qualified HerBruijn
+import qualified NamedExplSubst
 
 import System
 import System.IO (stdout, hSetBuffering, BufferMode(..))
@@ -179,6 +180,8 @@ doScopeCheck cdecls = case runTCM (Scoping.parse cdecls) initState of
        exitFailure
      Right (adecls, st) -> return (adecls, st)
 
+{- an unfinished attempt to use streams
+
 data StList s e a 
   = Fail e
   | Done s
@@ -196,6 +199,8 @@ scopeCheck (C.Declarations cdecls) = build step (cdecls, initState) where
   step :: ([C.Declaration], TheState) -> Either Scoping.ParseError (Either TheState ([A.Declaration], ([C.Declaration], TheState)))
   step ([]  , st) = Right $ Left st
   step (d:ds, st) = bimap id (Right . bimap id (ds,)) $ runTCM (Scoping.parse d) st
+-}
+
 {-
 scopeCheckStream :: 
 scopeCheckStream cdecls = foldr 

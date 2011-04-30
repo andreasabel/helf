@@ -30,6 +30,9 @@ update rho x v = (x,v) : rho
 union :: (Ord k) => Env k v -> Env k v -> Env k v
 union = (++)
 
+map :: (v -> w) -> Env k v -> Env k w
+map f = Prelude.map (\ (k,v) -> (k, f v))
+
 mapM :: (Monad m) => (v -> m w) -> Env k v -> m (Env k w)
 mapM f = Prelude.mapM (\ (k,v) -> f v >>= return . (k,))
 
