@@ -194,7 +194,7 @@ Second, in the case of a $\ovar$, the ordered list must have exactly one entry. 
 If we evaluate an application, we evaluate the left and the right term. The application's index enables us to split the substitution list at the right position. Then, we have to apply the first result to the second. 
 Surprisingly, evaluating an abstraction is very simple. We just need to keep the substitutions to build a closure. \\
 If we want to apply a large application to a value $w$, we just append $w$ to the vector of values (we write $\ve{\vec v, w}$ for $\ve{v_1, \ldots, v_n, w}$). 
-The case of a closure $\Val {\vec k} t {\vec v}$ is less simple. $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list $\vec v$: The new list $\vec {v'}$ is build by inserting $w$ after the first $k_1$ values, after the next $k_2$ values and so on. In total, $w$ is used $\length {\vec k}$ times. Then, $t$ is evaluated.
+The case of a closure $\Val {\vec k} t {\vec v}$ is less simple, but it is still quite clear what to do: $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list, so we just construct the list $\multiinsert {\vec v} {\vec k} w$. Then, $t$ is evaluated.
 
 % TODO THE WHOLE multiset THING IS unnecessary!
 
