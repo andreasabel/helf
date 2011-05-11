@@ -1,11 +1,13 @@
 \usepackage{xspace}
 \usepackage{ifthen}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{amssymb}
-%\usepackage{amsthm}
 \usepackage{stmaryrd}
 %\usepackage[all]{xy}
 %\usepackage{txfonts} 
+
+\usepackage{proof}
 
 % \newtheorem{theorem}{Theorem}
 %\newtheorem*{theorem*}{Theorem}
@@ -17,12 +19,19 @@
 % \newtheorem{remark}[theorem]{Remark}
 % \newtheorem{example}[theorem]{Example}
 
+
+\newtheorem{prop}{Proposition}
+\newtheorem{defin}[prop]{Definition}
+\newtheorem{cor}[prop]{Corollary}
+
+
 \newcommand{\oann}[1]{{}^{#1}\kern-0.15ex}
 \newcommand{\ovar}{\mathord{\bullet}}
 % \newcommand{\institute}[1]{}
 
 % own
 % general
+\newcommand{\comment}[1]{} % hack, useful in some cases.
 \newcommand{\sspace}{\,}
 \newcommand{\lspace}{\ \,}
 \newcommand{\shspace}{\vspace{1ex}}
@@ -33,9 +42,11 @@
 \newcommand{\sort}{\mathsf{Sort}}
 \newcommand{\la}{\lambda}
 \newcommand{\emptyVec}{[]}
+\newcommand{\emptySet}{\emptyset}
 \newcommand{\ve}[1]{[#1]}
 \newcommand{\emphSec}[1]{#1}
 \newcommand{\dom}[1]{\mathsf{dom}\left(#1\right)}
+\newcommand{\length}[1]{\mbox{length}(#1)}
 
 % abstract syntax:
 \newcommand{\ApA}[2]{#1 \sspace #2}
@@ -48,11 +59,18 @@
 \newcommand{\oapp}[1]{\sspace ^{#1} \sspace}
 \newcommand{\LaO}[2]{\la ^{#1} . \sspace #2}
 \newcommand{\PiO}[3]{\Pi \sspace #1 \sspace ^{#2} \sspace #3}
+% free variables in a term:
+\newcommand{\freevars}[1]{\mathsf{fV}(#1)}
 
 % ordered values:
 \newcommand{\ClosO}[4]{\left(\la^{#1} . \sspace {#2} \right)^{#3}_{#4}}
 \newcommand{\AbsO}[3]{\left( \la {#1}. \sspace {#2} \right)^{#3}}
 \newcommand{\FunO}[2]{\Pi \sspace #1 \sspace #2}
+% insertion (like it is done for beta reduction):
+\newcommand{\multiinsert}[3]{#1 ^ {\sspace #3 / #2}}
+
+% simpyfied:
+\newcommand{\Val}[3]{\left(\la^{#1} . \sspace {#2} \right)^{#3}}
 
 % ordered transformation:
 \newcommand{\transO}[3]{ {#1}^{\mathcal{T}\left({#2}, \sspace {#3}\right)}}
@@ -92,6 +110,42 @@
 
 \newcommand{\head}{\mathsf{Head}}
 
-\newcommand{\ev}[3]{\llbracket{#1}\rrbracket^{#2}_{#3}}
+% \newcommand{\ev}[3]{\llbracket{#1}\rrbracket^{#2}_{#3}}
+\newcommand{\ev}[2]{\llbracket{#1}\rrbracket_{#2}}
 \newcommand{\ap}{\,@\,} 
 \newcommand{\valsub}[2]{\llparenthesis {\,#1\,} \rrparenthesis^{#2}} 
+
+% Parsing
+% \newcommand{\lrhd}[1]{\mathrel{\mathord{\lhd}{^{#1}}\mathord{\rhd}}}
+% \newcommand{\parse}[3]{#1 \, {\lrhd #2} \, #3 }
+\newcommand{\parse}[3]{#1 \, {  \mathord{\lhd} {#2} \mathord{\rhd}  } \, #3 }
+\newcommand{\parseFun}[1]{\left(\mathord{\lhd} {#1} \mathord{\rhd}\right)}
+\newcommand{\parseFunE}{\mathfrak {parse }}                                                     % TODO !!
+\newcommand{\print}[3]{#1 \, {  \mathord{\rhd} {#2} \mathord{\lhd}  } \, #3 }
+\newcommand{\infru}[2]{\infer{#2}{#1}}
+\newcommand{\infnamed}[3]{\infer[#1]{#3}{#2}}
+
+\newcommand{\x}{X} % set of variables
+\newcommand{\te}{T} % set of terms in basic syntax
+\newcommand{\ot}{oT} % ordered terms
+\newcommand{\otc}{\overline{oT}} % closed ordered terms
+\newcommand{\va}{V} % values
+\newcommand{\xl}{\vec \x} % variable list
+\newcommand{\vl}{\vec \va} % values list
+\newcommand{\gl}{\vec \Gamma} % gamma list
+
+% Printing / ``translating''
+% \newcommand{\pr}[2]{ \prE  \hspace{-2pt} \left( #1 \ , \  #2 \right)}
+\newcommand{\pr}[2]{ \prE   \left( #1 \ , \  #2 \right)}
+\newcommand{\prE}{\lhd \hspace{-8pt} \lhd}
+\newcommand{\prVal}[1]{\lhd \hspace{-2pt} \left( #1 \right)}
+\newcommand{\prValE}{\mathord{\lhd}}
+\newcommand{\prTree}[1]{\lhd \hspace{-8pt} \lhd \hspace{-8pt} \lhd \left( #1 \right)}
+\newcommand{\prTreeE}{\lhd \hspace{-8pt} \lhd \hspace{-8pt} \lhd }
+
+% one step reduction
+\newcommand{\osr}{\rightarrow}
+\newcommand{\tree}[2]{\langle \hspace{-2pt}\langle #1 \ , \  #2 \rangle \hspace{-2pt}\rangle}
+%\newcommand{\tree}[2]{\left\langle \left\langle #1 \ , \  #2 \right\rangle \right\rangle}
+
+\newcommand{\evTr}{\mathsf{evalTrees}}
