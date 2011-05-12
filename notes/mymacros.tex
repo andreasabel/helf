@@ -70,7 +70,8 @@
 \newcommand{\multiinsert}[3]{#1 ^ {\sspace #3 / #2}}
 
 % simpyfied:
-\newcommand{\Val}[3]{\left(\la^{#1} . \sspace {#2} \right)^{#3}}
+%\newcommand{\Val}[3]{\left(\la^{#1} . \sspace {#2} \right)^{#3}}
+\newcommand{\Val}[3]{ (\la^{#1} . \sspace {#2} )^{#3}}
 
 % ordered transformation:
 \newcommand{\transO}[3]{ {#1}^{\mathcal{T}\left({#2}, \sspace {#3}\right)}}
@@ -120,7 +121,7 @@
 % \newcommand{\parse}[3]{#1 \, {\lrhd #2} \, #3 }
 \newcommand{\parse}[3]{#1 \, {  \mathord{\lhd} {#2} \mathord{\rhd}  } \, #3 }
 \newcommand{\parseFun}[1]{\left(\mathord{\lhd} {#1} \mathord{\rhd}\right)}
-\newcommand{\parseFunE}{\mathfrak {parse }}                                                     % TODO !!
+\newcommand{\parseFunE}{\mathfrak {parse } \,}                                                     % TODO !!
 \newcommand{\print}[3]{#1 \, {  \mathord{\rhd} {#2} \mathord{\lhd}  } \, #3 }
 \newcommand{\infru}[2]{\infer{#2}{#1}}
 \newcommand{\infnamed}[3]{\infer[#1]{#3}{#2}}
