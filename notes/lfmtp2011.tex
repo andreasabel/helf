@@ -42,11 +42,11 @@ We also describe our implementation experiments and present some results.
 \section{Introduction}
 
 Beta reduction is an important part of evaluating in many functional programming languages, proof assistants and other formal systems. However, implementations often involve the risk of memory leaks and inefficiency. Here, we assume that all of our terms are well-typed and beta reduction is therefore strongly normalizing, so all we care about is efficiency. \\
-A term representation always has to have a way to represent that a variable is bound by a lambda. For example, in the term $\LaA x {\ApA {\ApA a b} x}$ in basic syntax, the information about the connection of the $\la$ and the last variable is split: We have to look at both the $x$ and the $\la x$ in order to know what is going on. This may lead to some unnecessary difficulties. In contrast, the usage of de Bruijn indices makes it possible to remove the information from the $\la$ and concentrate them on the variable. Our goal is to do it the other way round: We want the whole information to be available at the $\la$.
+A term representation always has to have a way to represent that a variable is bound by a lambda. 
+For example, in the term $\LaA x {\LaA y {\ApA{\ApA a b} y}}$ in basic syntax, the information about the connection between the second $\la$ and the last variable is split: We have to look at both the $\la y$ and the $y$ in order to know what is going on. This may lead to some unnecessary difficulties. In contrast, the usage of de Bruijn indices makes it possible to remove the information from the $\la$ and concentrate them on the variable. Our goal is to do it the other way round: We want the whole information to be available at the $\la$.
 
-
-To demonstrate the problem we want to deal with, we consider the term $(\LaA x {\LaA y {\ApA{\ApA a b} y}}) \sspace g \sspace f$ in standard syntax. 
-If we want to get rid of the beta redexes, we could reduce it in the way shown below. By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurrence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
+To demonstrate the problem we want to deal with, we apply the term we just mentioned on the free variables $g$ and $f$, consecutively.
+To get rid of the beta redexes, we could reduce it in the way shown below. By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurrence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
 \[
 \begin{array}{lr@{}l}
 \shspace &(\LaA x {\LaA y {\ApA{\ApA a b} y}}) & \sspace g \sspace f \\ 
@@ -155,7 +155,7 @@ Consequently, we define values (the result of evaluation) in the following way:
 % \[
 % \mathsf{values} \ni v, w ::= x \, \vec v \ \mid \ \ClosO{\vec k}{t}{}{\vec v}
 % \]
-The \emph{large application} consists of a variable $x$ which is applied to a vector $\ve{v_1, v_2, \ldots, v_m}$ of values. It is to be read as a left-associative application, i.e. as $\pa{\pa{h \, v_1} v_2 \ldots } v_m$. 
+The \emph{large application} consists of a variable $x$ which is applied to a vector $\ve{v_1, v_2, \ldots, v_m}$ of values. It is to be read as a left-associative application, i.e. as $\pa{\pa{x \, v_1} v_2 \ldots } v_m$. 
 Note that it is not necessarily ``large''. Quite the contrary, it often only consists of the head (and the vector of values is empty).\\
 A \emph{closure} $\Val {\vec k} t {\vec v}$ is the result of an evaluation process, if the corresponding beta normal form of the term just does not start with a free variable. The main part, $\LaO {\vec k} t$, is nothing other than a lambda abstraction in the syntax of ordered terms.
 % ($t \in \mathsf{Ordered\,Terms}$). % TODO sollten offene terme wirklich terme sein?! vermutlich schon
@@ -166,7 +166,7 @@ The idea is that the $i^{th}$ unbound $\ovar$ is to be replaced by $v_i$.  These
 At this point, we want to introduce a notation for inserting a single item multiple times into a list. More precisely, if $\vec v = [v_1, v_2, \ldots, v_m]$ is a list (e.g. of values), $\vec k = [k_1, k_2, \ldots, k_n]$ is a vector (i.e. also a list) of  non-negative integeres satisfying $\sum_{i=1}^n k_i \leq m$ and $w$ is a single item (value), we write $\multiinsert {\vec v} {\vec k} {w}$  for the list that is constructed by inserting $w$ at each of the positions $k_1, k_1 + k_2, \ldots, \sum_{i=1}^n k_i$ into $\vec v$, i.e. for the list $[v_1, v_2, \ldots, v_{k_1}, w, v_{k_1 + 1}, \ldots, v_{k_1 + k_2}, w, v_{k_1 + k_2 + 1}, \ldots, v_m]$ (of course, it is possible that $\multiinsert {\vec v} {\vec k} {w}$ starts or ends with $w$).
 
 
-Now, we are able to define the evaluation function $\ev {\cdot} {\cdot}$ which takes an ordered term $t$ as well as an ordered substitution list $\vec v$ and returns a value. The tuple must always satisfy the condition $\freevars t = \length t$. In other words, the list carries neither too less nor redundant information.\\
+Now, we are able to define the evaluation function $\ev {\cdot} {\cdot}$ which takes an ordered term $t$ as well as an ordered substitution list $\vec v$ and returns a value. The tuple must always satisfy the condition $\freevars t = \length {\vec v}$. In other words, the list carries neither too less nor redundant information.\\
 At the start of the evaluation, the ordered substitution list is empty. \\
 Additionally, we specify the application $\cdot \ap \cdot$ of two values, which also returns a value and does not need anything else.
 
@@ -216,29 +216,37 @@ For each finite %multiset
 set $\Gamma$ of variable names, we define the relation
 $\parse \cdot \Gamma \cdot \ \subset \  \te \times (\ot \times \xl)$.
 The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse M \Gamma {u \vec x}$) means: $M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$ and those variables are exactly the ones occurring in $\Gamma$:
-\begin{gather*}
+%\begin{gather*}
+%\infru{x \in \Gamma}{\parse x \Gamma {\ovar \ve x}}
+%\qquad
+%\qquad
+%\infru{x \not\in \Gamma}{\parse x \Gamma {x \emptyVec}}
+%\qquad
+%\qquad
+%\infru{ {\parse M \Gamma {t \vec x}} \qquad {\parse N \Gamma {u \vec y}} \qquad {\length{\vec x} = k} } {\parse {MN} {\Gamma} {(\ApO t k u) [\vec x, \vec y]} } \\
+%\infru{ 
+%         {\parse M { \Gamma \uplus \{z\} } {       t \multiinsert{\vec x}{\vec k}{z}   }} 
+%          \qquad 
+%          z \not\in \vec x  }
+%          {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t) \ \vec x}}
+%\end{gather*}
+\[
+\begin{array}{c@{\qquad\qquad} c}
 \infru{x \in \Gamma}{\parse x \Gamma {\ovar \ve x}}
-\qquad
-\qquad
+&
+\infru{ {\parse M \Gamma {t \vec x}} \qquad {\parse N \Gamma {u \vec y}} \qquad {\length{\vec x} = k} } {\parse {MN} {\Gamma} {(\ApO t k u) [\vec x, \vec y]} } 
+\\ \\
 \infru{x \not\in \Gamma}{\parse x \Gamma {x \emptyVec}}
-\qquad
-\qquad
-\infru{ {\parse M \Gamma {t \vec x}} \qquad {\parse N \Gamma {u \vec y}} \qquad {\length{\vec x} = k} } {\parse {MN} {\Gamma} {(\ApO t k u) [\vec x, \vec y]} } \\
-%\infru { {\parse M { \Gamma \uplus \{x\} } {t \ve{ \vec{x_1}, z, \vec{x_2}, z, \ldots, z, \vec{x_{n+1}}}}} 
-%          \qquad 
-%          k_i = \length{\vec {x_i}} 
-%          \qquad 
-%          {\vec x = \ve{\vec{x_1}, \vec{x_2}, \ldots, \vec{x_{n+1}}}} 
-%          \qquad 
-%          z \not\in \vec x 
-%          } 
-%          { \parse {\LaA z M} {\Gamma} {(\LaO {\ve{k_1, k_2, \ldots, k_n}} t) \ \vec x} } \\
+&
 \infru{ 
          {\parse M { \Gamma \uplus \{z\} } {       t \multiinsert{\vec x}{\vec k}{z}   }} 
           \qquad 
           z \not\in \vec x  }
           {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t) \ \vec x}}
-\end{gather*}
+\end{array}
+\]
+
+
 \end{defin}
 First, it is important to notice that $\parse M \Gamma (u, \vec x)$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). \\
 By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parse M \Gamma {u  \vec x}$, so we can consider $\parse \cdot \Gamma \cdot$ a function $\te \rightarrow \ot \times \gl$. In the same way, we notice that $\parse M \Gamma {u  \vec x}$ always implies $\freevars u = \length {\vec x}$. \\
@@ -334,26 +342,26 @@ What we need to do is to define a one-step-evaluation, thereby making it possibl
 Our one-step reduction $\osr$ is a relation on $\evTr \times \evTr$:
 
 \begin{gather*}
-\infnamed{^{\ev \cdot \cdot \mbox{-1} }}{}{(x , \emptyVec) \osr x}
+\infnamed{^{\ev \cdot \cdot \mbox{\small -1} }}{}{(x , \emptyVec) \osr x}
 \qquad
 \qquad
-\infnamed{^{\ev \cdot \cdot \mbox{-2}}}{}{(\ovar , \ve v) \osr v}
+\infnamed{^{\ev \cdot \cdot \mbox{\small -2}}}{}{(\ovar , \ve v) \osr v}
 \qquad
 \qquad
-\infnamed{^{\ev \cdot \cdot \mbox{-3}}}{}{(t \oapp k u , \vec v \vec w) \osr \tree {(t, \vec v)}{(u, \vec w)}}
+\infnamed{^{\ev \cdot \cdot \mbox{\small -3}}}{}{(t \oapp k u , \vec v \vec w) \osr \tree {(t, \vec v)}{(u, \vec w)}}
 \\ \\
-\infnamed{^{\ev \cdot \cdot \mbox{-4}}}{}{(\LaO {\vec k} t , \vec v) \osr \Val {\vec k} t {\vec v}}
+\infnamed{^{\ev \cdot \cdot \mbox{\small -4}}}{}{(\LaO {\vec k} t , \vec v) \osr \Val {\vec k} t {\vec v}}
 \qquad
 \qquad
-\infnamed{^{\mbox{(struct-1)}}}{a \osr a'}{\tree a b \osr \tree {a'} b}
+\infnamed{^{\mbox{\small (struct-1)}}}{a \osr a'}{\tree a b \osr \tree {a'} b}
 \qquad
 \qquad
-\infnamed{^{\mbox{(struct-2)}}}{b \osr b'}{\tree a b \osr \tree a {b'}}
+\infnamed{^{\mbox{\small (struct-2)}}}{b \osr b'}{\tree a b \osr \tree a {b'}}
 \\ \\
-\infnamed{^{@\mbox{-1}}}{}{\tree {x \sspace v_1 \ldots v_n} w \osr  x \sspace v_1 \ldots v_n \sspace w}
+\infnamed{^{@\mbox{\small -1}}}{}{\tree {x \sspace v_1 \ldots v_n} w \osr  x \sspace v_1 \ldots v_n \sspace w}
 \qquad
 \qquad
-\infnamed{^{@\mbox{-2}}}{}{\tree {\Val {\vec k} t {\vec v}}{w}   \osr   (t, \multiinsert {\vec v} {\vec k} w)}
+\infnamed{^{@\mbox{\small -2}}}{}{\tree {\Val {\vec k} t {\vec v}}{w}   \osr   (t, \multiinsert {\vec v} {\vec k} w)}
 \end{gather*}
 % It is easy to convince oneself that, if $t \in \otc$ can be evaluated to a value using $\ev \cdot \emptyVec$, the one step evaluation above will provide the same result. 
 % TODO connection...
@@ -563,30 +571,29 @@ On the other hand, it can compete with the simple standard implementation. This 
 %}
 
 
-\vspace{30pt}
 
 
 
 
-% TODO decide: x or y = k ?!?
-% TODO ordered application is sometimes invalid!
-% TODO evaluation bleibt nicht stecken
+% TODO decide: x or y = k ?!? x.
+% TODO ordered application is sometimes invalid! yes, but not a problem i think.
+% TODO evaluation bleibt nicht stecken - done.
 
-\newpage 
-
----------------Gliederungsvorschlag---------------
-
-\vspace{10pt}
-
-1. Introduction (wie oben?) \\
-2. Syntax angeben (wie oben?); Terme sind Preterme, in denen fuer alle Subterme $\LaO {\ve {k_1, \ldots k_n}} t$ die Ungleichung ``$n + \sum_{j} k_j \leq \mbox{Zahl der ungebundenen dots in $t$}$`` (letzteres spezifizieren) erfuellt ist \\
-3. Werte spezifizieren \\
-4. Auswertung spezifizieren. Beispiel angeben (eines?). \\
-5. Parsing und Printing angeben. Zeigen, dass sie inverse Bijektionen zwischen (Terme in Standardsyntax modulo alpha) und (Terme in neuer Syntax vereinigt mit Werte in neuer Syntax) sind; das stimmt so aber gar nicht, es ist zwar ''Printing $\circ$ Parsing = id``, aber nicht andersrum, weil man aus Werten Terme macht; muss ich noch genauer machen, wird aber kein grosses Problem \\
-Zeigen, dass jede Verknuepfung der Form (Printing $\circ$ Auswerten $\circ$ Parsing) sich auch durch Betareduktion in normaler Syntax erreichen laesst. Das heisst, man macht nichts falsches. Dann noch zeigen, dass (Printing $\circ$ AuswertenBisZumWert $\circ$ Parsing) tatsaechlich die Info liefert, die man haben will (''wie beginnt die Normalform des Terms``), d.h. man macht nicht zu wenig. \\
-6. Experiment beschreiben, Ergebnisse praesentieren \\
-7. Related work (dazu kann ich nichts schreiben) \\
-
-Was meinst du? Wenn ich es so mache wie oben, wird das vermutlich zu lang, da muss ich mich wohl kuerzer fassen.
+%\newpage 
+%
+%---------------Gliederungsvorschlag---------------
+%
+%\vspace{10pt}
+%
+%1. Introduction (wie oben?) \\
+%2. Syntax angeben (wie oben?); Terme sind Preterme, in denen fuer alle Subterme $\LaO {\ve {k_1, \ldots k_n}} t$ die Ungleichung ``$n + \sum_{j} k_j \leq \mbox{Zahl der ungebundenen dots in $t$}$`` (letzteres spezifizieren) erfuellt ist \\
+%3. Werte spezifizieren \\
+%4. Auswertung spezifizieren. Beispiel angeben (eines?). \\
+%5. Parsing und Printing angeben. Zeigen, dass sie inverse Bijektionen zwischen (Terme in Standardsyntax modulo alpha) und (Terme in neuer Syntax vereinigt mit Werte in neuer Syntax) sind; das stimmt so aber gar nicht, es ist zwar ''Printing $\circ$ Parsing = id``, aber nicht andersrum, weil man aus Werten Terme macht; muss ich noch genauer machen, wird aber kein grosses Problem \\
+%Zeigen, dass jede Verknuepfung der Form (Printing $\circ$ Auswerten $\circ$ Parsing) sich auch durch Betareduktion in normaler Syntax erreichen laesst. Das heisst, man macht nichts falsches. Dann noch zeigen, dass (Printing $\circ$ AuswertenBisZumWert $\circ$ Parsing) tatsaechlich die Info liefert, die man haben will (''wie beginnt die Normalform des Terms``), d.h. man macht nicht zu wenig. \\
+%6. Experiment beschreiben, Ergebnisse praesentieren \\
+%7. Related work (dazu kann ich nichts schreiben) \\
+%
+%Was meinst du? Wenn ich es so mache wie oben, wird das vermutlich zu lang, da muss ich mich wohl kuerzer fassen.
 
 \end{document}
