@@ -46,7 +46,7 @@ A term representation always has to have a way to represent that a variable is b
 
 
 To demonstrate the problem we want to deal with, we consider the term $(\LaA x {\LaA y {\ApA{\ApA a b} y}}) \sspace g \sspace f$ in standard syntax. 
-If we want to get rid of the beta redexes, we could reduce it in the way shown below. By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
+If we want to get rid of the beta redexes, we could reduce it in the way shown below. By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurrence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
 \[
 \begin{array}{lr@{}l}
 \shspace &(\LaA x {\LaA y {\ApA{\ApA a b} y}}) & \sspace g \sspace f \\ 
@@ -77,7 +77,7 @@ In the case of an \emph{application}, there is a first term and a second term as
 Furthermore, the application carries an integer $k$ as an additional information that will be important for the evaluation process and is explained in the next paragraph.
 %the number of dots $\ovar$ in the first term which are not bound by lambdas in the first term itself should be denoted by the integer $k$. % COMMENT - there is no reason anymore to prefer the second to the first term. It might be a good idea to use the first term instead!? I have changed it now.
 %This will be important for the evaluation process. 
-The most interesting part is the \emph{abstraction} $\LaO {\vec k} t$. The vector $\vec k = \ve{k_1, k_2, \ldots, k_n}$ is nothing else but a list of nonnegative  integers of length $n$. It determines which dots $\ovar$ are bound by the $\la$ in the following way: Consider all $\ovar$ in the term $t$ which are not bound in $t$ itself. Now, the first $k_1$ of these are not bound by the $\la$, the next one is, the following $k_2$ are again not bound and so on (see examples below). 
+The most interesting part is the \emph{abstraction} $\LaO {\vec k} t$. The vector $\vec k = \ve{k_1, k_2, \ldots, k_n}$ is nothing else but a list of non-negative  integers of length $n$. It determines which dots $\ovar$ are bound by the $\la$ in the following way: Consider all $\ovar$ in the term $t$ which are not bound in $t$ itself. Now, the first $k_1$ of these are not bound by the $\la$, the next one is, the following $k_2$ are again not bound and so on (see examples below). 
 
 We denote the number of unbound $\ovar$ in an ordered preterm $t$ by $\freevars t$. Consequently, $\freevars \cdot$ is simply defined by 
 \[
@@ -114,8 +114,9 @@ from the very beginning would be represented as
 Before specifying values and evaluation formally, we want to give an example to demonstrate how the information carried by a lambda should be used and why we always have exactly the needed information. Suppose we have the term
 \[
 \left(\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}}\right) \sspace g \sspace f \sspace n, \\ 
+%\left(\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}}\right) \oapp 0 g \oapp 0 f \oapp 0 n, \\ 
 \]
-i.e. the $S$ combinator which is first applied to a constant $g$, then to $f$ and finally to $n$. We want to get rid of the beta redexes, so we start by eliminating the first one. The outermost $\la$ is decorated with the vector $\ve 0$ of length one. Now, the single variable bound by this $\la$ should be replaced by $g$, so we start a substitution list and insert a single $g$:
+i.e. the $S$ combinator which is first applied to a constant $g$, then to $f$ and finally to $n$ (we suppress the application indices $0$ for better readability). We want to get rid of the beta redexes, so we start by eliminating the first one. The outermost $\la$ is decorated with the vector $\ve 0$ of length one. Now, the single variable bound by this $\la$ should be replaced by $g$, so we start a substitution list and insert a single $g$:
 \[
 \left(\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}\right) \left[ g \right] \lspace f \sspace n
 \]
@@ -162,7 +163,7 @@ Here, we need the substitution list $\vec v$ (which is simply a list of values) 
 The idea is that the $i^{th}$ unbound $\ovar$ is to be replaced by $v_i$.  These substitution lists have already been used in the example above.
 
 
-At this point, we want to introduce a notation for inserting a single item multiple times into a list. More precisely, if $\vec v = [v_1, v_2, \ldots, v_m]$ is a list (e.g. of values), $\vec k = [k_1, k_2, \ldots, k_n]$ is a vector (i.e. also a list) of  nonnegative integeres satisfying $\sum_{i=1}^n k_i \leq m$ and $w$ is a single item (value), we write $\multiinsert {\vec v} {\vec k} {w}$  for the list that is constructed by inserting $w$ at each of the positions $k_1, k_1 + k_2, \ldots, \sum_{i=1}^n k_i$ into $\vec v$, i.e. for the list $[v_1, v_2, \ldots, v_{k_1}, w, v_{k_1 + 1}, \ldots, v_{k_1 + k_2}, w, v_{k_1 + k_2 + 1}, \ldots, v_m]$ (of course, it is possible that $\multiinsert {\vec v} {\vec k} {w}$ starts or ends with $w$).
+At this point, we want to introduce a notation for inserting a single item multiple times into a list. More precisely, if $\vec v = [v_1, v_2, \ldots, v_m]$ is a list (e.g. of values), $\vec k = [k_1, k_2, \ldots, k_n]$ is a vector (i.e. also a list) of  non-negative integeres satisfying $\sum_{i=1}^n k_i \leq m$ and $w$ is a single item (value), we write $\multiinsert {\vec v} {\vec k} {w}$  for the list that is constructed by inserting $w$ at each of the positions $k_1, k_1 + k_2, \ldots, \sum_{i=1}^n k_i$ into $\vec v$, i.e. for the list $[v_1, v_2, \ldots, v_{k_1}, w, v_{k_1 + 1}, \ldots, v_{k_1 + k_2}, w, v_{k_1 + k_2 + 1}, \ldots, v_m]$ (of course, it is possible that $\multiinsert {\vec v} {\vec k} {w}$ starts or ends with $w$).
 
 
 Now, we are able to define the evaluation function $\ev {\cdot} {\cdot}$ which takes an ordered term $t$ as well as an ordered substitution list $\vec v$ and returns a value. The tuple must always satisfy the condition $\freevars t = \length t$. In other words, the list carries neither too less nor redundant information.\\
@@ -173,7 +174,7 @@ Additionally, we specify the application $\cdot \ap \cdot$ of two values, which 
 \begin{array}{llll}
 & \ev x {\emptyVec} & = & x \\ \noalign{\medskip}
 & \ev \ovar {\ve{v_1}} & = & v_1 \\  \noalign{\medskip}
-& \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_{n-k}}}} \ap {\ev u {\ve{v_{n-k+1}, \ldots, v_n}}} \\  \noalign{\medskip}
+& \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}} \\  \noalign{\medskip}
 & \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} \\  
 \\ 
 & \pa{h \sspace \vec v} \ap w & = & h \sspace \ve{\vec v, w} 
@@ -214,7 +215,7 @@ By $\ot \otimes \xl$ (resp. $\ot \otimes \vl$, $\ot \otimes \gl$) we mean the su
 For each finite %multiset 
 set $\Gamma$ of variable names, we define the relation
 $\parse \cdot \Gamma \cdot \ \subset \  \te \times (\ot \times \xl)$.
-The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse M \Gamma {u \vec x}$) means: $M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$ and those variables are exactly the ones occuring in $\Gamma$:
+The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse M \Gamma {u \vec x}$) means: $M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$ and those variables are exactly the ones occurring in $\Gamma$:
 \begin{gather*}
 \infru{x \in \Gamma}{\parse x \Gamma {\ovar \ve x}}
 \qquad
@@ -239,10 +240,10 @@ The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse M \Gamma 
           {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t) \ \vec x}}
 \end{gather*}
 \end{defin}
-First, it is important to notice that $\parse M \Gamma (u, \vec x)$ implies that each variable occuring in $\vec x$ is contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). \\
-By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tupel $(u, \vec x)$ satisfying $\parse M \Gamma {u  \vec x}$, so we can consider $\parse \cdot \Gamma \cdot$ a function $\te \rightarrow \ot \times \gl$. In the same way, we notice that $\parse M \Gamma {u  \vec x}$ always implies $\freevars u = \length {\vec x}$. \\
+First, it is important to notice that $\parse M \Gamma (u, \vec x)$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). \\
+By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parse M \Gamma {u  \vec x}$, so we can consider $\parse \cdot \Gamma \cdot$ a function $\te \rightarrow \ot \times \gl$. In the same way, we notice that $\parse M \Gamma {u  \vec x}$ always implies $\freevars u = \length {\vec x}$. \\
 % By applying the function $\parse \cdot {\emptySet} \cdot$, we can transform a term from normal syntax to ordered syntax. \\
-This also works the other way round. For each $\Gamma$ and each tupel $(u, \vec x) \in \te \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parse M \Gamma {(u, \vec x)}$. Moreover, this term $M$ is unique up to alpha equivalence. So, $\parse \cdot \Gamma \cdot$ is actually a bijection between $\te / \alpha$ (the set of equivalence classes of terms) and $\ot \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tupel (in the last rule, any variable satisfying the condition can be choosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \ot \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
+This also works the other way round. For each $\Gamma$ and each tuple $(u, \vec x) \in \te \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parse M \Gamma {(u, \vec x)}$. Moreover, this term $M$ is unique up to alpha equivalence. So, $\parse \cdot \Gamma \cdot$ is actually a bijection between $\te / \alpha$ (the set of equivalence classes of terms) and $\ot \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tuple (in the last rule, any variable satisfying the condition can be chosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \ot \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
 \\
 Choosing $\Gamma = \emptySet$, we get bijections $\te \leftrightarrow \otc \otimes {\vec \emptySet}$. As $\vec \emptySet$ is only inhabited by the empty vector $\emptyVec$, we naturally get the parse function $\parseFunE$ which maps $\te$ bijectively on $\otc$.
 
@@ -314,7 +315,7 @@ Concerning correctness, we would obviously want to show that taking a term $t$, 
 \[
 \begin{xy}
 \xymatrix{
- t \in \te \ar@{-}[rrr]^{=_\beta} \ar@/_/[dd]_{\parseFun \emptySet} & & & t' \in \te \\ 
+ t \in \te \ar@{-}[rrr]^{=_\beta} \ar@/_/[dd]_{\parseFunE} & & & t' \in \te \\ 
  \\
 % u \in \otc \ar@/_/[uu]_{\pr{\cdot}{\emptyVec}} \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
  u \in \otc \ar@/_/[uu]_{\prE                  } \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
@@ -354,7 +355,8 @@ Our one-step reduction $\osr$ is a relation on $\evTr \times \evTr$:
 \qquad
 \infnamed{^{@\mbox{-2}}}{}{\tree {\Val {\vec k} t {\vec v}}{w}   \osr   (t, \multiinsert {\vec v} {\vec k} w)}
 \end{gather*}
-It is easy to convince oneself that, if $t \in \otc$ can be evaluated to a value using $\ev \cdot \emptyVec$, the one step evaluation above will provide the same result. 
+% It is easy to convince oneself that, if $t \in \otc$ can be evaluated to a value using $\ev \cdot \emptyVec$, the one step evaluation above will provide the same result. 
+% TODO connection...
 Now it is easy to define a printing function $\prTreeE$ to transform a tree into a term:
 \[
 \begin{array}{lclll}
@@ -388,7 +390,7 @@ Consequently, the term $\prTree {\tree {\Val {\vec k} t {\vec v}}{w}}$ can be re
 For any well-typed term $t \in \te$, the One-Step-Reduction terminates for $(\parseFunE t)$.
 \end{prop}
 \begin{proof}
-Suppose there is an infinite sequence $a_0 \rightarrow a_1 \rightarrow a_2 \rightarrow \ldots$ with $a_0 = \parseFunE t$. According to the proposition above, we can conclude that for each $i$, either $\prTree {a_i} = \prTree {a_{i+1}}$ or $\prTree {a_i} \rightarrow_\beta \prTree {a_{i+1}}$ (in exactly one step). Assume the latter possibility occurres infinitely often. This contradicts the fact that $\beta$-reduction is strongly normalizing on well-types terms. Assume it occurs only finitely often. Then there is an $N$ such that $\prTree {a_N} = \prTree {a_{N+1}} = \prTree {a_{N+2}} = \ldots$. For $a \in \evTr$, we define the weight $w(a)$ as the number of leafs of $a$ containing an element of $\ot \otimes \vl$ plus twice the number of leafs that contain a value. Each of the one-step-rules except the last one (and the structure rules) obviously increases the weight of a tree, thus we get $w(a_N) < w(a_{N+1}) < w(a_{N+2}) < \ldots$. However, the printing function is defined in a way that forces the weight of any tree $a$ to be less or equal than twice the length of $a$ and consequently, the sequence above is bounded by $2 \cdot \length{ \prTree{a_N}}$, thus giving us a contradiction again.
+Suppose there is an infinite sequence $a_0 \rightarrow a_1 \rightarrow a_2 \rightarrow \ldots$ with $a_0 = \parseFunE t$. According to the proposition above, we can conclude that for each $i$, either $\prTree {a_i} = \prTree {a_{i+1}}$ or $\prTree {a_i} \rightarrow_\beta \prTree {a_{i+1}}$ (in exactly one step). Assume the latter possibility occurs infinitely often. This contradicts the fact that $\beta$-reduction is strongly normalizing on well-types terms. Assume it occurs only finitely often. Then there is an $N$ such that $\prTree {a_N} = \prTree {a_{N+1}} = \prTree {a_{N+2}} = \ldots$. For $a \in \evTr$, we define the weight $w(a)$ as the number of leafs of $a$ containing an element of $\ot \otimes \vl$ plus twice the number of leafs that contain a value. Each of the one-step-rules except the last one (and the structure rules) obviously increases the weight of a tree, thus we get $w(a_N) < w(a_{N+1}) < w(a_{N+2}) < \ldots$. However, the printing function is defined in a way that forces the weight of any tree $a$ to be less or equal than twice the length of $a$ and consequently, the sequence above is bounded by $2 \cdot \length{ \prTree{a_N}}$, thus giving us a contradiction again.
 \end{proof}
 % TODO rename PARSINGfunction and make clear that sometimes parse: ... -> trees.
 
@@ -404,7 +406,7 @@ It is easy to check that the evaluation $\ev \cdot \cdot$ can be simulated by us
 
 \section{Experiments and Results}
 
-The specified term representation and evaluation have been implemented in Haskell. Then, they have been used by a typechecker check dependently typed terms of the logical framework which were kindly provided by Andrew W. Appel (Princeton University). To make this possible, an extended syntax has been used that includes $\Pi$-types and technical elements like constants and definitions. It is easy to expand our evaluation algorithm to satisfy special needs like these.
+The specified term representation and evaluation have been implemented in Haskell. Then, they have been used by a type checker check dependently typed terms of the logical framework which were kindly provided by Andrew W. Appel (Princeton University). To make this possible, an extended syntax has been used that includes $\Pi$-types and technical elements like constants and definitions. It is easy to expand our evaluation algorithm to satisfy special needs like these.
 \\
 For comparison, the completely analogous algorithm for terms in extended basic syntax (i.e. $\te$) has been used.
 
@@ -470,7 +472,7 @@ Beta Normal Values & 137.7 & 8513 \\
 \hline
 \end{tabular}
 \end{center}
-Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during typechecking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. \\
+Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during type checking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. \\
 None of the other strategies exhibited any shortcomings in the comparisons above. However, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures: 
 \begin{center}
  \begin{tabular}{| l || c | c |}
@@ -491,9 +493,9 @@ Beta Normal Values & 169.8 & 9044  \\
 \end{center}
 Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind. 
 \\
-In comparison, the typechecker of the Twelf project, \emph{Twelf r1697} (written in \emph{Standard ML}) does the job nearly five times faster with only 2720 megabytes of memory.
+In comparison, the type checker of the Twelf project, \emph{Twelf r1697} (written in \emph{Standard ML}) does the job nearly five times faster with only 2720 megabytes of memory.
 
-Unfortunately, the idea of ordered substitution lists does not really pay off within the context of typechecking in our tests. 
+Unfortunately, the idea of ordered substitution lists does not really pay off within the context of type checking in our tests. 
 On the other hand, it can compete with the simple standard implementation. This offers hope that there might be some applications that benefit more from our suggested strategy. 
 }
 
