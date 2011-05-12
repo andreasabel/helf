@@ -211,7 +211,7 @@ For each set $\Gamma$ of variable names ($\Gamma \subseteq \x$), we denote the s
 \\
 By $\ot \otimes \xl$ (resp. $\ot \otimes \vl$, $\ot \otimes \gl$) we mean the subset $\{(t, \vec x) \ | \ \freevars t = \length {\vec x} \}$ of $\ot \times \xl$ (and analogous for $\vl$ or $\gl$ instead of $\xl$).
 \\
-\begin{defin}
+% \begin{defin}
 For each finite %multiset 
 set $\Gamma$ of variable names, we define the relation
 $\parse \cdot \Gamma \cdot \ \subset \  \te \times (\ot \times \xl)$.
@@ -247,7 +247,8 @@ The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse M \Gamma 
 \]
 
 
-\end{defin}
+%\end{defin}
+
 First, it is important to notice that $\parse M \Gamma (u, \vec x)$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). \\
 By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parse M \Gamma {u  \vec x}$, so we can consider $\parse \cdot \Gamma \cdot$ a function $\te \rightarrow \ot \times \gl$. In the same way, we notice that $\parse M \Gamma {u  \vec x}$ always implies $\freevars u = \length {\vec x}$. \\
 % By applying the function $\parse \cdot {\emptySet} \cdot$, we can transform a term from normal syntax to ordered syntax. \\
@@ -258,10 +259,11 @@ Choosing $\Gamma = \emptySet$, we get bijections $\te \leftrightarrow \otc \otim
 
 %Choosing $\Gamma = \emptySet$, we get the special cases $\parseFun \emptySet$ and $\parseFun \emptySet ^{-1}$, which are bijections between $\te$ and $\otc$. This also explaines how one representation can be transformed into the other.
 
-The above construction also gives us function $\ot \otimes \xl \rightarrow \te$, but this is not enough: We want to transform the (more general) elements of $\ot \otimes \vl$ as well as values in $\va$ into basic terms $\te$:
-
-\begin{defin}
-We define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alpha$ and $\prValE : \va \rightarrow \te / \alpha$ simultaneously by recursion on the structure:
+The above construction also gives us function $\ot \otimes \xl \rightarrow \te$, but this is not enough. We want to transform the (more general) elements of $\ot \otimes \vl$ as well as values in $\va$ into basic terms $\te$.
+Therefore, we
+% \begin{defin}
+% We 
+define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alpha$ and $\prValE : \va \rightarrow \te / \alpha$ simultaneously by recursion on the structure:
 \[
 \begin{array}{lcl}
 \pr{x}{\emptyVec} & = & x \\
@@ -281,13 +283,13 @@ We define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \
 \prVal{\Val {\vec k} t {\vec v}} & = & \pr{\LaO {\vec k} t}{\vec v} \\
 \end{array}
 \]
-\end{defin}
+%\end{defin}
 First, note that the printing functions are well-defined (i.e. they always terminate). This is because during evaluation of $\pr{u}{\vec v}$, we may safely assume that $\pr{t}{\vec w}$ is well-defined as long as $t$ is a strict subterm of $u$ and each value $w'$ in $\vec w$ is either only a variable (so termination of $\prVal {w'}$ is clear) or also in $\vec v$. Similar, during evaluation of $\prVal {x \sspace v_1 \sspace \ldots v_n}$, we may assume that $\prVal {v_i}$ is defined for each $i$.
 
 For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\parse M \emptySet {t \emptyVec}$ as both judgements are defined identical in the case of closed ordered terms. This basically means $\prE \circ \parseFun \emptySet  = id_{\te}$, i.e. the composition of parsing and printing is the identity.
 
 
-\section{Correctness and Completeness}
+\section{Termination and Correctness}
 
 
 % TODO
@@ -377,7 +379,9 @@ Now it is easy to define a printing function $\prTreeE$ to transform a tree into
  For $a, b \in \evTr$ satisfying $a \osr b$, we have $\prTree a =_\beta \prTree b$. More precisely, if one of the rules ${\ev \cdot \cdot \mbox{-1} }, {\ev \cdot \cdot \mbox{-2} }, {\ev \cdot \cdot \mbox{-3} }, {\ev \cdot \cdot \mbox{-4} }$ or ${@\mbox{-1}}$ was used, even $\prTree a = \prTree b$ (up to $\alpha$-equivalence) holds, if ${@\mbox{-1}}$ was used,  $\prTree a$ can be reduced to $\prTree b$ in exactly one $\beta$-reduction step.
 \end{prop}
 \begin{proof}
- For all of the $\ev \cdot \cdot$-rules, we even have the equality $\prTree a = \prTree b$. In the case of the structure rules, we may assume that the statement holds for the premises, so it is also clear for the conclusions. The first of the $@$-rules is also simple. We only have to have a closer look at the second $@$-rule.\\
+ For all of the $\ev \cdot \cdot$-rules and $@\mbox{-1}$, the equality $\prTree a = \prTree b$ is easy to check. 
+% In the case of the structure rules, we may assume that the statement holds for the premises, so it is also clear for the conclusions. The first of the $@$-rules is also simple. 
+ We have to have a closer look at the second $@$-rule:\\
  By definition, we have 
  \[
 \begin{array}{lclr}
@@ -389,7 +393,8 @@ Now it is easy to define a printing function $\prTreeE$ to transform a tree into
 \end{array}
 \]
 Now, note that (again by induction on $t$) the term $\pr {t} {\multiinsert {\vec v}{\vec k}{z}}$ contains  $z$ exactly $\length {\vec k}$ times as a free variable and, by replacing each of those free occurrences  by $\prVal w$, we get the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$.
-Consequently, the term $\prTree {\tree {\Val {\vec k} t {\vec v}}{w}}$ can be reduced to $\prTree {    (t , \multiinsert{\vec v}{\vec k}{w} )    }$ in exactly one beta reduction step, thus the statement is true. 
+Consequently, the term $\prTree {\tree {\Val {\vec k} t {\vec v}}{w}}$ can be reduced to $\prTree {    (t , \multiinsert{\vec v}{\vec k}{w} )    }$ in exactly one beta reduction step. \\
+Note that these statements are also true if one or more of the structure rules are used in addition.
 
 
 \end{proof}
