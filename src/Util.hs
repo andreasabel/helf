@@ -1,5 +1,6 @@
 module Util where
 
+import Control.Applicative
 import Control.Monad.Error
 
 import Data.Map (Map)
@@ -90,10 +91,23 @@ enterDoc md cont = cont `catchError` \ s -> do
 
 -- * debugging
 
+traceM :: Monad m => m String -> m ()
+traceM mmsg = do
+  msg <- mmsg
+  trace msg $ return ()
+
+traceDoc :: (Functor m, Monad m) => m Doc -> m ()
+traceDoc mdoc = traceM (render <$> mdoc)
+
+{-
 traceM :: Monad m => m String -> m b -> m b
 traceM mmsg cont = do
   msg <- mmsg
   trace msg cont
+
+doTrace :: Monad m => String -> m ()
+doTrace msg = trace msg $ return ()
+-}
 
 -- * maps
 

@@ -1,5 +1,8 @@
 module Value where
 
+import Control.Applicative
+import Control.Monad
+
 import Abstract
 
 data Sort 
@@ -17,7 +20,8 @@ data ValView head val
 -- | The purpose of @MonadEval@ is read-only access to a global signature
 --   to get the definition of symbols, and potentially IO to have references
 --   to implement call-by-need.
-class (Eq head, Ord head) => MonadEval head val env m | val -> head, m -> val, m -> env where
+class (Eq head, Ord head, Functor m, Applicative m, Monad m) => 
+    MonadEval head val env m | val -> head, m -> val, m -> env where
   typ     :: m val
   kind    :: m val
   freeVar :: head -> val -> m val      -- typed free variable
@@ -52,6 +56,6 @@ class MonadEval val env m | m -> val, m -> env where
 -}
 
 -- | Apply a function to a reversed list of arguments.
-appsR :: (Monad m, MonadEval head val env m) => val -> [val] -> m val 
+appsR :: (MonadEval head val env m) => val -> [val] -> m val 
 appsR f vs = foldr (\ v mf -> mf >>= \ f -> apply f v) (return f) vs
   
