@@ -74,6 +74,12 @@ class (Monad m, -- Scoping.Scope m,
   abstrPi a x b = doEval $ abstractPi a x b
   view         :: val -> m (ValView fvar val)
   view          = doEval . valView
+  -- | Shortcut check for identity.  Default: no shortcut. 
+  unlessId     :: val -> val -> m () -> m ()
+  unlessId _ _ cont = cont
+  -- | Assigning equal things to same ref.
+  equate       :: val -> val -> m ()
+  equate _ _    = return ()
 {-
   doCxt        :: mx a -> m a
   addLocal     :: Name -> val -> (val -> m a) -> m a
@@ -191,30 +197,34 @@ isType t = do
  
 -- | Equality of types.
 equalType ::  (MonadCheckExpr fvar val env me m) => val -> val -> m ()
-equalType t1 t2 = typeTrace (EqualType t1 t2) $ equalBase t1 t2
+equalType t1 t2 = typeTrace (EqualType t1 t2) $ unlessId t1 t2 $ do
+  equalBase t1 t2
+  equate t1 t2
 
 -- | Equality at base type/sort.
 equalBase ::  (MonadCheckExpr fvar val env me m) => val -> val -> m ()
-equalBase v1 v2 = do
+equalBase v1 v2 = unlessId v1 v2 $ do
+  let ret = equate v1 v2
   w1 <- view v1
   w2 <- view v2
   case (w1, w2) of
-    (VSort s1, VSort s2) | s1 == s2 -> return ()
+    (VSort s1, VSort s2) | s1 == s2 -> ret
     (VPi a1 b1, VPi a2 b2) -> do
       equalBase a1 a2
       addLocal' b1 a1 $ \ xv -> appM2 equalBase (b1 `app` xv) (b2 `app` xv)
+      ret
     (VNe x1 t1 vs1, VNe x2 t2 vs2) -> 
-      if x1 == x2 then equalApp vs1 vs2 t1 >> return ()
+      if x1 == x2 then equalApp vs1 vs2 t1 >> ret
        else typeError $ UnequalHeads v1 v2
     (VDef x1 t1 vs1, VDef x2 t2 vs2) -> 
       case compare x1 x2 of
-        EQ -> (equalApp vs1 vs2 t1 >> return ()) 
-              <|> appM2 equalBase (unfold1 v1) (unfold1 v2) 
+        EQ -> (equalApp vs1 vs2 t1 >> ret)
+              <|> (appM2 equalBase (unfold1 v1) (unfold1 v2) >> ret) 
         -- unfold newer definition first (Coq heuristics)
         GT -> equalBase v1 =<< unfold1 v2
         LT -> unfold1 v1 >>= \ v1 -> equalBase v1 v2     
-    (VDef{}, _) -> unfold1 v1 >>= \ v1 -> equalBase v1 v2
-    (_, VDef{}) -> equalBase v1 =<< unfold1 v2     
+    (VDef{}, _) -> unfold1 v1 >>= \ v1 -> equalBase v1 v2 >> ret
+    (_, VDef{}) -> (equalBase v1 =<< unfold1 v2) >> ret     
     _ -> typeError $ UnequalTypes v1 v2
 
 -- | Pointwise equality of spines.
@@ -232,7 +242,7 @@ equalApp vs1 vs2 t =
 
 -- | Type directed equality of terms.
 equalTm :: (MonadCheckExpr fvar val env me m) => val -> val -> val -> m ()
-equalTm v1 v2 t = do
+equalTm v1 v2 t = unlessId v1 v2 $ do
   w <- view =<< force t
   case w of
     VPi a b -> addLocal' b a $ \ xv -> 

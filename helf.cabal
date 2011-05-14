@@ -50,6 +50,8 @@ executable helf
                     ScopeMonad
                     Scoping
                     Signature
+                    TermGraph
+                    TGChecker
                     TheMonad
                     TypeCheck
                     Util

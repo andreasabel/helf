@@ -10,7 +10,7 @@
 
 
 
-\title{A Lambda Term Representation Based on Linear Ordered Logic}
+\title{A Lambda Term Representation \\ Based on Linear Ordered Logic}
 \author{Andreas Abel
 \institute{
 Theoretical Computer Science\\
@@ -33,10 +33,33 @@ Nottingham, United Kingdom}
 \maketitle
 
 \begin{abstract}
-We introduce a nameless representation of lambda terms based on ordered logic. 
-Information about number and places of variables bound by a lambda is available without examining the whole term, thus making it possible to drop unneeded substitutions early to avoid memory leaks.
-% We describe an implementation of this and other representations as well as suggested evaluation algorithms. These implementations were tested in Haskell by using them for typechecking large dependently typed terms of the logical framework (LF). The different needs of time and space are documented and compared.\\
-We also describe our implementation experiments and present some results.
+We introduce a new nameless representation of lambda terms based on
+ordered logic.  At a lambda abstraction, number and relative
+position of all occurrences of the bound variable are stored, and
+application carries the additional information where to cut the
+variable context into function and argument part.  This way, 
+complete information about free variable occurrence is available at each
+subterm without requiring a traversal, and environments can
+be kept exact such that they only assign values to variables that
+actually occur in the associated term.
+Our approach avoids space leaks in interpreters that build 
+function closures.  
+
+In this article, we prove correctness of the new representation and
+present an experimental evaluation of its performance in a proof
+checker for the Edinburgh Logical Framework.
+  
+Keywords:
+representation of binders,
+explicit substitutions,
+ordered contexts,
+space leaks,
+Logical Framework.
+
+% We introduce a nameless representation of lambda terms based on ordered logic. 
+% Information about number and places of variables bound by a lambda is available without examining the whole term, thus making it possible to drop unneeded substitutions early to avoid memory leaks.
+% % We describe an implementation of this and other representations as well as suggested evaluation algorithms. These implementations were tested in Haskell by using them for typechecking large dependently typed terms of the logical framework (LF). The different needs of time and space are documented and compared.\\
+% We also describe our implementation experiments and present some results.
 \end{abstract}
 
 \section{Introduction}

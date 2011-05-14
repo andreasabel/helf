@@ -27,6 +27,7 @@ import qualified Closures
 import qualified Monolith
 import qualified HerBruijn
 import qualified NamedExplSubst
+import qualified TGChecker
 
 import System
 import System.IO (stdout, hSetBuffering, BufferMode(..))
@@ -34,13 +35,13 @@ import System.Console.GetOpt (getOpt, usageInfo, ArgOrder(Permute,ReturnInOrder)
 			     , OptDescr(..), ArgDescr(..)
 			     )
 
-data Engine = Closures | Ordered | HerBruijn | Monolith
+data Engine = Closures | Ordered | HerBruijn | Monolith | TGChecker
   deriving (Eq,Show,Enum,Bounded,Read)
 
 engines :: [Engine]
 engines = [minBound..maxBound]
 
-defaultEngine = Closures
+defaultEngine = TGChecker -- Closures
 
 {-
 data Options = Options
@@ -159,6 +160,7 @@ runCheckDecls Closures = Closures.runCheckDecls
 runCheckDecls Ordered  = Ordered.runCheckDecls
 runCheckDecls HerBruijn = HerBruijn.runCheckDecls
 runCheckDecls Monolith = Monolith.runCheckDecls
+runCheckDecls TGChecker = TGChecker.runCheckDecls
 
 doTypeCheck :: Engine -> Scoping.ScopeState -> A.Declarations -> IO ()
 doTypeCheck engine st decls = do
