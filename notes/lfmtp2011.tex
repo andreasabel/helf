@@ -164,7 +164,7 @@ The only thing left to be done is to apply the substitutions in the obvious way:
 \[
 g \sspace n  \sspace (f \sspace n)
 \]
-Here, evaluation naturally leads to a term in beta normal form. This will not always be the case: as an example, if we had tried to evaluate the above term without the $n$ (i.e. $S \oapp 0 f \oapp 0 g$), we would have got stuck at $\left(\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}\right)  \left[ g, f \right]$. On the other hand, this also would have been satisfactory as it would have shown that the term's normal form is an abstraction. % TODO give reason why this is enough
+Here, evaluation naturally leads to a term in beta normal form. This will not always be the case: as an example, if we had tried to evaluate the above term without the $n$ (i.e. $S \oapp 0 f \oapp 0 g$), we would have got stuck at $\left(\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}\right)  \left[ g, f \right]$. On the other hand, this also would have been satisfactory as it would have shown that the term's normal form is an abstraction. In other words, our evaluation results in weak head normal forms. % TODO give reason why this is enough
 
 Consequently, we define values (the result of evaluation) in the following way:
 
@@ -262,7 +262,7 @@ The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse M \Gamma 
 \infru{x \not\in \Gamma}{\parse x \Gamma {x \emptyVec}}
 &
 \infru{ 
-         {\parse M { \Gamma \uplus \{z\} } {       t \multiinsert{\vec x}{\vec k}{z}   }} 
+         {\parse M { \Gamma \cup \{z\} } {       t \multiinsert{\vec x}{\vec k}{z}   }} 
           \qquad 
           z \not\in \vec x  }
           {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t) \ \vec x}}
