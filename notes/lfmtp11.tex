@@ -1,13 +1,12 @@
+\nonstopmode
 \documentclass[submission,copyright,creativecommons]{eptcs}
 \providecommand{\event}{LFMTP'11} % Name of the event you are submitting to
 % \usepackage{breakurl}             % Not needed if you use pdflatex only.
-
-
-\input{mymacros}
-
+\usepackage{hyperref}
 \usepackage{proof}
 \usepackage[all]{xy}
 
+\input{mymacros}
 
 
 \title{A Lambda Term Representation \\ Based on Linear Ordered Logic}
@@ -28,7 +27,7 @@ Nottingham, United Kingdom}
 \email{ngk@cs.nott.ac.uk}
 }
 \def\titlerunning{A Lambda Term Representation Based on Linear Ordered Logic}
-\def\authorrunning{Andreas Abel, Nicolai Kraus}
+\def\authorrunning{Andreas Abel and Nicolai Kraus}
 \begin{document}
 \maketitle
 
@@ -63,8 +62,121 @@ Logical Framework.
 \end{abstract}
 
 \section{Introduction}
+\label{sec:intro}
 
-Beta reduction is an important part of evaluating in many functional programming languages, proof assistants and other formal systems. However, implementations often involve the risk of memory leaks and inefficiency. Here, we assume that all of our terms are well-typed and beta reduction is therefore strongly normalizing, so all we care about is efficiency. \\
+Type checking dependent types in languages like Agda~\cite{norell:PhD}
+and Coq~\cite{coq83} or logical frameworks like Twelf~\cite{carsten:twelf}
+requires a large amount of evaluation, since types my depend on
+values.  Such type checkers incorporate
+an interpreter for purely functional programs with free variables---at least, the
+$\lambda$-calculus---which is used to compute weak head normal forms
+of types.  Efficiency of type checking is mostly identical with
+efficiency of evaluation (and, in case of type reconstruction,
+efficiency of unification), and remains a challenge as of today.  
+In seminal work, Gregoire and Leroy \cite{gregoireLeroy:icfp02} have
+sped up Coq type checking by compiling to byte-code instead of
+using an interpreter.  Boespflug \cite{boespflug:padl10} has obtained
+further speed-ups by producing native code using stock-compilers.  
+
+While compilation approaches are successful on batch type \emph{checking}
+fully explicit programs, they have not been attempted on type
+\emph{reconstruction} using higher-order unification or on interactive
+program construction such as in Agda and Epigram \cite{mcBrideMcKinna:view}.
+These languages are involving and their implementations are
+prototypical and frequently modified and extended.  Implementing a
+full compiler just to get type reconstruction going is deterring;
+furthermore, compilation has not proven its feasibility in minor
+evaluation tasks that dominate higher-order unification.  Smart
+interpreters are, and may remain competitive to compilation.  
+
+For instance, Twelf's interpreter is sufficiently fast; it is 
+based on a term representation with de Bruijn indices 
+\cite{deBruijn:nameless} and explicit substitutions 
+\cite{abadiCardelliCurienLevy:jfp91}.  In the context of functional
+programming, explicit substitutions are known as \emph{closures},
+consisting of the code of a function plus an environment, assigning
+values to the free variables appearing in the code.  
+In typical implementations of interpreters \cite{coquand:type}, 
+these environment are not
+precise; they assign values to all variables that are statically in
+scope rather than to only to those that are actually refered to in the
+code.  This bears potential for space-leaks: the environment of a
+closure might refer to a large value that is never used, but cannot be
+garbage collected.  An obvious remedy to this threat is, when forming
+a closure, to restrict the environment to the actual free variables;
+however, this requires a traversal of the code.  We explore a
+different direction: we are looking for a code representation that
+maintains information about the free variables at each node of the
+abstract syntax tree.
+
+A principal candidate is \emph{linear typing} in Curry-Howard
+correspondence with Girard's linear logic \cite{girard:linear}; there,
+each variable in scope is actually referenced (more precisely,
+referenced exactly once).  In other words, the
+free variables are exactly the variables in the typing context.
+Dropping types, we may talk of \emph{linear scoping}.  The free
+variables of a function application are the disjoint union of the free
+variables of the function and the free variables of the argument.  If
+we want to maintain the set of free variables during a term traversal,
+at an application node we need to decide which variables go into the
+function part and which into the argument part.  Thus, we would store
+at each application a set of variables that go into the, say, function
+part, all others would go to the argument part.  Less information is
+needed if we switch to an \emph{ordered} representation.
+
+\emph{Ordered logic}, also called \emph{non-commutative linear logic}
+\cite{polakowPfenning:tlca99}, refines linear logic by removing the
+structural rule \emph{exchange} which restricts hypotheses to be used
+\emph{in the order they have been declared}.  Transferring this
+principle to ordered scoping this means that the scoping context lists
+the free variables in the order they occur in the term, from left to
+right.  This allows pushing the context into an application with very
+little information: we just need to know \emph{how many} variables
+appear in the function part so we can cut the context in two at the
+right position, splitting it into function context and argument
+context.  This constitutes the central idea of our representation: at
+each application node of the syntax tree, we store a number denoting
+the number of free variable occurrences in the function part.  During
+evaluation of an application in an environment, we can cut the
+environment into two, the environment needed for the evaluation of the
+function and the environment needed for the evaluation of the
+argument.  Thus, our environments are precise and space leaks are
+avoided.  In particular, a variable is always evaluated in a singleton
+environment assigning only a value to this variable.  Following this
+observation, variables do not need a name, they are identified by
+their position; and environments are simply sequences of values.
+
+Since we are not interested in proof terms of ordered logic per se,
+but only borrow the \emph{ordered context} idea for our
+representation, we need to allow multiple occurrences of the same
+variable.  In fact, the context shall list the variable
+\emph{occurrences} in order.  At a lambda abstraction, we bind all
+occurrences of the same variable.  Thus, at an abstraction node we
+specify at which positions the bound variable should be inserted in
+the scoping context.  This concludes the presentation of our idea.  
+
+In the rest of the paper, after an introductory example
+(Section~\ref{sec:example}) we formally define our term representation
+in Section~\ref{sec:syntax}.   Interpreter and handling of
+environments are described in Section~\ref{sec:values}, follows by
+the translation between ordinary lambda terms and ordered terms
+(Section~\ref{sec:parsing}).  Soundness of the interpreter is formally
+proven in Section~\ref{sec:sound}, before we conclude with an
+experimental evaluation in Section~\ref{sec:experiments}.
+
+This article summarizes the B.Sc.\ thesis of the second author
+\cite{kraus:bachelor}.
+
+\section{An Example}
+\label{sec:example}
+
+% Beta reduction is an important part of evaluation in functional
+% programming languages, proof assistants and other formal
+% systems. However, implementations often involve the risk of memory
+% leaks and inefficiency. Here, we assume that all of our terms are
+% well-typed and beta reduction is therefore strongly normalizing, so
+% all we care about is efficiency.
+
 A term representation always has to have a way to represent that a variable is bound by a lambda. 
 For example, in the term $\LaA x {\LaA y {\ApA{\ApA a b} y}}$ in basic syntax, the information about the connection between the second $\la$ and the last variable is split: We have to look at both the $\la y$ and the $y$ in order to know what is going on. This may lead to some unnecessary difficulties. In contrast, the usage of de Bruijn indices makes it possible to remove the information from the $\la$ and concentrate them on the variable. Our goal is to do it the other way round: We want the whole information to be available at the $\la$.
 
@@ -83,6 +195,7 @@ To get rid of the beta redexes, we could reduce it in the way shown below. By wr
 Actually, the substitution $\sub g x$ could be dropped instantly and there is no need to apply the other substitution $\sub f y$ to the term $\ApA a b$. However, the algorithm used above does not have this information and this is a problem that many representations come along with. Motivated by this observation, we want to describe an alternative.
 
 \section{Syntax}
+\label{sec:syntax}
 
 % The idea is that the information which variable is bound by which lambda should neither be split (like in the standard representation) nor carried by the variable (de Bruijn indices). Instead, it should be available as soon as the lambda becomes visible.
 Here, we only cover the core constructs of the lambda calculus, but we do not see any limitations for probably needed extensions. We first define ordered preterms, which are ordered terms if they satisfy a condition discussed below:
@@ -133,6 +246,7 @@ from the very beginning would be represented as
 
 
 \section{Values and Evaluation} \label{eval}
+\label{sec:values}
 
 Before specifying values and evaluation formally, we want to give an example to demonstrate how the information carried by a lambda should be used and why we always have exactly the needed information. Suppose we have the term
 \[
@@ -223,6 +337,7 @@ The case of a closure $\Val {\vec k} t {\vec v}$ is less simple, but it is still
 % TODO THE WHOLE multiset THING IS unnecessary!
 
 \section{Parsing and Printing}
+\label{sec:parsing}
 
 In this section, we define how terms in normal syntax are translated into our ordered syntax (Parsing) and vice versa (Printing). 
 To specify this, we need some notation. 
@@ -313,6 +428,7 @@ For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\
 
 
 \section{Termination and Correctness}
+\label{sec:sound}
 
 
 % TODO
@@ -441,12 +557,13 @@ It is easy to check that the evaluation $\ev \cdot \cdot$ can be simulated by us
 
 
 \section{Experiments and Results}
+\label{sec:experiments}
 
 The specified term representation and evaluation have been implemented in Haskell. Then, they have been used by a type checker check dependently typed terms of the logical framework which were kindly provided by Andrew W. Appel (Princeton University). To make this possible, an extended syntax has been used that includes $\Pi$-types and technical elements like constants and definitions. It is easy to expand our evaluation algorithm to satisfy special needs like these.
 \\
 For comparison, the completely analogous algorithm for terms in extended basic syntax (i.e. $\te$) has been used.
 
-Our main test file \textsf{w32\_sig\_semant.elf} with a size of approximately 21 megabytes contains a proof described in \cite{appel}. We also tested smaller parts of this file.
+Our main test file \textsf{w32\_sig\_semant.elf} with a size of approximately 21 megabytes contains a proof described in \cite{appel:toplas10}. We also tested smaller parts of this file.
 All tests were executed on the same server (``baerentatze'', Ludwig-Maximilians-Universit\"at M\"unchen, Department of Computer Science) working with a CPU of type \emph{AMD Phenom II X4 B95} (only one core used, 3000 MHz) and 7999 MiB system memory.
 
 ...etc...quite disappointing results...
@@ -536,25 +653,37 @@ On the other hand, it can compete with the simple standard implementation. This 
 }
 
 
-\section{Related Work}
+\section{Conclusions}
+\label{sec:concl}
 
-\begin{thebibliography}{4} \addcontentsline{toc}{section}{References}
+
+\paragraph*{Acknowledgments}
+The idea for the here presented ordered term representation was
+planted in a discussion with Christophe Raffalli who invited the first
+author to Chambery in February 2010.  He mentioned to me that in his
+library \texttt{bindlib} formation of closures restricts the
+environment to the variables actually occuring free in the code.
+
+\bibliographystyle{alpha}
+\bibliography{auto-lfmtp11}
+
+% \begin{thebibliography}{4} \addcontentsline{toc}{section}{References}
   
-\bibitem{some more items}
-  some name, some title, some journal
+% \bibitem{some more items}
+%   some name, some title, some journal
   
     
-\bibitem{watkins}
-  Kevin Watkins, Iliano Cervesato, Frank Pfenning, David Walker. \emph{A concurrent logical framework I: Judgements and properties}.\\
-  % Technical Report, 
-  School of Computer Science, Carnegie Mellon University, Pittsburgh, 2003.
+% \bibitem{watkins}
+%   Kevin Watkins, Iliano Cervesato, Frank Pfenning, David Walker. \emph{A concurrent logical framework I: Judgements and properties}.\\
+%   % Technical Report, 
+%   School of Computer Science, Carnegie Mellon University, Pittsburgh, 2003.
 
 
-\bibitem{appel} 
-  Amal Ahmed, Andrew W. Appel, Christopher D. Richards, Kedar N. Swadi, Gang Tan, Daniel C. Wang. \emph{Semantic foundations for typed assembly languages}.\\
-  ACM Trans. Program. Lang. Syst., volume 32, number 3, 2010.
+% \bibitem{appel} 
+%   Amal Ahmed, Andrew W. Appel, Christopher D. Richards, Kedar N. Swadi, Gang Tan, Daniel C. Wang. \emph{Semantic foundations for typed assembly languages}.\\
+%   ACM Trans. Program. Lang. Syst., volume 32, number 3, 2010.
 
-\end{thebibliography}
+% \end{thebibliography}
 
 
 
