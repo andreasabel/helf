@@ -431,8 +431,10 @@ To keep our argumentation simple, we just sketch the proofs and hope that the id
 
 First, we attend to the correctness question. 
 We need to convince ourselves that \emph{rewriting} according to the rules of the functions $\ev \cdot \cdot$ and $\ap$ does not cause an error. 
-By \emph{rewriting}, we mean one step of the \emph{normal} or \emph{leftmost outermost} evaluation.
-If we have, e.g., the tupel $(t, \vec v)$, printing it should result in a term that is $\beta$ equivalent to the term we get if we rewrite it once before printing. This basically means that, for each evaluation rule on the left hand side of the following tabular, we have to check that the equality on the right hand side holds:
+By \emph{rewriting}, we mean one step of the \emph{normal} or \emph{leftmost outermost} evaluation. We have demonstrated this in the example at the beginning of Section~\ref{sec:values}.
+%If we have, e.g., the tupel $(t, \vec v)$, printing it should result in a term that is $\beta$ equivalent to the term we get if we rewrite it once before printing. 
+Printing should result in a term that is $\beta$ equivalent to the term we get if we rewrite before printing. 
+This basically means that, for each evaluation rule on the left hand side of the following tabular, we have to check that the equality on the right hand side holds:
 \begin{center}
 \begin{tabular}{|   rcl  |  rcl    |}
 \hline
