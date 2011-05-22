@@ -221,7 +221,7 @@ In this article, we only cover the core constructs of the lambda calculus as the
 \]
 \emph{Free variables} are denoted by their name like in the standard syntax. \emph{Bound variables}, however, are just denoted by a dot $\ovar$, which does not carry any information beside the fact that it is a bound variable. 
 % This, for example, means that if $\left(\ApO \ovar 1 \ovar \right)$ is a subterm, it is not possible to tell whether we have two different variables or two times the same one without looking at the whole term.\footnote{However, the latter possibility could not be well-typed.} 
-In the case of an \emph{application}, there is a first term and a second term as usual. 
+In the case of an \emph{application}, there is a first term (the function part) and a second term (the argument) as usual. 
 Furthermore, the application carries an integer $m$ as an additional piece of information that will be important for the evaluation process and is explained in a later paragraph.
 %the number of dots $\ovar$ in the first term which are not bound by lambdas in the first term itself should be denoted by the integer $k$. % COMMENT - there is no reason anymore to prefer the second to the first term. It might be a good idea to use the first term instead!? I have changed it now.
 %This will be important for the evaluation process. 
@@ -259,7 +259,7 @@ from Section~\ref{sec:example} would be represented as
 At this point, we hope to have clarified the intended meaning of our syntax. A formal definition will be given in Section~\ref{sec:parsing}.
 
 
-\section{Values and Evaluation} \label{eval}
+\section{Values and Evaluation} 
 \label{sec:values}
 
 Before specifying values and evaluation formally, we want to give an example to demonstrate how the information carried by a lambda should be used and why we always have exactly the needed information. Suppose we have the term
@@ -327,7 +327,7 @@ Additionally, we specify the application $\cdot \ap \cdot$ of two values, which 
 & \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}} \\  \noalign{\medskip}
 & \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} \\  
 \\ 
-& \pa{x \sspace \vec v} \ap w & = & h \sspace \ve{\vec v, w} 
+& \pa{x \sspace \vec v} \ap w & = & x \sspace \ve{\vec v, w} 
 \\ \noalign{\medskip}
 & \Val{\vec k} t {\vec v}   \ap w & = & \ev t {\multiinsert{\vec v}{\vec k}{w}}
 \end{array}
@@ -417,104 +417,171 @@ First, note that the printing functions are well-defined (i.e. they always termi
 For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\parse M \emptySet {t \emptyVec}$ (which just means $\parseFunE t = M$) as both judgements are defined identical in the case of closed ordered terms. This essentially (with implicit use of the bijection $\otc \leftrightarrow \ot \otimes \vec \emptySet$) means $\prE \circ \parseFunE  = id_{\te}$, i.e. the composition of parsing and printing is the identity.
 
 
-\section{Termination and Correctness}
+
+
+
+
+\section{Correctness and Termination properties}
 \label{sec:sound}
 
 
-We still have to prove two important facts about the evaluation algorithm given in section \ref{eval} - first, its termination properties and second, its correctness, i.e. it corresponds to beta reduction. 
 
-Concerning correctness, we would obviously want to show that taking a term $t$, translating it to an ordered term, evaluation and printing it gives us a term which is beta equal to $t$, which is represented by the diagram
-\[
-\begin{xy}
-\xymatrix{
- t \in \te \ar@{-}[rrr]^{=_\beta} \ar@/_/[dd]_{\parseFunE} & & & t' \in \te \\ 
- \\
-% u \in \otc \ar@/_/[uu]_{\pr{\cdot}{\emptyVec}} \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
- u \in \otc \ar@/_/[uu]_{\prE                  } \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
-}
-\end{xy}
-\]
-However, the diagram does not make much sense as we do not know yet that $\ev \cdot \emptyVec$ is a well-defined function.
-What we need to do is to define a one-step-evaluation, thereby making it possible to check if each single evaluation step preserves beta equality. Unfortunately, this becomes even more complicated as we get binary trees during evaluation: 
-\[
-\begin{array}{lllrll@{\qquad}}
-\evTr       & \ni & \mathsf{tree}_1, \mathsf{tree}_2 & ::= & (t, \vec v) & \mbox{a tupel in $\ot \otimes \vl$} \\
-			                   &&& \mid & v & \mbox{just a value} \\
-			                   &&& \mid & \tree {\mathsf{tree}_1} {\mathsf{tree}_2}  & \mbox{node with two subtrees} 
-\end{array}
-\]
-Our one-step reduction $\osr$ is a relation on $\evTr \times \evTr$:
+We still have not shown that our evaluation algorithm given in Section~\ref{sec:values} does not change the meaning of terms in an unexpected way. The combination of parsing, evaluating and printing should never result in a term that is not beta equivalent to the original term. We also want to show a simple termination property.
+To keep our argumentation simple, we just sketch the proofs and hope that the ideas become clear.
 
-\begin{gather*}
-\infnamed{^{\ev \cdot \cdot \mbox{\small -1} }}{}{(x , \emptyVec) \osr x}
-\qquad
-\qquad
-\infnamed{^{\ev \cdot \cdot \mbox{\small -2}}}{}{(\ovar , \ve v) \osr v}
-\qquad
-\qquad
-\infnamed{^{\ev \cdot \cdot \mbox{\small -3}}}{}{(t \oapp k u , \vec v \vec w) \osr \tree {(t, \vec v)}{(u, \vec w)}}
-\\ \\
-\infnamed{^{\ev \cdot \cdot \mbox{\small -4}}}{}{(\LaO {\vec k} t , \vec v) \osr \Val {\vec k} t {\vec v}}
-\qquad
-\qquad
-\infnamed{^{\mbox{\small (struct-1)}}}{a \osr a'}{\tree a b \osr \tree {a'} b}
-\qquad
-\qquad
-\infnamed{^{\mbox{\small (struct-2)}}}{b \osr b'}{\tree a b \osr \tree a {b'}}
-\\ \\
-\infnamed{^{@\mbox{\small -1}}}{}{\tree {x \sspace v_1 \ldots v_n} w \osr  x \sspace v_1 \ldots v_n \sspace w}
-\qquad
-\qquad
-\infnamed{^{@\mbox{\small -2}}}{}{\tree {\Val {\vec k} t {\vec v}}{w}   \osr   (t, \multiinsert {\vec v} {\vec k} w)}
-\end{gather*}
-Now it is easy to define a printing function $\prTreeE$ to transform a tree into a term:
-\[
-\begin{array}{lclll}
-\prTree{(t, \vec v)} & = & \pr {t} {\vec v} &&\\
-\prTree{v} & = & \prVal v &&\\
-\prTree{\tree a b} & = & \ApA {\prTree a}{\prTree b}&& \mbox{(simply the application in $\te$)}
-\end{array}
-\]
-\begin{prop}
- For $a, b \in \evTr$ satisfying $a \osr b$, we have $\prTree a =_\beta \prTree b$. More precisely, if one of the rules ${\ev \cdot \cdot \mbox{-1} }, {\ev \cdot \cdot \mbox{-2} }, {\ev \cdot \cdot \mbox{-3} }, {\ev \cdot \cdot \mbox{-4} }$ or ${@\mbox{-1}}$ was used, even $\prTree a = \prTree b$ (up to $\alpha$-equivalence) holds, if ${@\mbox{-1}}$ was used,  $\prTree a$ can be reduced to $\prTree b$ in exactly one $\beta$-reduction step.
-\end{prop}
-\begin{proof}
- For all of the $\ev \cdot \cdot$-rules and $@\mbox{-1}$, the equality $\prTree a = \prTree b$ is easy to check. 
-% In the case of the structure rules, we may assume that the statement holds for the premises, so it is also clear for the conclusions. The first of the $@$-rules is also simple. 
- We have to have a closer look at the second $@$-rule:\\
- By definition, we have 
- \[
-\begin{array}{lclr}
- \prTree {\tree {\Val {\vec k} t {\vec v}}{w}} & = & \ApA {  \prVal {\Val {\vec k} t {\vec v}}   } \ {\prVal w}  & \\
-& = &\ApA {  \pr{\LaO {\vec k} t}{\vec v}   }  \ {\prVal w} \\
-& = & \ApA {\left( \LaA z {\pr {t} {\multiinsert {\vec v}{\vec k}{z}}} \right)} \ {\prVal w} &  \qquad \mbox{$z$ not free in $t$, $\vec v$}\\
-\mbox{and} &&& \\
- \prTree {    (t , \multiinsert{\vec v}{\vec k}{w} )    } & = & \pr{t}{\multiinsert{\vec v}{\vec k}{w}} &
-\end{array}
-\]
-Now, note that (again by induction on $t$) the term $\pr {t} {\multiinsert {\vec v}{\vec k}{z}}$ contains  $z$ exactly $\length {\vec k}$ times as a free variable and, by replacing each of those free occurrences  by $\prVal w$, we get the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$.
-Consequently, the term $\prTree {\tree {\Val {\vec k} t {\vec v}}{w}}$ can be reduced to $\prTree {    (t , \multiinsert{\vec v}{\vec k}{w} )    }$ in exactly one beta reduction step. \\
-Note that these statements are also true if one or more of the structure rules are used in addition.
+First, we attend to the correctness question. 
+We need to convince ourselves that \emph{rewriting} according to the rules of the functions $\ev \cdot \cdot$ and $\ap$ does not cause an error. 
+By \emph{rewriting}, we mean one step of the \emph{normal} or \emph{leftmost outermost} evaluation.
+If we have, e.g., the tupel $(t, \vec v)$, printing it should result in a term that is $\beta$ equivalent to the term we get if we rewrite it once before printing. This basically means that, for each evaluation rule on the left hand side of the following tabular, we have to check that the equality on the right hand side holds:
+\begin{center}
+\begin{tabular}{|   rcl  |  rcl    |}
+\hline
+&&&&& \\
+$\ev x {\emptyVec} $&$=$&$ x    $ & $ \pr{x}{\emptyVec} $&$\, =_\beta \, $&$\prVal{x}$\\
+&&&&& \\
+$\ev \ovar {\ve{v}} $&$=$&$ v   $ & $ \pr{\ovar}{v} $&$\, =_\beta \,$&$ \prVal v$ \\
+&&&&& \\
+$\ev {t \oapp k u} {[\vec v , \vec w]} $&$=$&$ {\ev t {\vec v}} \ap {\ev u {\vec w}}   $ & $ \pr {t \oapp k u} {[\vec v , \vec w]} $&$\, =_\beta \,$&$  \ApA {\pr{t}{\vec v}} {\pr{u}{\vec w}} $\\
+&&&&& \\
+$\ev {\LaO {\vec k} t}  {\vec v} $&$=$&$ \Val {\vec k} t {\vec v} $ & $  \pr{\LaO {\vec k} t}{\vec v}$&$ \, =_\beta \,$&$  \prVal {\Val {\vec k} t {\vec v}} $ \\  
+&&&&& \\
+$\pa{x \sspace \vec v} \ap w $&$=$&$ x \sspace \ve{\vec v, w}   $ & $\ApA {\prVal {x \sspace \vec v} } {\prVal w}   $&$\, =_\beta \, $&$ \prVal{x \sspace \ve{\vec v, w}}$\\
+&&&&& \\
+$\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}   $ & $ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $&$ \, =_\beta \, $&$  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $ \\
+&&&&& \\
+\hline
+\end{tabular}
+\end{center}
+Note that "rewriting using the evaluation rules" results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element. 
+Although we do not define it formally, it should be clear how those expressions can be printed by using the printing functions for ordered terms and values (if an expression is a tuple, just print the function part and the argument part separately). In fact, while the function $\ev \cdot \cdot$ is formulated as a big step evaluation, the rewriting process can be understood as the corresponding small step (or one step) evaluation.
+
+In the first five rows of the tabular, we only have to look at the definitions of the printing functions to see that the printed terms are not only $\beta$ equivalent but even equal. The very last rule requires closer examination: 
+\\
+By definition, the term $\prVal{\Val{\vec k} t {\vec v}}$ is equal to $\LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }} $ for a (sufficiently) fresh variable $z$. Now, the definitions of the printing functions are "context free" in a way that guarantees  that $z$ occurs exactly $\length{\vec k}$ times (free) in $\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }$. Furthermore, replacing those occurrences by $\prVal{w}$ results in the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$. This means that, starting with 
+$ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $,
+we have to use exactly one $\beta$ reduction step to get the term $  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $.
+
+As we have already seen that the composition of parsing a term and printing it afterwards does not change anything (up to $\alpha$ equivalence), we can now conclude that parsing, evaluating (a finite number of rewriting steps) and printing is equivalent to a number of $\beta$ reduction steps.
+
+Now we discuss termination. Obviously, our evaluation function $\ev \cdot \cdot$ does not always terminate as not each term has a weak head normal form. However, $\ev \cdot \cdot$ terminates whenever it is applied on ($\parseFunE t$) if the usual $\beta$ reduction is strongly normalizing on $t$. 
+The main consequence of this is that our evaluation terminates for all well-typed terms. To prove this statement, assume that there is such a term $s_0 \in \te$ so that the evaluation of $t_0 := \parseFunE s_0$ does not terminate. 
+%
+Then, we get an infinite sequence $t_0, t_1, t_2, \ldots$ where $t_{i+1}$ is the result of rewriting (a subexpression of) $t_i$ using one of the evaluation rules. If we print $t_0, t_1, t_2, \ldots$, we get a sequence $s_0, s_1, s_2, \ldots$ of terms in $\te$, where $s_{i+1}$ is either ($\alpha$) equal to $s_i$ or arises from $s_i$ in exactly one $\beta$ reduction step. If $\beta$ reduction is strongly normalizing on $s_0$, the sequence has to become constant at some point, i.e. $s_N = s_{N+1} = s_{N+2} = \ldots$ for some $N$. This implies that, after the first $N$ rewriting steps, the second $@$ rule (which corresponds to the last line in the tabular) is not used anymore. Define the \emph{weight} $w(t)$ of an expression $t$ to be $1$, if the expression is just an element of $\ot \otimes \va$, to be $2$, if it is a value of the \emph{closure} type, to be %TODO
+$1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$
+, if it is a value of the form $x \, v_1 v_2 \ldots v_n$ (i.e. a \emph{large application}) and, if it is a tuple of two expressions, as the sum of both weights. Then, each of the rewritings that are induced by the first five lines in the tabular increase the weight of the expression, so we get $w(t_N) < w(t_{N+1}) < w(t_{N+2}) < \ldots$;  however, as the total number of values (and tuples in $\ot \otimes \va$) is bound by the length of the term we get after printing $t_N$ (or any $t_{N+i}$), the sequence is bound, resulting in the required contradiction.
 
 
-\end{proof}
 
-\begin{prop}
-For any well-typed term $t \in \te$, the One-Step-Reduction terminates for $(\parseFunE t)$.
-\end{prop}
-\begin{proof}
-Suppose there is an infinite sequence $a_0 \rightarrow a_1 \rightarrow a_2 \rightarrow \ldots$ with $a_0 = \parseFunE t$. According to the proposition above, we can conclude that for each $i$, either $\prTree {a_i} = \prTree {a_{i+1}}$ or $\prTree {a_i} \rightarrow_\beta \prTree {a_{i+1}}$ (in exactly one step). Assume the latter possibility occurs infinitely often. This contradicts the fact that $\beta$-reduction is strongly normalizing on well-types terms. Assume it occurs only finitely often. Then there is an $N$ such that $\prTree {a_N} = \prTree {a_{N+1}} = \prTree {a_{N+2}} = \ldots$. For $a \in \evTr$, we define the weight $w(a)$ as the number of leafs of $a$ containing an element of $\ot \otimes \vl$ plus twice the number of leafs that contain a value. Each of the one-step-rules except the last one (and the structure rules) obviously increases the weight of a tree, thus we get $w(a_N) < w(a_{N+1}) < w(a_{N+2}) < \ldots$. However, the printing function is defined in a way that forces the weight of any tree $a$ to be less or equal than twice the length of $a$ and consequently, the sequence above is bounded by $2 \cdot \length{ \prTree{a_N}}$, thus giving us a contradiction again.
-\end{proof}
-% TODO rename PARSINGfunction and make clear that sometimes parse: ... -> trees.
+% -----------------------------------
+%
+% THIS IS AN OUTDATED VERSION OF THE SECTION. IT IS MORE "FORMALLY CORRECT" BUT CONTAINS TOO MUCH OVERHEAD AND IS THEREFORE DIFFICULT TO READ.
+%
+%We still have to prove two important facts about the evaluation algorithm given in section \ref{sec:values} - first, its termination properties and second, its correctness, i.e. it corresponds to beta reduction. 
+%
+%Concerning correctness, we would obviously want to show that taking a term $t$, translating it to an ordered term, evaluation and printing it gives us a term which is beta equal to $t$, which is represented by the diagram
+%\[
+%\begin{xy}
+%\xymatrix{
+% t \in \te \ar@{-}[rrr]^{=_\beta} \ar@/_/[dd]_{\parseFunE} & & & t' \in \te \\ 
+% \\
+%% u \in \otc \ar@/_/[uu]_{\pr{\cdot}{\emptyVec}} \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
+% u \in \otc \ar@/_/[uu]_{\prE                  } \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
+%}
+%\end{xy}
+%\]
+%However, the diagram does not make much sense as we do not know yet that $\ev \cdot \emptyVec$ is a well-defined function.
+%What we need to do is to define a one-step-evaluation, thereby making it possible to check if each single evaluation step preserves beta equality. Unfortunately, this becomes even more complicated as we get binary trees during evaluation: 
+%\[
+%\begin{array}{lllrll@{\qquad}}
+%\evTr       & \ni & \mathsf{tree}_1, \mathsf{tree}_2 & ::= & (t, \vec v) & \mbox{a tupel in $\ot \otimes \vl$} \\
+%			                   &&& \mid & v & \mbox{just a value} \\
+%			                   &&& \mid & \tree {\mathsf{tree}_1} {\mathsf{tree}_2}  & \mbox{node with two subtrees} 
+%\end{array}
+%\]
+%Our one-step reduction $\osr$ is a relation on $\evTr \times \evTr$:
+%
+%\begin{gather*}
+%\infnamed{^{\ev \cdot \cdot \mbox{\small -1} }}{}{(x , \emptyVec) \osr x}
+%\qquad
+%\qquad
+%\infnamed{^{\ev \cdot \cdot \mbox{\small -2}}}{}{(\ovar , \ve v) \osr v}
+%\qquad
+%\qquad
+%\infnamed{^{\ev \cdot \cdot \mbox{\small -3}}}{}{(t \oapp k u , \vec v \vec w) \osr \tree {(t, \vec v)}{(u, \vec w)}}
+%\\ \\
+%\infnamed{^{\ev \cdot \cdot \mbox{\small -4}}}{}{(\LaO {\vec k} t , \vec v) \osr \Val {\vec k} t {\vec v}}
+%\qquad
+%\qquad
+%\infnamed{^{\mbox{\small (struct-1)}}}{a \osr a'}{\tree a b \osr \tree {a'} b}
+%\qquad
+%\qquad
+%\infnamed{^{\mbox{\small (struct-2)}}}{b \osr b'}{\tree a b \osr \tree a {b'}}
+%\\ \\
+%\infnamed{^{@\mbox{\small -1}}}{}{\tree {x \sspace v_1 \ldots v_n} w \osr  x \sspace v_1 \ldots v_n \sspace w}
+%\qquad
+%\qquad
+%\infnamed{^{@\mbox{\small -2}}}{}{\tree {\Val {\vec k} t {\vec v}}{w}   \osr   (t, \multiinsert {\vec v} {\vec k} w)}
+%\end{gather*}
+%Now it is easy to define a printing function $\prTreeE$ to transform a tree into a term:
+%\[
+%\begin{array}{lclll}
+%\prTree{(t, \vec v)} & = & \pr {t} {\vec v} &&\\
+%\prTree{v} & = & \prVal v &&\\
+%\prTree{\tree a b} & = & \ApA {\prTree a}{\prTree b}&& \mbox{(simply the application in $\te$)}
+%\end{array}
+%\]
+%\begin{prop}
+% For $a, b \in \evTr$ satisfying $a \osr b$, we have $\prTree a =_\beta \prTree b$. More precisely, if one of the rules ${\ev \cdot \cdot \mbox{-1} }, {\ev \cdot \cdot \mbox{-2} }, {\ev \cdot \cdot \mbox{-3} }, {\ev \cdot \cdot \mbox{-4} }$ or ${@\mbox{-1}}$ was used, even $\prTree a = \prTree b$ (up to $\alpha$-equivalence) holds, if ${@\mbox{-1}}$ was used,  $\prTree a$ can be reduced to $\prTree b$ in exactly one $\beta$-reduction step.
+%\end{prop}
+%\begin{proof}
+% For all of the $\ev \cdot \cdot$-rules and $@\mbox{-1}$, the equality $\prTree a = \prTree b$ is easy to check. 
+%% In the case of the structure rules, we may assume that the statement holds for the premises, so it is also clear for the conclusions. The first of the $@$-rules is also simple. 
+% We have to have a closer look at the second $@$-rule:\\
+% By definition, we have 
+% \[
+%\begin{array}{lclr}
+% \prTree {\tree {\Val {\vec k} t {\vec v}}{w}} & = & \ApA {  \prVal {\Val {\vec k} t {\vec v}}   } \ {\prVal w}  & \\
+%& = &\ApA {  \pr{\LaO {\vec k} t}{\vec v}   }  \ {\prVal w} \\
+%& = & \ApA {\left( \LaA z {\pr {t} {\multiinsert {\vec v}{\vec k}{z}}} \right)} \ {\prVal w} &  \qquad \mbox{$z$ not free in $t$, $\vec v$}\\
+%\mbox{and} &&& \\
+% \prTree {    (t , \multiinsert{\vec v}{\vec k}{w} )    } & = & \pr{t}{\multiinsert{\vec v}{\vec k}{w}} &
+%\end{array}
+%\]
+%Now, note that (again by induction on $t$) the term $\pr {t} {\multiinsert {\vec v}{\vec k}{z}}$ contains  $z$ exactly $\length {\vec k}$ times as a free variable and, by replacing each of those free occurrences  by $\prVal w$, we get the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$.
+%Consequently, the term $\prTree {\tree {\Val {\vec k} t {\vec v}}{w}}$ can be reduced to $\prTree {    (t , \multiinsert{\vec v}{\vec k}{w} )    }$ in exactly one beta reduction step. \\
+%Note that these statements are also true if one or more of the structure rules are used in addition.
+%
+%
+%\end{proof}
+%
+%\begin{prop}
+%For any well-typed term $t \in \te$, the One-Step-Reduction terminates for $(\parseFunE t)$.
+%\end{prop}
+%\begin{proof}
+%Suppose there is an infinite sequence $a_0 \rightarrow a_1 \rightarrow a_2 \rightarrow \ldots$ with $a_0 = \parseFunE t$. According to the proposition above, we can conclude that for each $i$, either $\prTree {a_i} = \prTree {a_{i+1}}$ or $\prTree {a_i} \rightarrow_\beta \prTree {a_{i+1}}$ (in exactly one step). Assume the latter possibility occurs infinitely often. This contradicts the fact that $\beta$-reduction is strongly normalizing on well-types terms. Assume it occurs only finitely often. Then there is an $N$ such that $\prTree {a_N} = \prTree {a_{N+1}} = \prTree {a_{N+2}} = \ldots$. For $a \in \evTr$, we define the weight $w(a)$ as the number of leafs of $a$ containing an element of $\ot \otimes \vl$ plus twice the number of leafs that contain a value. % TODO: THIS HAS TO BE MODIFIED. (see newer version)
+%Each of the one-step-rules except the last one (and the structure rules) obviously increases the weight of a tree, thus we get $w(a_N) < w(a_{N+1}) < w(a_{N+2}) < \ldots$. However, the printing function is defined in a way that forces the weight of any tree $a$ to be less or equal than twice the length of $a$ and consequently, the sequence above is bounded by $2 \cdot \length{ \prTree{a_N}}$, thus giving us a contradiction again.
+%\end{proof}
+%% TODO rename PARSINGfunction and make clear that sometimes parse: ... -> trees.
+%
+%Note that if the reduction terminates, the result is a tree that consists of exactly one leaf containing a value (as there is a reduction step for any other case). We identify this tree with the value.
+%
+%\begin{cor}
+%For all well-typed terms, the evaluation function $\ev \cdot \cdot$ is well-defined (i.e. terminates) and correct (i.e. parsing a term, evaluating and printing it results in a $\beta$-equivalent term).
+%\end{cor}
+%\begin{proof}
+%It is easy to check that the evaluation $\ev \cdot \cdot$ can be simulated by using a sequence of $\rightarrow$-steps. First, this shows that it terminates as we would get an infinite sequence of steps otherwise. Second, as each small step conserves $\beta$-equality, the whole sequence does the same. As we know that for $t \in \te$ the equality $\prTree {\parseFunE t , \emptyVec} = t$ holds, this implies $\prTree {\ev{\parseFunE t} {\emptyVec}} = t$. 
+%\end{proof}
+%
+% -----------------------------------
 
-Note that if the reduction terminates, the result is a tree that consists of exactly one leaf containing a value (as there is a reduction step for any other case). We identify this tree with the value.
 
-\begin{cor}
-For all well-typed terms, the evaluation function $\ev \cdot \cdot$ is well-defined (i.e. terminates) and correct (i.e. parsing a term, evaluating and printing it results in a $\beta$-equivalent term).
-\end{cor}
-\begin{proof}
-It is easy to check that the evaluation $\ev \cdot \cdot$ can be simulated by using a sequence of $\rightarrow$-steps. First, this shows that it terminates as we would get an infinite sequence of steps otherwise. Second, as each small step conserves $\beta$-equality, the whole sequence does the same. As we know that for $t \in \te$ the equality $\prTree {\parseFunE t , \emptyVec} = t$ holds, this implies $\prTree {\ev{\parseFunE t} {\emptyVec}} = t$. 
-\end{proof}
+
+
+
+
+
+
+
 
 
 \section{Experiments and Results}
