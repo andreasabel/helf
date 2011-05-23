@@ -65,7 +65,7 @@ Logical Framework.
 \label{sec:intro}
 
 Type checking dependent types in languages like Agda~\cite{norell:PhD}
-and Coq~\cite{coq83} or logical frameworks like Twelf~\cite{carsten:twelf}
+and Coq~\cite{inria:coq83} or logical frameworks like Twelf~\cite{carsten:twelf}
 requires a large amount of evaluation, since types may depend on
 values.  Such type checkers incorporate
 an interpreter for purely functional programs with free variables---at least, the
@@ -195,9 +195,9 @@ By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the
 \]
 Here, the substitution $\sub g x$ could be dropped instantly and there is no need to apply the other substitution $\sub f y$ to the term $\ApA a b$. 
 However, the term representation used above comes along with the problem that such an evaluation algorithm does not have the required information in time.
-This is due to the fact that the binding information is always split between the $\la$ and the actual variable occurrence as they both carry the variable's name.  
+This is due to the fact that the binding information is always split between the $\la$ and the actual variable occurrence as they both carry the variable name.  
 In contrast, the usage of de Bruijn indices makes it possible to remove the piece of information from the $\la$.
-Our goal is to do it the other way round: We want the whole information to be available at the $\la$, thus making it possible to know the number and places of the bound variable's occurrences without looking at the whole term.
+Our goal is to do it the other way round: We want the whole information to be available at the $\la$, thus making it possible to know the number and places of the bound variable occurrences without looking at the whole term.
 
 
 %A term representation always has to have a way to represent that a variable is bound by a lambda. 
@@ -589,13 +589,42 @@ $1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$
 \section{Experiments and Results}
 \label{sec:experiments}
 
-The specified term representation and evaluation have been implemented in Haskell. Then, they have been used by a type checker to check dependently typed terms of the logical framework which were kindly provided by Andrew W. Appel (Princeton University). To make this possible, an extended syntax has been used that includes $\Pi$-types and technical elements like constants and definitions. It is easy to expand our evaluation algorithm to satisfy special needs like these. The substitution lists can be implemented as simple Haskell lists for simplicity or as balanced binary trees to decrease the general complexity. Both possibilities were tested [referred to as \emph{Ordered (trees)} and \emph{Ordered (lists)}].
-\\
-For comparison, the completely analogous algorithm for terms in extended basic syntax (i.e. $\te$) has been used [\emph{Simple Closures}]. Furthermore, we have tested a strategy that always evaluates completely (i.e. produces $\beta$ normal forms) using Hereditary Substitution [\emph{Beta Normal Values}].
+The specified term representation and evaluation have been implemented
+in Haskell. They have been used by a type checker to check large files
+of dependently
+typed terms of the Edinburgh Logical Framework which were kindly
+provided by Andrew W. Appel (Princeton University). To make this
+possible, an extended syntax has been used that includes $\Pi$-types
+% and technical elements like
+, constants and definitions. It is straightforward to expand our
+evaluation algorithm to the extended syntax. The substitution lists
+have been implemented as simple Haskell lists, and also as balanced
+binary trees for better asymptotic complexity.  Both variants were
+evaluated for performance 
+[referred to as \emph{Ordered (trees)} and \emph{Ordered (lists)}].
 
-Our main test file \textsf{w32\_sig\_semant.elf} with a size of approximately 21 megabytes contains a proof described in \cite{appel:toplas10}. We also tested smaller parts of this file, more precisely, the first $6000$, $10.000$ and $12.000$ lines without the rest (named \textsf{6000.elf} and so on). Later terms tend to be larger, so the tests with fewer lines needed much less time.
+For comparison, the completely analogous algorithm for terms in
+extended basic syntax (i.e. $\te$) has been used [\emph{Simple
+  Closures}]. Furthermore, we have tested a strategy that always
+evaluates completely (i.e. produces $\beta$ normal forms) using
+Hereditary Substitution [\emph{Beta Normal Values}].
 
-All tests were executed on the same server ("baerentatze", Ludwig-Maximilians-Universit\"at M\"unchen, Department of Computer Science) working with a CPU of type \emph{AMD Phenom II X4 B95} (only one core used, 3000 MHz) and 7999 MiB system memory. The measured needs of space and time are given in the following tables (rounded average values):
+Our main test file \textsf{w32\_sig\_semant.elf} with a size of
+approximately 21 megabytes contains a proof described in
+\cite{appel:toplas10}. We also tested smaller parts of this file, more
+precisely, the first $6000$, $10.000$ and $12.000$ lines without the
+rest (named \textsf{6000.elf} and so on). Later terms tend to be
+larger, so the tests with fewer lines needed much less time.
+
+All tests were executed on the same server 
+\texttt{baerentatze.cip.ifi.lmu.de}
+% ("baerentatze",
+% Ludwig-Maximilians-Universit\"at M\"unchen, Department of Computer
+% Science) 
+working with a CPU of type \emph{AMD Phenom II X4 B95} (only
+one core used, 3000 MHz) and 7999 MiB system memory. The measurement
+of space and time consumption are given in the following tables (rounded
+average values):
 
 \begin{center}
 \begin{tabular}{| l || c | c |}
@@ -648,6 +677,7 @@ Beta Normal Values & 137.7 & 8513 \\
 \end{center}
 Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during type checking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. \\
 None of the other strategies exhibited any shortcomings in the comparisons above. However, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures: 
+
 \begin{center}
  \begin{tabular}{| l || c | c |}
 \multicolumn{3}{c}{\textsf{w32\_sig\_semant.elf} (file size: 20.9 MB)}\\
@@ -665,9 +695,13 @@ Beta Normal Values & 169.8 & 9044  \\
 \hline
 \end{tabular}
 \end{center}
+
 Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind. 
-\\
-In comparison, the type checker of the Twelf project, \emph{Twelf r1697} (written in \emph{Standard ML}) does the job nearly five times faster while using only 2720 megabytes of memory. % TODO only due to an optimized compiler?
+In comparison, the type checker of the Twelf project, \emph{Twelf
+  r1697} (written in \emph{Standard ML} and compiled with
+\emph{MLton}'s hole program optimizations) does the job nearly five
+times faster while using only 2720 megabytes of
+memory. % TODO only due to an optimized compiler?
 
 %Unfortunately, the idea of ordered substitution lists does not really pay off within the context of type checking in our tests. 
 %On the other hand, it can compete with the simple standard implementation. This offers hope that there might be some applications that benefit more from our suggested strategy. 
@@ -675,8 +709,78 @@ In comparison, the type checker of the Twelf project, \emph{Twelf r1697} (writte
 
 
 
-\section{Conclusions}
+\section{Related Work and Conclusions}
 \label{sec:concl}
+
+Our term representation is inspired by intuitionistic implicational
+linear logic in natural deduction style which has explicit operations
+for weakening and contraction
+\cite{bentonBiermanDePaivaHyland:tlca93}.  With explicit weakening and
+contraction, one easily maintains complete information about the free
+variables of a term at each node \cite{kesnerLengrand:infcomp07}.  Our
+term representation incorporates weakening and contraction into lambda
+abstraction.  By using inspiration from ordered logic, we reduce the
+stored information at application nodes to a minimum, namely an
+integer; further, our variable nodes need to carry no information at all.
+
+Another means to maintain information about free variables are
+\emph{director strings} by Sinot \cite{sinot:jlc05}.  Application
+nodes come with a map that tell for each variable whether it appears
+in the left or the right subterm or in both.  Our term representation
+can be seen as an optimized version of director strings, however, we
+have no experimental comparison. 
+Sinot \etal~\cite{fernandezMackieSinot:aaecc05} present some
+performance results of director strings; however, it is restricted
+to evaluation of some specific big lambda-terms.  There is no study on
+their relative performance in a realistic application---yet that is
+our concern.
+
+Liang, Nadathur, and Qi \cite{liangNadathurQi:jar05} have evaluated
+different term representations in the context of $\lambda$Prolog, a
+study that compares to our study of term representations for the
+Edinburgh Logical Framework.  They have tested different combinations
+of features, confirming our result that lazy substitution is 
+preferable to eager substitution {[Beta Normal Forms]},
+even more so when several substitutions are gathered into one
+traversal {[Closures, Ordered]}.  They also test a variant where
+each term is equipped with an \emph{annotation}, a flag telling whether
+this term is open, \ie, has free variables, or closed, \ie, has no
+free variables.  In their experimental evaluation, these annotation
+pay off greatly for the poorly behaving eager substitution, yet give
+next to no advantage for explicit substitutions.  It is
+hypothesized that in a combined substitution, each subterm will
+mention at least one variable with a high probability, so the
+traversal has to run over most of the whole term---this is certainly
+different in the substitution for a single variable.
+
+To summarize, we have presented a new term representation for the
+lambda-calculus based on ordered linear logic, and experimentally
+compared it with well-known representations (closures, normal forms)
+in a prototypical implementation of a type checker for the Edinburgh
+logical framework.  The experiments were carried out on large realistic
+proof terms, constructed manually and mechanically.  
+
+The results were not significantly in favor of our new representation.
+This might be due to the application domain, LF signature checking.
+For one, LF-definitions are closed, which means that substitutions
+never need to traverse a definition body when the definition is
+expanded, and this optimization is shared by all the term
+representation we compared.  Secondly, we only tested type checking,
+not type reconstruction via unification.  During type checking, where
+equality tests are expected to succeed, full normal forms are always
+computed, and closures are very short-lived in memory.  More space
+leaks are to be expected in applications like logic programming or
+type reconstruction, where unification is needed, which is not
+expected to always succeed.   In constraint-based unification,
+unsolvable constraints might be postponed, keeping closures alive for
+longer.  In such situations, the benefits of our representation might
+be more noticeable, more experiments are required.
+
+In the future, we plan to investigate further term representations
+such as term graphs and perform more experiments.  The literature on
+experimentally successful term representations is sparse, our work
+contributes to close this gap.  Our long term goal is to find a
+performing term representation to use for Agda's type reconstruction.
 
 
 \paragraph*{Acknowledgements}
@@ -684,7 +788,11 @@ The idea for the here presented ordered term representation was
 planted in a discussion with Christophe Raffalli who invited the first
 author to Chambery in February 2010.  He mentioned to me that in his
 library \texttt{bindlib} formation of closures restricts the
-environment to the variables actually occurring free in the code.
+environment to the variables actually occurring free in the code.  I
+also benefited from discussions with Brigitte Pientka and Stefan Monnier.
+
+Thanks to Gabriel Scherer for comments on a draft version of this
+paper and pointers to related work.
 
 \bibliographystyle{alpha}
 \bibliography{auto-lfmtp11}
