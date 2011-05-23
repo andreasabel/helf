@@ -293,9 +293,8 @@ The only thing left to be done is to apply the substitutions in the obvious way:
 g \sspace n  \sspace (f \sspace n)
 \]
 Here, evaluation naturally leads to a term in beta normal form. This is not always the case: as an example, if we had tried to evaluate the above term without the $n$ (i.e. $S \oapp 0 f \oapp 0 g$), we would have got stuck at $\left(\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}\right)  \left[ g, f \right]$. On the other hand, this also would have been satisfactory as it would have shown that the term's normal form is an abstraction. In other words, our evaluation results in weak head normal forms.
-
+\\
 Consequently, we define values in the following way:
-
 \[ 
 \begin{array}{lllrll@{\qquad}}
 \mathsf{values}       & \ni & v,w & ::= & x \sspace \vec v & \mbox{large application} \\ 
@@ -321,15 +320,15 @@ At the start of the evaluation, the ordered substitution list is empty. \\
 Additionally, we specify the application $\cdot \ap \cdot$ of two values, which also returns a value and does not need anything else.
 
 \[ 
-\begin{array}{llll}
-& \ev x {\emptyVec} & = & x \\ \noalign{\medskip}
-& \ev \ovar {\ve{v_1}} & = & v_1 \\  \noalign{\medskip}
-& \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}} \\  \noalign{\medskip}
-& \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} \\  
+\begin{array}{lcl}
+ \ev x {\emptyVec} & = & x \\ \noalign{\medskip}
+ \ev \ovar {\ve{v_1}} & = & v_1 \\  \noalign{\medskip}
+ \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}} \\  \noalign{\medskip}
+ \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} \\  
 \\ 
-& \pa{x \sspace \vec v} \ap w & = & x \sspace \ve{\vec v, w} 
+ \pa{x \sspace \vec v} \ap w & = & x \sspace \ve{\vec v, w} 
 \\ \noalign{\medskip}
-& \Val{\vec k} t {\vec v}   \ap w & = & \ev t {\multiinsert{\vec v}{\vec k}{w}}
+ \Val{\vec k} t {\vec v}   \ap w & = & \ev t {\multiinsert{\vec v}{\vec k}{w}}
 \end{array}
 \]
 First, if we want to evaluate a free variable, the substitution list must be empty because of the invariant mentioned above. 
@@ -340,14 +339,17 @@ If we want to apply a large application to a value $w$, we just append $w$ to th
 The case of a closure $\Val {\vec k} t {\vec v}$ is less simple, but it is still quite clear what to do: $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list, so we just construct the list $\multiinsert {\vec v} {\vec k} w$. Then, $t$ is evaluated.
 
 
+Concerning substitution lists, we talk about "lists of values" for simplicity. More specifically, we want them to be lists of pointers to avoid the duplication of "real" values during constructing lists like $\multiinsert {\vec v} {\vec k} {w}$. They can not only be implemented as linked lists but also as balanced binary trees, cf. Section~\ref{sec:experiments}.
+
+
 \section{Parsing and Printing}
 \label{sec:parsing}
 
 In this section, we define how terms in normal syntax are translated into our ordered syntax (Parsing) and vice versa (Printing). 
 To specify this, we need some notation. 
-First of all, we write $\x$ for the set of variable names we want to use and $\te$ for the set of lambda terms in basic standard syntax (i.e. $\x \subset \te$, furthermore, $x \in \x$ together with $t, u \in \te$ implies $\ApA t u \in \te$ and $\LaA x t \in \te$). Additionally, $\ot$ is the set of terms in our ordered syntax defined above, $\otc$ the subset of closed ordered terms and $\va$ the set of values (defined in the previous section).
+First of all, we write $\x$ for the set of variable names we want to use and $\te$ for the set of lambda terms in basic standard syntax (i.e. $\x \subset \te$, furthermore, $x \in \x$ together with $t, u \in \te$ implies $\ApA t u \in \te$ and $\LaA x t \in \te$). Additionally, $\ot$ is the set of terms in our ordered syntax defined above, $\otc$ the subset of closed ordered terms ($\freevars t = 0$) and $\va$ the set of values (defined in the previous section).
 Moreover, we write $\xl$ for the set of lists of variable names and $\vl$ for the set of lists of values. 
-For each set $\Gamma$ of variable names ($\Gamma \subseteq \x$), we denote the set of lists of elements of $\Gamma$ by $\gl$ and the ordered terms that do not mention any variable of $\Gamma$ by $\otw$.
+For each set $\Gamma$ of variable names ($\Gamma \subseteq \x$), we denote the set of lists of elements of $\Gamma$ by $\gl$ and the ordered terms that do not contain any variable of $\Gamma$ (as a free variable) by $\otw$.
 % We will often allow $\Gamma$ to be a finite multiset, i.e. a finite set that can contain each element more than once. The according notion of union $\uplus$ satisfies $\Gamma \uplus \{z\} \not= \Gamma$. 
 \\
 By writing $\ot \otimes \xl$ (resp. $\ot \otimes \vl$, $\otw \otimes \gl$, $\ldots$), we mean the subset $\{(t, \vec x) \ | \ \freevars t = \length {\vec x} \}$ of $\ot \times \xl$ (and analogous for the other cases).
@@ -360,54 +362,37 @@ $\parseb \cdot \Gamma \cdot \cdot ~ \subset ~ \te \times \ot \times \xl$.
 The intuition is that $\parseb M \Gamma u {\vec x}$ means: 
 % The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse
 % M \Gamma {u \, \vec x}$) means: 
-$M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$ and those variables are exactly the ones occurring in $\Gamma$:
+$M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$. 
+The set $\Gamma$ can be seen as a filter that tells us which free variables do not occur in $u$ but in $\vec x$ instead.
 \[
-% \begin{array}{c@{\qquad\qquad} c}
-% \infru{x \in \Gamma}{\parse x \Gamma {\ovar \, \ve x}}
-% &
-% \infru{ {\parse M \Gamma {t \, \vec x}} \qquad {\parse N \Gamma {u \, \vec y}} \qquad {\length{\vec x} = k} } {\parse {MN} {\Gamma} {(\ApO t k u)  \, [\vec x, \vec y]} } 
-% \\ \\
-% \infru{x \not\in \Gamma}{\parse x \Gamma {x \, \emptyVec}}
-% &
-% \infru{ 
-%          {\parse M { \Gamma \cup \{z\} } {       t \, \multiinsert{\vec x}{\vec k}{z}   }} 
-%           \qquad 
-%           z \not\in \vec x  }
-%           {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t) \, \vec x}}
-% \end{array}
 \begin{array}{c@{\qquad\qquad} c}
 \infru{x \in \Gamma}{\parseb x \Gamma \ovar x}
 &
 \infru{ {\parseb M \Gamma t {\vec x}} \qquad 
-        {\parseb N \Gamma u {\vec y}} \qquad {\length{\vec x} = k} } 
-      {\parseb {M\,N} {\Gamma} {(\ApO t k u)}  {\vec x, \vec y} } 
+        {\parseb N \Gamma u {\vec y}} \qquad {\length{\vec x} = m} } 
+      {\parseb {M\,N} {\Gamma} {(\ApO t m u)}  {\vec x, \vec y} } 
 \\ \\
 \infru{x \not\in \Gamma}{\parseb x \Gamma x {}}
 &
 \infru{ 
-         {\parseb M { (\Gamma \uplus \{z\}) }  t {\multiinsert{\vec x}{\vec k}{z}   }} 
+         {\parseb M { (\Gamma \cup \{z\}) }  t {\multiinsert{\vec x}{\vec k}{z}   }} 
           \qquad 
           z \not\in \vec x  }
           {\parseb {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t)} {\vec x}}
 \end{array}
 \]
-
-
 %\end{defin}
-
-First, it is important to notice that $\parse M \Gamma (u, \vec x)$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$ and each free variable occurring in $u$ is not contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). \\
-By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parse M \Gamma {u  \, \vec x}$, so we can consider $\parse \cdot \Gamma \cdot$ a function $\te \rightarrow \otw \times \gl$. In the same way, we notice that $\parse M \Gamma {u  \, \vec x}$ always implies $\freevars u = \length {\vec x}$. \\
-% By applying the function $\parse \cdot {\emptySet} \cdot$, we can transform a term from normal syntax to ordered syntax. \\
-This also works the other way round. For each $\Gamma$ and each tuple $(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parse M \Gamma {u \, \vec x}$. Moreover, this term $M$ is unique up to alpha equivalence. So, $\parse \cdot \Gamma \cdot$ is actually a bijection between $\te / \alpha$ (the set of equivalence classes of terms) and $\otw \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tuple (in the last rule, any variable satisfying the condition can be chosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
+First, it is important to notice that $\parseb M \Gamma u {\vec x}$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$ and each free variable occurring in $u$ is not contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). \\
+By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parseb M \Gamma u  {\vec x}$, so we can consider $\parseFun \Gamma$ a function $\te \rightarrow \otw \times \gl$. Furthermore, we notice that $\parseb M \Gamma u {\vec x}$ always implies $\freevars u = \length {\vec x}$. \\
+This also works the other way round. For each $\Gamma$ and each tuple $(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parseb M \Gamma u {\vec x}$. Moreover, this term $M$ is unique up to alpha equivalence. So, $\parseFun \Gamma$ is actually a bijection between $\te / \alpha$ (the set of $\alpha$ equivalence classes of terms) and $\otw \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tuple (in the last rule, any variable satisfying the condition can be chosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
 \\
 Choosing $\Gamma = \emptySet$, we get bijections $\te \leftrightarrow \ot \otimes {\vec \emptySet}$. As $\vec \emptySet$ is only inhabited by the empty vector $\emptyVec$, we naturally get the 
-%parse 
 function $\parseFunE$ which maps $\te$ bijectively on $\otc$.
 
 
 %Choosing $\Gamma = \emptySet$, we get the special cases $\parseFun \emptySet$ and $\parseFun \emptySet ^{-1}$, which are bijections between $\te$ and $\otc$. This also explaines how one representation can be transformed into the other.
 
-The above construction also gives us function $\otc \rightarrow \te$, but this is not enough. We want to transform the (more general) elements of $\ot \otimes \vl$ as well as values in $\va$ into basic terms $\te$.
+The above construction also gives us a function $\otc \rightarrow \te$, but this is not enough. We want to transform the (more general) elements of $\ot \otimes \vl$ or just $\va$ into basic terms $\te$.
 Therefore, we
 % \begin{defin}
 % We 
@@ -418,9 +403,9 @@ define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alp
 \pr{x}{\emptyVec} & = & x \\
 \medskip
 \pr{\ovar}{[v]} & = & \prVal v \\
-\pr{t \oapp k u}{\vec v} & = & \ApA {\pr {t}{\vec{v_{start}}}  }  {\quad \pr {u}{\vec{v_{rest}}}} \\
+\pr{t \oapp m u}{\vec v} & = & \ApA {\pr {t}{\vec{v_{start}}}  }  {\quad \pr {u}{\vec{v_{rest}}}} \\
 \medskip
-&& \mbox{(split $\vec v$ at position $k$ to get $\vec{v_{start}}$ and $\vec{v_{rest}}$)} \\
+&& \mbox{(split $\vec v$ at position $m$ to get $\vec{v_{start}}$ and $\vec{v_{rest}}$)} \\
 % \pr{\LaO {k_1, \ldots, k_m} t}{[v_1, v_2, \ldots, v_n]} & = & \LaA z {\pr {t} {v_1, \ldots, v_{k_1}, z, v_{k_1+1}, \ldots, }}   \\
 \pr{\LaO {\vec k} t}{\vec v} & = & \LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }}   \\
 \medskip
@@ -433,7 +418,7 @@ define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alp
 %\end{defin}
 First, note that the printing functions are well-defined (i.e. they always terminate). This is because during evaluation of $\pr{u}{\vec v}$, we may safely assume that $\pr{t}{\vec w}$ is well-defined as long as $t$ is a strict subterm of $u$ and each value $w'$ in $\vec w$ is either only a variable (so termination of $\prVal {w'}$ is clear) or also in $\vec v$. Similar, during evaluation of $\prVal {x \sspace v_1 \sspace \ldots v_n}$, we may assume that $\prVal {v_i}$ is defined for each $i$.
 
-For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\parse M \emptySet {t \emptyVec}$ (which just means $\parseFunE t = M$) as both judgements are defined identical in the case of closed ordered terms. This essentially (with implicit use of the bijection $\otc \leftrightarrow \ot \otimes \vec \emptySet$) means $\prE \circ \parseFunE  = id_{\te}$, i.e. the composition of parsing and printing is the identity.
+For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\parseb M \emptySet t \emptyVec$ (which just means $\parseFunE t = M$) as both judgements are defined identical in the case of closed ordered terms. This essentially (with implicit use of the bijection $\otc \leftrightarrow \ot \otimes \vec \emptySet$) means $\prE \circ \parseFunE  = id_{\te}$, i.e. the composition of parsing and printing is the identity.
 
 
 
@@ -473,7 +458,7 @@ $\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}
 \hline
 \end{tabular}
 \end{center}
-Note that "rewriting using the evaluation rules" results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element. 
+Note that "rewriting using the evaluation rules" results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple (to read as simple application) of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element. 
 Although we do not define it formally, it should be clear how those expressions can be printed by using the printing functions for ordered terms and values (if an expression is a tuple, just print the function part and the argument part separately). In fact, while the function $\ev \cdot \cdot$ is formulated as a big step evaluation, the rewriting process can be understood as the corresponding small step (or one step) evaluation.
 
 In the first five rows of the tabular, we only have to look at the definitions of the printing functions to see that the printed terms are not only $\beta$ equivalent but even equal. The very last rule requires closer examination: 
@@ -662,6 +647,8 @@ Beta Normal Values & 27.6 & 2034\\
 \hline
 \end{tabular}
 
+\vspace{5pt}
+
 \begin{tabular}{| l || c | c |}
 \multicolumn{3}{c}{\textsf{10000.elf} (file size: 12.9 MB)}\\
 \hline
@@ -677,6 +664,8 @@ Simple Closures & 60.0 & 3302\\
 Beta Normal Values & 98.7 & 5878\\
 \hline
 \end{tabular}
+
+\vspace{5pt}
 
 \begin{tabular}{| l || c | c |}
 \multicolumn{3}{c}{\textsf{12000.elf} (file size: 17.8 MB)}\\
@@ -695,7 +684,7 @@ Beta Normal Values & 137.7 & 8513 \\
 \end{tabular}
 \end{center}
 Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during type checking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. \\
-None of the other strategies exhibited any shortcomings in the comparisons above. However, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures: 
+Although none of the other strategies exhibited any shortcomings in the comparisons above, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures: 
 
 \begin{center}
  \begin{tabular}{| l || c | c |}
@@ -714,7 +703,6 @@ Beta Normal Values & 169.8 & 9044  \\
 \hline
 \end{tabular}
 \end{center}
-
 Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind. 
 In comparison, the type checker of the Twelf project, \emph{Twelf
   r1697} (written in \emph{Standard ML} and compiled with
