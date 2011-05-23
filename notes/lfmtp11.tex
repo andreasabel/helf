@@ -355,21 +355,40 @@ By writing $\ot \otimes \xl$ (resp. $\ot \otimes \vl$, $\otw \otimes \gl$, $\ldo
 % \begin{defin}
 For each finite %multiset 
 set $\Gamma$ of variable names, we define the relation
-$\parse \cdot \Gamma \cdot \ \subset \  \te \times (\ot \times \xl)$.
-The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse M \Gamma {u \, \vec x}$) means: $M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$ and those variables are exactly the ones occurring in $\Gamma$:
+% $\parse \cdot \Gamma \cdot \ \subset \  \te \times (\ot \times \xl)$.
+$\parseb \cdot \Gamma \cdot \cdot ~ \subset ~ \te \times \ot \times \xl$.
+The intuition is that $\parseb M \Gamma u {\vec x}$ means: 
+% The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse
+% M \Gamma {u \, \vec x}$) means: 
+$M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$ and those variables are exactly the ones occurring in $\Gamma$:
 \[
+% \begin{array}{c@{\qquad\qquad} c}
+% \infru{x \in \Gamma}{\parse x \Gamma {\ovar \, \ve x}}
+% &
+% \infru{ {\parse M \Gamma {t \, \vec x}} \qquad {\parse N \Gamma {u \, \vec y}} \qquad {\length{\vec x} = k} } {\parse {MN} {\Gamma} {(\ApO t k u)  \, [\vec x, \vec y]} } 
+% \\ \\
+% \infru{x \not\in \Gamma}{\parse x \Gamma {x \, \emptyVec}}
+% &
+% \infru{ 
+%          {\parse M { \Gamma \cup \{z\} } {       t \, \multiinsert{\vec x}{\vec k}{z}   }} 
+%           \qquad 
+%           z \not\in \vec x  }
+%           {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t) \, \vec x}}
+% \end{array}
 \begin{array}{c@{\qquad\qquad} c}
-\infru{x \in \Gamma}{\parse x \Gamma {\ovar \, \ve x}}
+\infru{x \in \Gamma}{\parseb x \Gamma \ovar x}
 &
-\infru{ {\parse M \Gamma {t \, \vec x}} \qquad {\parse N \Gamma {u \, \vec y}} \qquad {\length{\vec x} = k} } {\parse {MN} {\Gamma} {(\ApO t k u)  \, [\vec x, \vec y]} } 
+\infru{ {\parseb M \Gamma t {\vec x}} \qquad 
+        {\parseb N \Gamma u {\vec y}} \qquad {\length{\vec x} = k} } 
+      {\parseb {M\,N} {\Gamma} {(\ApO t k u)}  {\vec x, \vec y} } 
 \\ \\
-\infru{x \not\in \Gamma}{\parse x \Gamma {x \, \emptyVec}}
+\infru{x \not\in \Gamma}{\parseb x \Gamma x {}}
 &
 \infru{ 
-         {\parse M { \Gamma \cup \{z\} } {       t \, \multiinsert{\vec x}{\vec k}{z}   }} 
+         {\parseb M { (\Gamma \uplus \{z\}) }  t {\multiinsert{\vec x}{\vec k}{z}   }} 
           \qquad 
           z \not\in \vec x  }
-          {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t) \, \vec x}}
+          {\parse {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t)} {\vec x}}
 \end{array}
 \]
 
@@ -594,12 +613,12 @@ in Haskell. They have been used by a type checker to check large files
 of dependently
 typed terms of the Edinburgh Logical Framework which were kindly
 provided by Andrew W. Appel (Princeton University). To make this
-possible, an extended syntax has been used that includes $\Pi$-types
-% and technical elements like
+possible, an extended syntax has been used that includes $\Pi$-types% and technical elements like
 , constants and definitions. It is straightforward to expand our
 evaluation algorithm to the extended syntax. The substitution lists
 have been implemented as simple Haskell lists, and also as balanced
-binary trees for better asymptotic complexity.  Both variants were
+binary trees (following Adams \cite{adams:jfp93})
+for better asymptotic complexity.  Both variants were
 evaluated for performance 
 [referred to as \emph{Ordered (trees)} and \emph{Ordered (lists)}].
 
@@ -699,7 +718,8 @@ Beta Normal Values & 169.8 & 9044  \\
 Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind. 
 In comparison, the type checker of the Twelf project, \emph{Twelf
   r1697} (written in \emph{Standard ML} and compiled with
-\emph{MLton}'s hole program optimizations) does the job nearly five
+\emph{MLton}'s whole program optimizations \cite{fluetWeeks:icfp01}) 
+does the job nearly five
 times faster while using only 2720 megabytes of
 memory. % TODO only due to an optimized compiler?
 
