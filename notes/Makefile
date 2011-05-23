@@ -40,7 +40,7 @@ lfmtp11.zip : lfmtp11.pdf lfmtp11.tex lfmtp11.bbl macros.tex auto-lfmtp11.bib
 
 # initially, run latex once to create an .aux file
 # mark .aux file as fresh by creating a stamp _aux
-lfmtp11_aux : lfmtp11.tex macros.tex all.bib
+lfmtp11_aux : lfmtp11.tex macros.tex
 	-$(pdflatex) lfmtp11.tex;
 	touch $@;
 
