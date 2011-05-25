@@ -1,0 +1,15 @@
+%% 2011-05-01
+
+nat : type.
+z   : nat.
+s   : nat -> nat.
+
+eq   : nat -> nat -> type.
+refl : {n : nat} eq n n.
+
+plus5 : nat -> nat
+      = [n] s (s (s (s (s n)))).
+5     = s (s (s (s (s z)))).
+
+5is5 : eq 5 (s (s (s (s (s z)))))
+     = refl (s (s (s (s (s z))))).

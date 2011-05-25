@@ -1,0 +1,10 @@
+%% 2011-05-01
+
+a  : type.
+b  : type.
+c  : type.
+
+i1 : (a -> b -> c) -> (a -> b -> c)
+   = [x] x.
+S  : (a -> b -> c) -> (a -> b) -> a -> c
+   = [x][y][z] x z (y z).
