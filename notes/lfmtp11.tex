@@ -181,7 +181,7 @@ This article summarizes the B.Sc.\ thesis of the second author
 %To demonstrate the problem we want to deal with, we apply the term we just mentioned on the free variables $g$ and $f$, consecutively.
 %To get rid of the beta redexes, we could reduce it in the way shown below. By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurrence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
 
-To demonstrate the discussed risk of space-leaks during evaluation, we apply the term $\LaA x {\LaA y {\ApA{\ApA a b} y}}$ in basic syntax consecutively on the free variables $g$ and $f$. A possible (and, if the mentioned closures are used, typical) sequence of reduction steps is given below.  
+To demonstrate the discussed risk of space-leaks during evaluation, we apply the term $\LaA x {\LaA y {\ApA{\ApA a b} y}}$ in basic syntax consecutively to the free variables $g$ and $f$. A possible (and, if the mentioned closures are used, typical) sequence of reduction steps is given below.  
 By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurrence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
 \[
 \begin{array}{lr@{}l}
