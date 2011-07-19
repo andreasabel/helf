@@ -323,25 +323,36 @@ We are now able to define the evaluation function $\ev {\cdot} {\cdot}$ which ta
 At the start of the evaluation, the ordered substitution list is empty. 
 Additionally, we specify the application $\cdot \ap \cdot$ of two values, which also returns a value and does not need anything else.
 
+% this is not how it should be done using latex...
 \[ 
-\begin{array}{lcl}
- \ev x {\emptyVec} & = & x \\ \noalign{\medskip}
- \ev \ovar {\ve{v_1}} & = & v_1 \\  \noalign{\medskip}
- \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}} \\  \noalign{\medskip}
- \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} \\  
+\begin{array}{lcl \qquad r}
+ \ev x {\emptyVec} & = & x & \lab 1 \\ \noalign{\medskip}
+ \ev \ovar {\ve{v_1}} & = & v_1 & \lab 2\\  \noalign{\medskip}
+ \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}}  & \lab 3 \\  \noalign{\medskip}
+ \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} & \lab 4 \\  
 \\ 
- \pa{x \sspace \vec v} \ap w & = & x \sspace \ve{\vec v, w} 
+ \pa{x \sspace \vec v} \ap w & = & x \sspace \ve{\vec v, w}  & \lab 5
 \\ \noalign{\medskip}
- \Val{\vec k} t {\vec v}   \ap w & = & \ev t {\multiinsert{\vec v}{\vec k}{w}}
+ \Val{\vec k} t {\vec v}   \ap w & = & \ev t {\multiinsert{\vec v}{\vec k}{w}} & \lab 6
 \end{array}
 \]
-First, if we want to evaluate a free variable, the substitution list must be empty because of the invariant mentioned above. 
-Second, in the case of a $\ovar$, the ordered list must have exactly one entry. This entry is the result of the evaluation. 
-If we evaluate an application, we evaluate the left and the right term. The application's index enables us to split the substitution list at the right position. Then, we have to apply the first result to the second. 
-Evaluating an abstraction is easy. We just need to keep the substitutions to build a closure. 
+%\beginalign}
+% \ev x {\emptyVec} &=  x \\ %\noalign{\medskip}
+% \ev \ovar {\ve{v_1}} &=  v_1 \\  %\noalign{\medskip}
+% \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} &= {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}} \\  %\noalign{\medskip}
+% \ev {\LaO {\vec k} t}  {\vec v} &=  \Val {\vec k} t {\vec v} \\  
+%\nonumber \\ 
+% \pa{x \sspace \vec v} \ap w &=  x \sspace \ve{\vec v, w} \\
+%%\\ \noalign{\medskip}
+% \Val{\vec k} t {\vec v}   \ap w &=  \ev t {\multiinsert{\vec v}{\vec k}{w}}
+%\end{align}
+First, if we want to evaluate a free variable \lab 1, the substitution list must be empty because of the invariant mentioned above. 
+Second, in the case of a $\ovar$ \lab 2, the ordered list must have exactly one entry. This entry is the result of the evaluation. 
+If we evaluate an application \lab 3, we evaluate the left and the right term. The application's index enables us to split the substitution list at the right position. Then, we have to apply the first result to the second. 
+Evaluating an abstraction \lab 4 is easy. We just need to keep the substitutions to build a closure. 
 
-If we want to apply a large application to a value $w$, we just append $w$ to the vector of values (we write $\ve{\vec v, w}$ for $\ve{v_1, \ldots, v_n, w}$). 
-The case of a closure $\Val {\vec k} t {\vec v}$ is less simple, but it is still quite clear what to do: $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list, so we just construct the list $\multiinsert {\vec v} {\vec k} w$. Then, $t$ is evaluated.
+If we want to apply a large application to a value $w$ \lab 5 , we just append $w$ to the vector of values (we write $\ve{\vec v, w}$ for $\ve{v_1, \ldots, v_n, w}$). 
+The case of a closure $\Val {\vec k} t {\vec v}$ \lab 6 is less simple, but it is still quite clear what to do: $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list, so we just construct the list $\multiinsert {\vec v} {\vec k} w$. Then, $t$ is evaluated.
 
 
 Concerning substitution lists, we talk about ``lists of values'' for simplicity. More specifically, we want them to be lists of pointers to avoid the duplication of  ``real'' values during constructing lists like $\multiinsert {\vec v} {\vec k} {w}$. They could also be implemented as binary trees instead of linked lists, cf. Section~\ref{sec:experiments}.
@@ -425,7 +436,7 @@ define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alp
 %\end{defin}
 First, note that the printing functions are well-defined (i.e. they always terminate). This is because during evaluation of $\pr{u}{\vec v}$, we may safely assume that $\pr{t}{\vec w}$ is well-defined as long as $t$ is a strict subterm of $u$ and each value $w'$ in $\vec w$ is either only a variable (so termination of $\prVal {w'}$ is clear) or also in $\vec v$. Similar, during evaluation of $\prVal {x \sspace v_1 \sspace \ldots v_n}$, we may assume that $\prVal {v_i}$ is defined for each $i$.
 
-For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\parseb M \emptySet t \emptyVec$ (which just means $\parseFunE t = M$) as both judgements are defined identically in the case of closed ordered terms. This essentially (with implicit use of the bijection $\otc \leftrightarrow \ot \otimes \vec \emptySet$) means $\prE \circ \parseFunE  = id_{\te}$, i.e. the composition of parsing and printing is the identity.
+For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\parseb M \emptySet t { }$ (which just means $\parseFunE t = M$) as both judgements are defined identically in the case of closed ordered terms. This essentially (with implicit use of the bijection $\otc \leftrightarrow \ot \otimes \vec \emptySet$) means $\prE \circ \parseFunE  = id_{\te}$, i.e. the composition of parsing and printing is the identity.
 
 
 
