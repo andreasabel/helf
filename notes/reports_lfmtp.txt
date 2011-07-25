@@ -258,25 +258,32 @@ globally insist on freshness in the presentation of the rules.
 
 p.6 bottom. Bad line-break after "we notice that": use an mbox, or
 rephrase to avoid the notation splitting up.
+% DONE. solved by using additional { } in most of the macro definitions to make the expressions atomar. The same should still be done in some other macro definition if reformatting is required.
+
 
 On Section 5 generally: it's good to have this material, but it is not
 the most interesting or important part of the paper. It's good
 hygiene/adequacy/faithfulness, but you could push it to an appendix?
+% I don't know. Some parts (/notations) of sec 5 are used in sec 6. Might still be a good idea (?)
 
 
 p.7 bottom "the following tabular" --> "the following table". Similarly page 8, middle. 
 % DONE
+
 
 p.9 Experimental results. I was puzzled by the quoted accuracy of
 figures, and oddities such as "3000 MHz" (surely "3GHz"?) contrasted
 with "7999MiB" (surely "MB", and why not "8GB"?). Why one decimal
 place of accuracy for times, yet 3 decimal places of accuracy for MB
 usage (if you convert to GB?).
+% DONE. ok, I am not sure whether I agree. 3/4 significant digits are used for time, 4 for space, so what's the problem with 4 for 3000 MHz, 7999MiB? Anyway, changed to 3 GHz, 8 GB.
+
 
 There has been some interesting recent work on profiling basic
 datatypes and their memory footprint in haskell (recent blog posting
 on haskell mailing list). Consider putting your results in the context
 of existing allocation overhead caused by ghc.
+% hmm...
 
 
 Also, IIRC, the language is "haskell", not "Haskell". 

@@ -136,13 +136,15 @@
 % Parsing
 % \newcommand{\lrhd}[1]{\mathrel{\mathord{\lhd}{^{#1}}\mathord{\rhd}}}
 % \newcommand{\parse}[3]{#1 \, {\lrhd #2} \, #3 }
-\newcommand{\parseb}[4]{#1 \lhd #2 \rhd  #3[#4] }
-\newcommand{\parse}[3]{#1 \, {  \mathord{\lhd} {#2} \mathord{\rhd}  } \, #3 }
-\newcommand{\parseFun}[1]{\left(\mathord{\lhd} {#1} \mathord{\rhd}\right)}
-\newcommand{\parseFunE}{\mathfrak {parse } \,}                                                     % TODO ?
-\newcommand{\print}[3]{#1 \, {  \mathord{\rhd} {#2} \mathord{\lhd}  } \, #3 }
-\newcommand{\infru}[2]{\infer{#2}{#1}}
-\newcommand{\infnamed}[3]{\infer[#1]{#3}{#2}}
+\newcommand{\parseb}[4]{{#1 \lhd #2 \rhd  #3[#4]}}
+\newcommand{\parse}[3]{{#1 \, {  \mathord{\lhd} {#2} \mathord{\rhd}  } \, #3}}
+%\newcommand{\parseb}[4]{\mbox{$#1 \lhd #2 \rhd  #3[#4]$} }
+%\newcommand{\parse}[3]{\mbox{$#1 \, {  \mathord{\lhd} {#2} \mathord{\rhd}  } \, #3$} }
+\newcommand{\parseFun}[1]{{\left(\mathord{\lhd} {#1} \mathord{\rhd}\right)}}
+\newcommand{\parseFunE}{{\mathfrak {parse } \,}}                                                     % TODO ?
+\newcommand{\print}[3]{{#1 \, {  \mathord{\rhd} {#2} \mathord{\lhd}  } \, #3 }}
+\newcommand{\infru}[2]{{\infer{#2}{#1}}}
+\newcommand{\infnamed}[3]{{\infer[#1]{#3}{#2}}}
 
 \newcommand{\x}{X} % set of variables
 \newcommand{\te}{T} % set of terms in basic syntax
@@ -156,12 +158,12 @@
 
 % Printing / "translating''
 % \newcommand{\pr}[2]{ \prE  \hspace{-2pt} \left( #1 \ , \  #2 \right)}
-\newcommand{\pr}[2]{ \prE   \left( #1 \ , \  #2 \right)}
-\newcommand{\prE}{\lhd \hspace{-8pt} \lhd}
-\newcommand{\prVal}[1]{\lhd \hspace{-2pt} \left( #1 \right)}
-\newcommand{\prValE}{\mathord{\lhd}}
-\newcommand{\prTree}[1]{\lhd \hspace{-8pt} \lhd \hspace{-8pt} \lhd \left( #1 \right)}
-\newcommand{\prTreeE}{\lhd \hspace{-8pt} \lhd \hspace{-8pt} \lhd }
+\newcommand{\pr}[2]{{ \prE   \left( #1 \ , \  #2 \right)}}
+\newcommand{\prE}{{\lhd \hspace{-8pt} \lhd}}
+\newcommand{\prVal}[1]{{\lhd \hspace{-2pt} \left( #1 \right)}}
+\newcommand{\prValE}{{\mathord{\lhd}}}
+\newcommand{\prTree}[1]{{\lhd \hspace{-8pt} \lhd \hspace{-8pt} \lhd \left( #1 \right)}}
+\newcommand{\prTreeE}{{\lhd \hspace{-8pt} \lhd \hspace{-8pt} \lhd }}
 
 % one step reduction
 \newcommand{\osr}{\rightarrow}
@@ -170,4 +172,4 @@
 
 \newcommand{\evTr}{\mathsf{evalTrees}}
 
-\newcommand{\lab}[1]{(#1)}
+\newcommand{\lab}[1]{\mbox{(#1)}}
