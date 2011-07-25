@@ -35,13 +35,33 @@ Some specific points for the authors to ponder about related to their work:
 
 (1) Lambda terms need to maintain binding information not only for guiding substitutions during reduction but also for permitting a comparison within abstraction contexts, something needed in type checking and unification. Your "nameless" representation handles the former aspect but it is far from clear that it provides a basis for the latter. Have you thought about this issue?
 
-(2) Your term structure seems quite sensitive to the way terms are traversed and rewritten. For example, usual contraction on lambda terms can be done anywhere in the term. Will your representation still work if contraction is done at embedded sites in a term rather than in an outermost fashion? Similarly, how should the representation be used if we are interested in strong head normal forms (the usual basis for comparing terms) rather than weak head normal forms? A point to note is that your evaluation procedure seems to have an outermost, call-by-value strategy built into it.
+% I don't understand that one.
+
+
+(2) Your term structure seems quite sensitive to the way terms are traversed and rewritten. For example, usual contraction on lambda terms can be done anywhere in the term. Will your representation still work if contraction is done at embedded sites in a term rather than in an outermost fashion? 
+
+% No, it won't and there is no (reasonable) way to fix this.
+
+Similarly, how should the representation be used if we are interested in strong head normal forms (the usual basis for comparing terms) rather than weak head normal forms? 
+
+% isn't it done by applying whnf to a fresh variable?
+
+A point to note is that your evaluation procedure seems to have an outermost, call-by-value strategy built into it.
+
+% hmm.
+
 
 (3) In contexts where unification is at issue, meta variables are treated in two different ways: in the "logical" way which means that reduction substitutions cannot impact them and in a "graftable" way which means that reductions substutitions have to be suspended at these variable locations. Your treatment supports the first possibility, but can it be adapted to support the second? 
+
+% ?
+
 
 (4) Graph based reduction with associated term sharing is often used in reduction. Can such an approach be used also with your representation? This relates to item (2), which notes the sensitivity to where rewriting is done. See reference [1] below for such reduction procedures based on explicit substitutions. 
 
 (5) The experimental comparisons are a bit weak. One reason for this is that these comparisons are in the setting of a somewhat artificial task of reducing to weak head normal forms rather than in a setting where all the different operations (such as comparison, unification, etc) on lambda terms in a computation are being performed. But even in the context of reduction, I would argue that the really meaningful comparisons should be to representations/notations for lambda terms that control substitution flow carefully. Thus, a comparison with an implementation based on the work of Sinot would be more illuminating and should be tried. 
+
+% We do perform the different operations, don't we?
+
 
 On a different note, your discussion in the introduction of lambda term representations and implementations is skewed in that it seems to ignore the rather substantial work that has been done related to these topics with respect to the Teyjus implementation of Lambda Prolog. The "seminal work" of Gregoire and Leroy, for example, is reasonably useful when very large, statically known terms have to be reduced only once and then compared. However, in computations in systems like Twelf and Lambda Prolog, reductions have often to be done on terms that are dynamically created. You should at least reference (and possibly also understand carefully) work like that in [1] below that have considered the general issues more carefully and completely. 
 
@@ -95,9 +115,14 @@ optimising type inference/reconstruction via unification/matching, the
 situation precisely considered by Nadathur and co-workers in the
 context of lambda-Prolog. 
 
+
 Stylistically, the paper could be improved with more comprehensive
 debugging from native English speakers (colleagues in Nottingham could
-help there!), and curbing of the tendency to make judgments of cost
+help there!), 
+% DONE
+
+
+and curbing of the tendency to make judgments of cost
 and value as on-the-fly asides, without proper quantification or
 justification (esp. in the introduction). But I don't think such
 nitpicks detract from the overall message. 
@@ -209,7 +234,10 @@ Pfenning/Cerevesato, ...). Consider adding a reference?
 
 p.5 mid-bottom. How expensive are these operations (as above)?
 
+
 "neither too less nor redundant information": change "less" --> "little" at a minimum
+% DONE
+
 
 I first saw the separation of evaluation into a weak-head step,
 together with an application algebra on weak-head normal forms, in the
@@ -235,7 +263,9 @@ On Section 5 generally: it's good to have this material, but it is not
 the most interesting or important part of the paper. It's good
 hygiene/adequacy/faithfulness, but you could push it to an appendix?
 
+
 p.7 bottom "the following tabular" --> "the following table". Similarly page 8, middle. 
+% DONE
 
 p.9 Experimental results. I was puzzled by the quoted accuracy of
 figures, and oddities such as "3000 MHz" (surely "3GHz"?) contrasted
@@ -248,7 +278,10 @@ datatypes and their memory footprint in haskell (recent blog posting
 on haskell mailing list). Consider putting your results in the context
 of existing allocation overhead caused by ghc.
 
+
 Also, IIRC, the language is "haskell", not "Haskell". 
+% I cannot find any evidence for this statement. 
+
 
 p.10 I think it would be good to spend a bit more effort on analysing
 these results. you say that while "beta normal values perform

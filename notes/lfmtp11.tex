@@ -7,7 +7,7 @@
 \usepackage[all]{xy}
 
 \input{mymacros}
-
+\newcommand{\define}[1]{\mbox{\textbf{\textit{#1}}}}
 
 \title{A Lambda Term Representation \\ Based on Linear Ordered Logic}
 \author{Andreas Abel
@@ -87,7 +87,7 @@ prototypical and frequently modified and extended.  Implementing a
 full compiler just to get type reconstruction going is deterring;
 furthermore, compilation has not proven its feasibility in minor
 evaluation tasks that dominate higher-order unification.  Smart
-interpreters are, and may remain competitive to compilation.  
+interpreters are, and may remain competitive with compilation.  
 
 For instance, Twelf's interpreter is sufficiently fast; it is 
 based on a term representation with de Bruijn indices 
@@ -210,7 +210,7 @@ Our goal is to do it the other way round: We want the whole information to be av
 \label{sec:syntax}
 
 % The idea is that the information which variable is bound by which lambda should neither be split (like in the standard representation) nor carried by the variable (de Bruijn indices). Instead, it should be available as soon as the lambda becomes visible.
-In this article, we only cover the core constructs of the lambda calculus as they are enough to make the approach clear. However, we do not see any limitations for common extensions. We first define \emph{ordered preterms}:
+In this article, we only cover the core constructs of the lambda calculus as they are enough to make the approach clear. However, we do not see any limitations for common extensions. We first define \define{ordered preterms}:
 \[
 \begin{array}{lllrll@{\qquad}}
 \mathsf{ordered \ preterms}       & \ni & t,u & ::= & x & \mbox{free variable (named $x$)} \\
@@ -222,7 +222,8 @@ In this article, we only cover the core constructs of the lambda calculus as the
 \emph{Free variables} are denoted by their name like in the standard syntax. \emph{Bound variables}, however, are just denoted by a dot $\ovar$, which does not carry any information beside the fact that it is a bound variable. 
 % This, for example, means that if $\left(\ApO \ovar 1 \ovar \right)$ is a subterm, it is not possible to tell whether we have two different variables or two times the same one without looking at the whole term.\footnote{However, the latter possibility could not be well-typed.} 
 In the case of an \emph{application}, there is a first term (the function part) and a second term (the argument) as usual. 
-Furthermore, the application carries an integer $m$ as an additional piece of information that will be important for the evaluation process and is explained in a later paragraph.
+Furthermore, the application carries an integer $m$ as an additional piece of information that will be important for the evaluation process and is explained 
+in a moment.
 %the number of dots $\ovar$ in the first term which are not bound by lambdas in the first term itself should be denoted by the integer $k$. % COMMENT - there is no reason anymore to prefer the second to the first term. It might be a good idea to use the first term instead!? I have changed it now.
 %This will be important for the evaluation process. 
 The most interesting part is the \emph{abstraction} $\LaO {\vec k} t$. The vector $\vec k = \ve{k_1, k_2, \ldots, k_n}$ is nothing else but a list of non-negative  integers of length $n$. It determines which dots $\ovar$ are bound by the $\la$ in the following way: Consider all $\ovar$ in the term $t$ which are not bound in $t$ itself. Now, the first $k_1$ of these are not bound by the $\la$, the next one is, the following $k_2$ are again not bound and so on (see examples below). 
@@ -234,8 +235,11 @@ We denote the number of unbound $\ovar$ in an ordered preterm $t$ by $\freevars 
 \end{array}
 \]
 %Note that in the case of $\ApO t k u$, we have $k = \freevars u$ by definition of $k$. \\
-Any ordered preterm $u$ is an \emph{ordered term} if each lambda abstraction $\LaO {\ve {k_1, \ldots, k_n}} t$ which is a sub-preterm of $u$ satisfies the condition $n + \sum_i k_i \leq \freevars t$. In other words, if a $\la$ in $u$ binds a variable, this variable must actually exist. In addition, each sub-preterm $\ApO t m u$ has to fulfil the condition $m = \freevars t$.
-$t$ is called \emph{closed} if $\freevars t = 0$.
+% new:
+We call an ordered preterm $u$ an \define{ordered term} iff each sub-preterm $w$ of $u$ fulfils the following condition: If $w$ is an application $\ApO t m u$, the equation $m = \freevars t$ holds and if it is an abstraction $\LaO {\ve {k_1, \ldots, k_n}} t$, then $n + \sum_i k_i \leq \freevars t$ is satisfied. The latter condition states that if a $\la$ in $u$ binds a variable, this variable must actually exist while the first one just gives a meaning to the integer carried by an application. Clearly, any sub-preterm of an ordered term is again an ordered term. 
+%
+%Any ordered preterm $u$ is an \define{ordered term} if each lambda abstraction $\LaO {\ve {k_1, \ldots, k_n}} t$ which is a sub-preterm of $u$ satisfies the condition $n + \sum_i k_i \leq \freevars t$. In other words, if a $\la$ in $u$ binds a variable, this variable must actually exist. In addition, each sub-preterm $\ApO t m u$ has to fulfil the condition $m = \freevars t$.
+$u$ is called \define{closed} if $\freevars t = 0$.
 % From now on, we only handle terms and forget about invalid preterms.
 
 Here are some examples of closed terms.
@@ -295,8 +299,8 @@ The only thing left to be done is to apply the substitutions in the obvious way:
 g \sspace n  \sspace (f \sspace n)
 \]
 Here, evaluation naturally leads to a term in beta normal form. This is not always the case: as an example, if we had tried to evaluate the above term without the $n$ (i.e. $S \oapp 0 f \oapp 0 g$), we would have got stuck at $\left(\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}\right)  \left[ g, f \right]$. However, this would have been satisfactory as it would have shown that the term's normal form is an abstraction. In other words, our evaluation results in weak head normal forms.
-\\
-Consequently, we define values in the following way:
+
+Consequently, we define \define{values} in the following way:
 \[ 
 \begin{array}{lllrll@{\qquad}}
 \mathsf{values}       & \ni & v,w & ::= & x \sspace \vec v & \mbox{large application} \\ 
@@ -458,22 +462,22 @@ By \emph{rewriting}, we mean one step of the \emph{normal} or \emph{leftmost out
 Printing should result in a term that is $\beta$ equivalent to the term we get if we rewrite before printing. 
 This basically means that, for each evaluation rule on the left hand side of the following table, we have to check that the equality on the right hand side holds:
 \begin{center}
-\begin{tabular}{|   rcl  |  rcl    |}
-\hline
+\begin{tabular}{|   rcl  |  rcl    | c  }
+\cline{1-6}
 &&&&& \\
-$\ev x {\emptyVec} $&$=$&$ x    $ & $ \pr{x}{\emptyVec} $&$\, =_\beta \, $&$\prVal{x}$\\
+$\ev x {\emptyVec} $&$=$&$ x    $ & $ \pr{x}{\emptyVec} $&$\, =_\beta \, $&$\prVal{x}$ & \qquad \lab 1 \\
 &&&&& \\
-$\ev \ovar {\ve{v}} $&$=$&$ v   $ & $ \pr{\ovar}{v} $&$\, =_\beta \,$&$ \prVal v$ \\
+$\ev \ovar {\ve{v}} $&$=$&$ v   $ & $ \pr{\ovar}{v} $&$\, =_\beta \,$&$ \prVal v$  & \qquad \lab 2 \\
 &&&&& \\
-$\ev {t \oapp k u} {[\vec v , \vec w]} $&$=$&$ {\ev t {\vec v}} \ap {\ev u {\vec w}}   $ & $ \pr {t \oapp k u} {[\vec v , \vec w]} $&$\, =_\beta \,$&$  \ApA {\pr{t}{\vec v}} {\pr{u}{\vec w}} $\\
+$\ev {t \oapp k u} {[\vec v , \vec w]} $&$=$&$ {\ev t {\vec v}} \ap {\ev u {\vec w}}   $ & $ \pr {t \oapp k u} {[\vec v , \vec w]} $&$\, =_\beta \,$&$  \ApA {\pr{t}{\vec v}} {\pr{u}{\vec w}} $  & \qquad \lab 3 \\
 &&&&& \\
-$\ev {\LaO {\vec k} t}  {\vec v} $&$=$&$ \Val {\vec k} t {\vec v} $ & $  \pr{\LaO {\vec k} t}{\vec v}$&$ \, =_\beta \,$&$  \prVal {\Val {\vec k} t {\vec v}} $ \\  
+$\ev {\LaO {\vec k} t}  {\vec v} $&$=$&$ \Val {\vec k} t {\vec v} $ & $  \pr{\LaO {\vec k} t}{\vec v}$&$ \, =_\beta \,$&$  \prVal {\Val {\vec k} t {\vec v}} $  & \qquad \lab 4 \\  
 &&&&& \\
-$\pa{x \sspace \vec v} \ap w $&$=$&$ x \sspace \ve{\vec v, w}   $ & $\ApA {\prVal {x \sspace \vec v} } {\prVal w}   $&$\, =_\beta \, $&$ \prVal{x \sspace \ve{\vec v, w}}$\\
+$\pa{x \sspace \vec v} \ap w $&$=$&$ x \sspace \ve{\vec v, w}   $ & $\ApA {\prVal {x \sspace \vec v} } {\prVal w}   $&$\, =_\beta \, $&$ \prVal{x \sspace \ve{\vec v, w}}$  & \qquad \lab 5\\
 &&&&& \\
-$\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}   $ & $ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $&$ \, =_\beta \, $&$  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $ \\
+$\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}   $ & $ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $&$ \, =_\beta \, $&$  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $  & \qquad \lab 6\\
 &&&&& \\
-\hline
+\cline{1-6}
 \end{tabular}
 \end{center}
 Note that ``rewriting using the evaluation rules'' results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple (to read as simple application) of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element. 
@@ -640,12 +644,12 @@ rest (named \textsf{6000.elf} and so on). Later terms tend to be
 larger, so the tests with fewer lines needed much less time.
 
 All tests were executed on the same server 
-\texttt{baerentatze.cip.ifi.lmu.de}
+\mbox{\texttt{baerentatze.cip.ifi.lmu.de}}
 % ("baerentatze",
 % Ludwig-Maximilians-Universit\"at M\"unchen, Department of Computer
 % Science) 
 working with a CPU of type \emph{AMD Phenom II X4 B95} (only
-one core used, 3000 MHz) and 7999 MiB system memory. The measurements
+one core used, 3 GHz) and 8 GB system memory. The measurements
 of space and time consumption are given in the following tables (rounded
 average values):
 
