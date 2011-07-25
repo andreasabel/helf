@@ -255,6 +255,8 @@ p.6 mid-bottom. The translation relation you define (name it! and
 label its tabular definition!) seems to need disjoint \vec{x} and
 \vec{y} in the top-right inference rule. If so, remark on it, or
 globally insist on freshness in the presentation of the rules.
+% how should we 'name it'? labelling is a good idea, yes. disjoint vecs: no, not needed?!
+
 
 p.6 bottom. Bad line-break after "we notice that": use an mbox, or
 rephrase to avoid the notation splitting up.
@@ -283,7 +285,7 @@ There has been some interesting recent work on profiling basic
 datatypes and their memory footprint in haskell (recent blog posting
 on haskell mailing list). Consider putting your results in the context
 of existing allocation overhead caused by ghc.
-% hmm...
+% hmm…
 
 
 Also, IIRC, the language is "haskell", not "Haskell". 
