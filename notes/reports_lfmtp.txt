@@ -42,6 +42,7 @@ Some specific points for the authors to ponder about related to their work:
 
 % No, it won't and there is no (reasonable) way to fix this.
 
+
 Similarly, how should the representation be used if we are interested in strong head normal forms (the usual basis for comparing terms) rather than weak head normal forms? 
 
 % isn't it done by applying whnf to a fresh variable?
@@ -58,12 +59,18 @@ A point to note is that your evaluation procedure seems to have an outermost, ca
 
 (4) Graph based reduction with associated term sharing is often used in reduction. Can such an approach be used also with your representation? This relates to item (2), which notes the sensitivity to where rewriting is done. See reference [1] below for such reduction procedures based on explicit substitutions. 
 
+% I don't know...
+
+
 (5) The experimental comparisons are a bit weak. One reason for this is that these comparisons are in the setting of a somewhat artificial task of reducing to weak head normal forms rather than in a setting where all the different operations (such as comparison, unification, etc) on lambda terms in a computation are being performed. But even in the context of reduction, I would argue that the really meaningful comparisons should be to representations/notations for lambda terms that control substitution flow carefully. Thus, a comparison with an implementation based on the work of Sinot would be more illuminating and should be tried. 
 
-% We do perform the different operations, don't we?
+% We do perform those different operations, don't we?
 
 
 On a different note, your discussion in the introduction of lambda term representations and implementations is skewed in that it seems to ignore the rather substantial work that has been done related to these topics with respect to the Teyjus implementation of Lambda Prolog. The "seminal work" of Gregoire and Leroy, for example, is reasonably useful when very large, statically known terms have to be reduced only once and then compared. However, in computations in systems like Twelf and Lambda Prolog, reductions have often to be done on terms that are dynamically created. You should at least reference (and possibly also understand carefully) work like that in [1] below that have considered the general issues more carefully and completely. 
+
+% hmm.
+
 
 References
 ==========
@@ -195,8 +202,10 @@ generality, but only for patterns; is this the common "minor" case
 (beta-zero, in Miller's terminology) you were considering?)
 
 "competitive to compilation" --> "competitive with compilation" 
+% DONE
 
 p.2, line 1: "bears" --> "carries" 
+% DONE
 
 p.2, para 1: how real is the threat of space leaks? how is this
 affected by adding defintions to the calculus (you only treat lambda
@@ -209,6 +218,7 @@ later technical definitions?
 
 p.2, last para. "consecutively on the free variables" -->
 "consecutively to the free variables" 
+% DONE
 
 p.3 top. The example requires us
 to expect an evaluation which builds the whole explicit substitution
@@ -219,13 +229,19 @@ p.3 bottom "an ordered preterm \(u\) is an ordered term if". The
 sentence has definitional force, so at least mark the defined term,
 here "ordered term" typographically, or even make a fully-fledged
 Definition environment, please!
+% true. terms in definitions are marked now, I hope that's sufficient…
+
 
 p.4 top The definition of the S-combinator,and a fully-applied
 instance of it, in your new representation are nice, but have taken a
 while to arrive. Consider moving them forward to the introduction (the
 reader might then get the idea faster than thinking about linearity?)
+% I think about it
+
 
 p.4 bottom "following entry" is ambiguous; "subsequent entry" is not. 
+% DONE
+
 
 p.5 "large applications". Such 'spine representations' (and variables
 giving rise to large applications with null spine) are ubiquitous in
@@ -255,7 +271,7 @@ p.6 mid-bottom. The translation relation you define (name it! and
 label its tabular definition!) seems to need disjoint \vec{x} and
 \vec{y} in the top-right inference rule. If so, remark on it, or
 globally insist on freshness in the presentation of the rules.
-% how should we 'name it'? labelling is a good idea, yes. disjoint vecs: no, not needed?!
+% how should we 'name it'? labelling is a good idea, yes. disjoint vecs: no, not needed (?)
 
 
 p.6 bottom. Bad line-break after "we notice that": use an mbox, or
