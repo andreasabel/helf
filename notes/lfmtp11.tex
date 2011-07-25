@@ -329,7 +329,7 @@ Additionally, we specify the application $\cdot \ap \cdot$ of two values, which 
 
 % this is not how it should be done using latex...
 \[ 
-\begin{array}{lcl \qquad r}
+\begin{array}{lcl@{\qquad} r}
  \ev x {\emptyVec} & = & x & \lab 1 \\ \noalign{\medskip}
  \ev \ovar {\ve{v_1}} & = & v_1 & \lab 2\\  \noalign{\medskip}
  \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}}  & \lab 3 \\  \noalign{\medskip}
@@ -405,7 +405,7 @@ The set $\Gamma$ can be seen as a filter that tells us which free variables do n
 It is important to note that $\parseb M \Gamma u {\vec x}$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$ and each free variable occurring in $u$ is not contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). 
 
 By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parseb M \Gamma u  {\vec x}$, so we can consider $\parseFun \Gamma$ a function $\te \rightarrow \otw \times \gl$. Furthermore, we note that $\parseb M \Gamma u {\vec x}$ always implies $\freevars u = \length {\vec x}$. 
-
+ 
 This also works the other way round. For each $\Gamma$ and each tuple $(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parseb M \Gamma u {\vec x}$. Moreover, this term $M$ is unique up to alpha equivalence. So, $\parseFun \Gamma$ is actually a bijection between $\te / \alpha$ (the set of $\alpha$ equivalence classes of terms) and $\otw \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tuple (in the last rule, any variable satisfying the condition can be chosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
 
 Choosing $\Gamma = \emptySet$, we get bijections $\te \leftrightarrow \ot \otimes {\vec \emptySet}$. As $\vec \emptySet$ is only inhabited by the empty vector $\emptyVec$, we naturally get the 
