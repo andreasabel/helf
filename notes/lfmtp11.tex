@@ -386,15 +386,15 @@ $M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ ar
 The set $\Gamma$ can be seen as a filter that tells us which free variables do not occur in $u$ but in $\vec x$ instead.
 \[
 \begin{array}{c@{\qquad\qquad} c}
-\infru{x \in \Gamma}{\parseb x \Gamma \ovar x}
+\infnamed{\quad (A)}{x \in \Gamma}{\parseb x \Gamma \ovar x}
 &
-\infru{ {\parseb M \Gamma t {\vec x}} \qquad 
+\infnamed{\quad (B)}{ {\parseb M \Gamma t {\vec x}} \qquad 
         {\parseb N \Gamma u {\vec y}} \qquad {\length{\vec x} = m} } 
       {\parseb {M\,N} {\Gamma} {(\ApO t m u)}  {\vec x, \vec y} } 
 \\ \\
-\infru{x \not\in \Gamma}{\parseb x \Gamma x {}}
+\infnamed{\quad (C)}{x \not\in \Gamma}{\parseb x \Gamma x {}}
 &
-\infru{ 
+\infnamed{\quad (D)}{ 
          {\parseb M { (\Gamma \cup \{z\}) }  t {\multiinsert{\vec x}{\vec k}{z}   }} 
           \qquad 
           z \not\in \vec x  }
@@ -406,10 +406,10 @@ It is important to note that $\parseb M \Gamma u {\vec x}$ implies that each var
 
 By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parseb M \Gamma u  {\vec x}$, so we can consider $\parseFun \Gamma$ a function $\te \rightarrow \otw \times \gl$. Furthermore, we note that $\parseb M \Gamma u {\vec x}$ always implies $\freevars u = \length {\vec x}$. 
  
-This also works the other way round. For each $\Gamma$ and each tuple $(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parseb M \Gamma u {\vec x}$. Moreover, this term $M$ is unique up to alpha equivalence. So, $\parseFun \Gamma$ is actually a bijection between $\te / \alpha$ (the set of $\alpha$ equivalence classes of terms) and $\otw \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tuple (in the last rule, any variable satisfying the condition can be chosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
+This also works the other way round. For each $\Gamma$ and each tuple $(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parseb M \Gamma u {\vec x}$. Moreover, this term $M$ is unique up to $\alpha$ equivalence. So, $\parseFun \Gamma$ is actually a bijection between $\te / \alpha$ (the set of $\alpha$ equivalence classes of terms) and $\otw \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tuple (in the last rule, any variable satisfying the condition can be chosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
 
 Choosing $\Gamma = \emptySet$, we get bijections $\te \leftrightarrow \ot \otimes {\vec \emptySet}$. As $\vec \emptySet$ is only inhabited by the empty vector $\emptyVec$, we naturally get the 
-function $\parseFunE$ which maps $\te$ bijectively on $\otc$.
+function $\parseFunE$ which maps $\te / \alpha$ bijectively on $\otc$.
 
 
 %Choosing $\Gamma = \emptySet$, we get the special cases $\parseFun \emptySet$ and $\parseFun \emptySet ^{-1}$, which are bijections between $\te$ and $\otc$. This also explaines how one representation can be transformed into the other.
@@ -464,19 +464,19 @@ This basically means that, for each evaluation rule on the left hand side of the
 \begin{center}
 \begin{tabular}{|   rcl  |  rcl    | c  }
 \cline{1-6}
-&&&&& \\
+&&&&&& \\
 $\ev x {\emptyVec} $&$=$&$ x    $ & $ \pr{x}{\emptyVec} $&$\, =_\beta \, $&$\prVal{x}$ & \qquad \lab 1 \\
-&&&&& \\
+&&&&&& \\
 $\ev \ovar {\ve{v}} $&$=$&$ v   $ & $ \pr{\ovar}{v} $&$\, =_\beta \,$&$ \prVal v$  & \qquad \lab 2 \\
-&&&&& \\
+&&&&&& \\
 $\ev {t \oapp k u} {[\vec v , \vec w]} $&$=$&$ {\ev t {\vec v}} \ap {\ev u {\vec w}}   $ & $ \pr {t \oapp k u} {[\vec v , \vec w]} $&$\, =_\beta \,$&$  \ApA {\pr{t}{\vec v}} {\pr{u}{\vec w}} $  & \qquad \lab 3 \\
-&&&&& \\
+&&&&&& \\
 $\ev {\LaO {\vec k} t}  {\vec v} $&$=$&$ \Val {\vec k} t {\vec v} $ & $  \pr{\LaO {\vec k} t}{\vec v}$&$ \, =_\beta \,$&$  \prVal {\Val {\vec k} t {\vec v}} $  & \qquad \lab 4 \\  
-&&&&& \\
+&&&&&& \\
 $\pa{x \sspace \vec v} \ap w $&$=$&$ x \sspace \ve{\vec v, w}   $ & $\ApA {\prVal {x \sspace \vec v} } {\prVal w}   $&$\, =_\beta \, $&$ \prVal{x \sspace \ve{\vec v, w}}$  & \qquad \lab 5\\
-&&&&& \\
+&&&&&& \\
 $\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}   $ & $ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $&$ \, =_\beta \, $&$  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $  & \qquad \lab 6\\
-&&&&& \\
+&&&&&& \\
 \cline{1-6}
 \end{tabular}
 \end{center}
@@ -823,7 +823,10 @@ environment to the variables actually occurring free in the code.  I
 also benefited from discussions with Brigitte Pientka and Stefan Monnier.
 
 Thanks to Gabriel Scherer for comments on a draft version of this
-paper and pointers to related work.
+paper and pointers to related work. 
+The final version of this paper was stylistically improved with the highly appreciated help of Neil Sculthorpe.
+
+
 
 \bibliographystyle{alpha}
 \bibliography{auto-lfmtp11}
