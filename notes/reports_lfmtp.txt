@@ -126,7 +126,7 @@ context of lambda-Prolog.
 Stylistically, the paper could be improved with more comprehensive
 debugging from native English speakers (colleagues in Nottingham could
 help there!), 
-% DONE
+% DONE. added thanks to Neil.
 
 
 and curbing of the tendency to make judgments of cost
