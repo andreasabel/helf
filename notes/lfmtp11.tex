@@ -9,7 +9,7 @@
 \input{mymacros}
 \newcommand{\define}[1]{\mbox{\textbf{\textit{#1}}}}
 
-\title{A Lambda Term Representation \\ Based on Linear Ordered Logic}
+\title{A Lambda Term Representation \\ Inspired by Linear Ordered Logic}
 \author{Andreas Abel
 \institute{
 Theoretical Computer Science\\
@@ -26,13 +26,13 @@ University of Nottingham\\
 Nottingham, United Kingdom}
 \email{ngk@cs.nott.ac.uk}
 }
-\def\titlerunning{A Lambda Term Representation Based on Linear Ordered Logic}
+\def\titlerunning{A Lambda Term Representation Inspired by Linear Ordered Logic}
 \def\authorrunning{Andreas Abel and Nicolai Kraus}
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We introduce a new nameless representation of lambda terms based on
+We introduce a new nameless representation of lambda terms inspired by
 ordered logic.  At a lambda abstraction, number and relative
 position of all occurrences of the bound variable are stored, and
 application carries the additional information where to cut the
@@ -55,7 +55,7 @@ ordered contexts,
 space leaks,
 Logical Framework.
 
-% We introduce a nameless representation of lambda terms based on ordered logic. 
+% We introduce a nameless representation of lambda terms inspired by ordered logic. 
 % Information about number and places of variables bound by a lambda is available without examining the whole term, thus making it possible to drop unneeded substitutions early to avoid memory leaks.
 % % We describe an implementation of this and other representations as well as suggested evaluation algorithms. These implementations were tested in Haskell by using them for typechecking large dependently typed terms of the logical framework (LF). The different needs of time and space are documented and compared.\\
 % We also describe our implementation experiments and present some results.
@@ -71,7 +71,11 @@ values.  Such type checkers incorporate
 an interpreter for purely functional programs with free variables---at least, the
 $\lambda$-calculus---which is used to compute weak head normal forms
 of types.  Efficiency of type checking is mostly identical with
-efficiency of evaluation (and, in case of type reconstruction,
+efficiency of evaluation\footnote{Evaluation is necessary to reduce
+  types to weak head normal form and compare types for equality.
+  Subtracting these operations, type checking has linear complexity.
+} 
+(and, in case of type reconstruction,
 efficiency of unification), and remains a challenge as of today.  
 In seminal work, Gregoire and Leroy \cite{gregoireLeroy:icfp02} have
 sped up Coq type checking by compiling to byte-code instead of
@@ -82,15 +86,18 @@ While compilation approaches are successful on batch type \emph{checking}
 fully explicit programs, they have not been attempted on type
 \emph{reconstruction} using higher-order unification or on interactive
 program construction such as in Agda and Epigram \cite{mcBrideMcKinna:view}.
-These languages are involving and their implementations are
-prototypical and frequently modified and extended.  Implementing a
+These languages are involved and constantly evolving, 
+and their implementations are
+prototypes and frequently modified and extended.  Implementing a
 full compiler just to get type reconstruction going is deterring;
-furthermore, compilation has not proven its feasibility in minor
-evaluation tasks that dominate higher-order unification.  Smart
-interpreters are, and may remain competitive with compilation.  
+furthermore, compilation has not (yet) proven its feasibility in minor
+evaluation tasks (like weak head evaluation)
+that dominate higher-order unification.  
+At least for language prototyping, smart
+interpreters are, and may remain, competitive with compilation.  
 
 For instance, Twelf's interpreter is sufficiently fast; it is 
-based on a term representation with de Bruijn indices 
+inspired by a term representation with de Bruijn indices 
 \cite{deBruijn:nameless} and explicit substitutions 
 \cite{abadiCardelliCurienLevy:jfp91}.  In the context of functional
 programming, explicit substitutions are known as \emph{closures},
@@ -114,7 +121,15 @@ correspondence with Girard's linear logic \cite{girard:linear}; there,
 each variable in scope is actually referenced (more precisely,
 referenced exactly once).  In other words, the
 free variables are exactly the variables in the typing context.
-Dropping types, we may talk of \emph{linear scoping}.  The free
+Dropping types, we may talk of \emph{linear scoping}.
+Yet we do not want to represent linear terms, but arbitrary
+$\lambda$-terms.   Kesner and Lengrand \cite{kesnerLengrand:infcomp07}
+achieve this by introducing explicit term constructs for weakening and
+contraction.  We pursue a different path: we incorporate information
+about variable use and multiplicity directly into abstraction and
+application. 
+
+In the context of linear $\lambda$-calculus, the free
 variables of a function application are the disjoint union of the free
 variables of the function and the free variables of the argument.  If
 we want to maintain the set of free variables during a term traversal,
@@ -148,7 +163,8 @@ their position; and environments are simply sequences of values.
 
 Since we are not interested in proof terms of ordered logic per se,
 but only borrow the \emph{ordered context} idea for our
-representation, we need to allow multiple occurrences of the same
+representation of untyped $\lambda$-calculus, 
+we need to allow multiple occurrences of the same
 variable.  In fact, the context shall list the variable
 \emph{occurrences} in order.  At a lambda abstraction, we bind all
 occurrences of the same variable.  Thus, at an abstraction node we
@@ -311,8 +327,15 @@ Consequently, we define \define{values} in the following way:
 % \[
 % \mathsf{values} \ni v, w ::= x \, \vec v \ \mid \ \ClosO{\vec k}{t}{}{\vec v}
 % \]
-The \emph{large application} consists of a variable $x$ which is applied to a vector $\ve{v_1, v_2, \ldots, v_m}$ of values. It is to be read as a left-associative application, i.e. as $\pa{\pa{x \, v_1} v_2 \ldots } v_m$. 
-Note that it is not necessarily ``large''. Quite the contrary, it often only consists of the head (and the vector of values is empty).\\
+The \emph{large application}\footnote{
+The argument vector $\vec v$ of a large application is sometimes
+called a \emph{spine} \cite{cervesatoPfenning:spineCalculus}.  Large
+applications $x\,\vec v$ also appear in the formulation of B\"ohm
+trees \cite{barendregt:lambdacalculus}.}
+ consists of a variable $x$ which is applied to a vector $\ve{v_1, v_2, \ldots, v_m}$ of values. It is to be read as a left-associative application, i.e. as $\pa{\pa{x \, v_1} v_2 \ldots } v_m$. 
+Note that it is not necessarily ``large''. Quite the contrary, it
+often only consists of the head (and the vector of values is empty).
+
 A \emph{closure} $\Val {\vec k} t {\vec v}$ is the result of the evaluation process if the corresponding beta normal form of the term does not start with a free variable. The main part, $\LaO {\vec k} t$, is nothing other than a lambda abstraction in the syntax of ordered terms.
 In addition, we need the substitution list $\vec v$ (which is simply a list of values) that satisfies $\length {\vec v} = \freevars{\LaO {\vec k} t}$. % as there might be unbound $\ovar$ in $\LaO {\vec k} t$. 
 The idea is that the $i^{th}$ unbound $\ovar$ is to be replaced by $v_i$.  These substitution lists have already been used in the example above.
@@ -359,7 +382,20 @@ If we want to apply a large application to a value $w$ \lab 5 , we just append $
 The case of a closure $\Val {\vec k} t {\vec v}$ \lab 6 is less simple, but it is still quite clear what to do: $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list, so we just construct the list $\multiinsert {\vec v} {\vec k} w$. Then, $t$ is evaluated.
 
 
-Concerning substitution lists, we talk about ``lists of values'' for simplicity. More specifically, we want them to be lists of pointers to avoid the duplication of  ``real'' values during constructing lists like $\multiinsert {\vec v} {\vec k} {w}$. They could also be implemented as binary trees instead of linked lists, cf. Section~\ref{sec:experiments}.
+Concerning substitution lists, we talk about ``lists of values'' for
+simplicity. More specifically, we want them to be lists of pointers to
+avoid the duplication of ``real'' values during constructing lists
+like $\multiinsert {\vec v} {\vec k} {w}$. 
+Instead of simple linked lists,
+we have also implemented these lists as dynamic functional arrays
+represented as binary trees.  This reduces the asymptotic costs of
+list splitting---$[v_1,\dots,v_n]$ to
+$([v_1,\dots,v_k],[v_{k+1},\dots,v_n])$---
+and multi-insertion $\multiinsert {\vec v} {\vec k} w$ 
+from linear to logarithmic time (in terms of the length of the list
+$\vec v$).  For an
+experimental comparison of the two implementations
+see Section~\ref{sec:experiments}.
 
 
 \section{Parsing and Printing}
@@ -785,7 +821,7 @@ traversal has to run over most of the whole term---this is certainly
 different in the substitution for a single variable.
 
 To summarize, we have presented a new term representation for the
-lambda-calculus based on ordered linear logic, and experimentally
+lambda-calculus inspired by ordered linear logic, and experimentally
 compared it with well-known representations (closures, normal forms)
 in a prototypical implementation of a type checker for the Edinburgh
 Logical Framework.  The experiments were carried out on large realistic
@@ -828,7 +864,7 @@ The final version of this paper was stylistically improved with the highly appre
 
 
 
-\bibliographystyle{alpha}
+\bibliographystyle{eptcs}
 \bibliography{auto-lfmtp11}
 
 

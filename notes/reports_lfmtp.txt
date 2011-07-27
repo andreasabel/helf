@@ -13,9 +13,20 @@ We are pleased to inform you that the paper entitled
 
 A Lambda Term Representation Based on Linear Ordered Logic
 
-that you submitted to LFMTP 2011 has been accepted for presentation at the workshop. Included with this message are comments prepared by its reviewers that should help you plan the presentation and to prepare a final version of the paper. We will send you instructions soon concerning the formatting and uploading process for the final version. Please note that the deadline for our receiving this version is August 1, 2011.
+that you submitted to LFMTP 2011 has been accepted for presentation at
+the workshop. Included with this message are comments prepared by its
+reviewers that should help you plan the presentation and to prepare a
+final version of the paper. We will send you instructions soon
+concerning the formatting and uploading process for the final
+version. Please note that the deadline for our receiving this version
+is August 1, 2011.
 
-Please remember that we expect each accepted paper to be presented at the workshop by at least one of its authors---its inclusion in the final proceedings is, in fact, contingent on this happening. We look forward to seeing you there---there will be an interesting collection of papers at the workshop and we expect a useful and lively discussion.
+Please remember that we expect each accepted paper to be presented at
+the workshop by at least one of its authors---its inclusion in the
+final proceedings is, in fact, contingent on this happening. We look
+forward to seeing you there---there will be an interesting collection
+of papers at the workshop and we expect a useful and lively
+discussion.
 
 Regards,
 Herman and Gopalan
@@ -29,45 +40,99 @@ AUTHORS: Andreas Abel and Nicolai Kraus
 OVERALL RATING: 1 (weak accept)
 REVIEWER'S CONFIDENCE: 3 (high)
 
-This paper describes a new representation for lambda terms called ordered terms that contains more precise information about variable occurrences and that consequently obviates names for bound variables in the context of reduction and that also allows usage information about substitutions generated during reduction to be maintained more accurately; the latter feature has potential for use, for instance, in more aggressive garbage collection in an implementation context. The representation and an evaluation procedure are described, the reduction procedure is shown to be correct and is compared experimentally to standard procedures. Overall, the ideas are presented clearly and they have interesting connection to linear ordered logic and explicit substitution based implementations of reduction. While these have not been probed significantly in this paper, they can be and hence a workshop presentation can stimulate useful discussion.
+This paper describes a new representation for lambda terms called
+ordered terms that contains more precise information about variable
+occurrences and that consequently obviates names for bound variables
+in the context of reduction and that also allows usage information
+about substitutions generated during reduction to be maintained more
+accurately; the latter feature has potential for use, for instance, in
+more aggressive garbage collection in an implementation context. The
+representation and an evaluation procedure are described, the
+reduction procedure is shown to be correct and is compared
+experimentally to standard procedures. Overall, the ideas are
+presented clearly and they have interesting connection to linear
+ordered logic and explicit substitution based implementations of
+reduction. While these have not been probed significantly in this
+paper, they can be and hence a workshop presentation can stimulate
+useful discussion.
 
 Some specific points for the authors to ponder about related to their work: 
 
-(1) Lambda terms need to maintain binding information not only for guiding substitutions during reduction but also for permitting a comparison within abstraction contexts, something needed in type checking and unification. Your "nameless" representation handles the former aspect but it is far from clear that it provides a basis for the latter. Have you thought about this issue?
+(1) Lambda terms need to maintain binding information not only for
+guiding substitutions during reduction but also for permitting a
+comparison within abstraction contexts, something needed in type
+checking and unification. Your "nameless" representation handles the
+former aspect but it is far from clear that it provides a basis for
+the latter. Have you thought about this issue?
 
 % I don't understand that one.
 
 
-(2) Your term structure seems quite sensitive to the way terms are traversed and rewritten. For example, usual contraction on lambda terms can be done anywhere in the term. Will your representation still work if contraction is done at embedded sites in a term rather than in an outermost fashion? 
+(2) Your term structure seems quite sensitive to the way terms are
+traversed and rewritten. For example, usual contraction on lambda
+terms can be done anywhere in the term. Will your representation still
+work if contraction is done at embedded sites in a term rather than in
+an outermost fashion?
 
 % No, it won't and there is no (reasonable) way to fix this.
 
 
-Similarly, how should the representation be used if we are interested in strong head normal forms (the usual basis for comparing terms) rather than weak head normal forms? 
+Similarly, how should the representation be used if we are interested
+in strong head normal forms (the usual basis for comparing terms)
+rather than weak head normal forms?
 
 % isn't it done by applying whnf to a fresh variable?
 
-A point to note is that your evaluation procedure seems to have an outermost, call-by-value strategy built into it.
+A point to note is that your evaluation procedure seems to have an
+outermost, call-by-value strategy built into it.
 
 % hmm.
 
 
-(3) In contexts where unification is at issue, meta variables are treated in two different ways: in the "logical" way which means that reduction substitutions cannot impact them and in a "graftable" way which means that reductions substutitions have to be suspended at these variable locations. Your treatment supports the first possibility, but can it be adapted to support the second? 
+(3) In contexts where unification is at issue, meta variables are
+treated in two different ways: in the "logical" way which means that
+reduction substitutions cannot impact them and in a "graftable" way
+which means that reductions substutitions have to be suspended at
+these variable locations. Your treatment supports the first
+possibility, but can it be adapted to support the second?
 
 % ?
 
 
-(4) Graph based reduction with associated term sharing is often used in reduction. Can such an approach be used also with your representation? This relates to item (2), which notes the sensitivity to where rewriting is done. See reference [1] below for such reduction procedures based on explicit substitutions. 
+(4) Graph based reduction with associated term sharing is often used
+in reduction. Can such an approach be used also with your
+representation? This relates to item (2), which notes the sensitivity
+to where rewriting is done. See reference [1] below for such reduction
+procedures based on explicit substitutions.
 
 % I don't know...
 
 
-(5) The experimental comparisons are a bit weak. One reason for this is that these comparisons are in the setting of a somewhat artificial task of reducing to weak head normal forms rather than in a setting where all the different operations (such as comparison, unification, etc) on lambda terms in a computation are being performed. But even in the context of reduction, I would argue that the really meaningful comparisons should be to representations/notations for lambda terms that control substitution flow carefully. Thus, a comparison with an implementation based on the work of Sinot would be more illuminating and should be tried. 
+(5) The experimental comparisons are a bit weak. One reason for this
+is that these comparisons are in the setting of a somewhat artificial
+task of reducing to weak head normal forms rather than in a setting
+where all the different operations (such as comparison, unification,
+etc) on lambda terms in a computation are being performed. But even in
+the context of reduction, I would argue that the really meaningful
+comparisons should be to representations/notations for lambda terms
+that control substitution flow carefully. Thus, a comparison with an
+implementation based on the work of Sinot would be more illuminating
+and should be tried.
 
 % We do perform those different operations, don't we?
 
 
-On a different note, your discussion in the introduction of lambda term representations and implementations is skewed in that it seems to ignore the rather substantial work that has been done related to these topics with respect to the Teyjus implementation of Lambda Prolog. The "seminal work" of Gregoire and Leroy, for example, is reasonably useful when very large, statically known terms have to be reduced only once and then compared. However, in computations in systems like Twelf and Lambda Prolog, reductions have often to be done on terms that are dynamically created. You should at least reference (and possibly also understand carefully) work like that in [1] below that have considered the general issues more carefully and completely. 
+On a different note, your discussion in the introduction of lambda
+term representations and implementations is skewed in that it seems to
+ignore the rather substantial work that has been done related to these
+topics with respect to the Teyjus implementation of Lambda Prolog. The
+"seminal work" of Gregoire and Leroy, for example, is reasonably
+useful when very large, statically known terms have to be reduced only
+once and then compared. However, in computations in systems like Twelf
+and Lambda Prolog, reductions have often to be done on terms that are
+dynamically created. You should at least reference (and possibly also
+understand carefully) work like that in [1] below that have considered
+the general issues more carefully and completely.
 
 % hmm.
 
@@ -75,7 +140,9 @@ On a different note, your discussion in the introduction of lambda term represen
 References
 ==========
 
-[1] Gopalan Nadathur. A fine-grained notation for lambda terms and its use in intensional operations. Journal of Functional and Logic Programming 1999(2): 1--62, MIT Press, March 1999.
+[1] Gopalan Nadathur. A fine-grained notation for lambda terms and its
+use in intensional operations. Journal of Functional and Logic
+Programming 1999(2): 1--62, MIT Press, March 1999.
 
 
 ----------------------- REVIEW 2 ---------------------
@@ -126,6 +193,7 @@ context of lambda-Prolog.
 Stylistically, the paper could be improved with more comprehensive
 debugging from native English speakers (colleagues in Nottingham could
 help there!), 
+
 % DONE. added thanks to Neil.
 
 
@@ -141,6 +209,8 @@ bottom of the same page. On which point, it would be really nice (even
 if only for the purposes of review!) to be able to refer to these
 definitions by a number, or even to a table/figure. 
 
+%% DONE
+
 The clever trick of the paper (which I really liked!) means that
 during evaluation the environment must be chopped up and interleaved
 with new (possibly repeated) bindings in order to ensure that exactly
@@ -152,6 +222,8 @@ interaction between clauses 3 and 6 of the aforementioned definition
 of evaluation (see?) appears to be a good opportunity for some partial
 evaluation/worker-wrapper optimisation. Again, Nottingham is a good
 place to learn how to do this! 
+
+%% NO CLUE
 
 Detailed comments:
 
@@ -165,6 +237,8 @@ introduced by Lengrand and Kesner should be more prominently mentioned
 in the introduction. It seems most closely related to what the authors
 propose here.
 
+%% DONE
+
 Introduction.
 
 I was confused by the appeal to linearity ("the context is cut" in the
@@ -174,6 +248,8 @@ have terms/variables inserted. When the example of reducing an
 S-combinator application is given, the non-linearity is
 evident. Perhaps it would be better simply to say something like
 "explicit copying" rather than "linearity"?
+
+%% DOING NOTHING
 
 p.1, para.1 "Efficiency of typechecking is mostly identical with
 efficiency of evaluation". The 'mostly' is horrible without being more
@@ -186,13 +262,19 @@ still quite painful in the worst case), but systems as strong as Coq
 are going to struggle however good the term representation might be,
 surely?
 
+%% DONE
+
 p.1, para 2 
 
 "These languages are involving... are prototypical and frequently
 modified and extended". Do you mean "evolving" (not yet fixed) or
 "involved" (complicated)?
 
+%% DONE
+
 "are prototypes" is probably better, too. 
+
+%% DONE
 
 "compilation has not... in minor evaluation tasks that dominate
 higher-order unification". Quantify "minor" and "dominate" (or else:
@@ -200,6 +282,8 @@ this is an interesting area for further work! Much work has been done
 to make sure that higher-order unification is not done in full
 generality, but only for patterns; is this the common "minor" case
 (beta-zero, in Miller's terminology) you were considering?)
+
+%% DONE
 
 "competitive to compilation" --> "competitive with compilation" 
 % DONE
