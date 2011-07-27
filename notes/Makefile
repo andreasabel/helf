@@ -12,8 +12,8 @@ bibtool=bibtool -- 'preserve.key.case = ON' \
 	  -- 'delete.field = { abstract }' \
 	  -- 'delete.field = { dvi }' \
 	  -- 'delete.field = { postscript }' \
-	  -- 'delete.field = { pdf }' \
-	  -- 'delete.field = { url }' 
+	  -- 'delete.field = { pdf }' 
+#	  -- 'delete.field = { url }' 
 catcfg=sed -e "s/%.*//g" <
 latex=latex
 pdflatex=pdflatex
