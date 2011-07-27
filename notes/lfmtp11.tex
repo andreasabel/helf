@@ -420,21 +420,21 @@ Therefore, we
 % We 
 define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alpha$ and $\prValE : \va \rightarrow \te / \alpha$ simultaneously by recursion on the structure:
 \[
-\begin{array}{lcl}
+\begin{array}{lclc}
 \medskip
-\pr{x}{\emptyVec} & = & x \\
+\pr{x}{\emptyVec} & = & x & \lab I \\
 \medskip
-\pr{\ovar}{[v]} & = & \prVal v \\
-\pr{t \oapp m u}{\vec v} & = & \ApA {\pr {t}{\vec{v_{start}}}  }  {\quad \pr {u}{\vec{v_{rest}}}} \\
+\pr{\ovar}{[v]} & = & \prVal v & \lab {II} \\
+\pr{t \oapp m u}{\vec v} & = & \ApA {\pr {t}{\vec{v_{start}}}  }  {\quad \pr {u}{\vec{v_{rest}}}}  & \lab {III} \\
 \medskip
 && \mbox{(split $\vec v$ at position $m$ to get $\vec{v_{start}}$ and $\vec{v_{rest}}$)} \\
-% \pr{\LaO {k_1, \ldots, k_m} t}{[v_1, v_2, \ldots, v_n]} & = & \LaA z {\pr {t} {v_1, \ldots, v_{k_1}, z, v_{k_1+1}, \ldots, }}   \\
-\pr{\LaO {\vec k} t}{\vec v} & = & \LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }}   \\
+% \pr{\LaO {k_1, \ldots, k_m} t}{[v_1, v_2, \ldots, v_n]} & = & \LaA z {\pr {t} {v_1, \ldots, v_{k_1}, z, v_{k_1+1}, \ldots, }}  & \lab {IV} \\
+\pr{\LaO {\vec k} t}{\vec v} & = & \LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }}   & \lab {IV}\\
 \medskip
 && \mbox{where $z$ is any variable that does not occur freely in $t$ or $\vec v$ } \\
-\prVal{x \sspace v_1 \sspace v_2 \sspace \ldots \sspace v_n} & = & x \ \prVal{v_1} \ \prVal{v_2} \ \ldots \ \prVal{v_n} \\
+\prVal{x \sspace v_1 \sspace v_2 \sspace \ldots \sspace v_n} & = & x \ \prVal{v_1} \ \prVal{v_2} \ \ldots \ \prVal{v_n} & \lab V\\
 \medskip && \mbox{(a large application simply becomes an application of terms)} \\
-\prVal{\Val {\vec k} t {\vec v}} & = & \pr{\LaO {\vec k} t}{\vec v} \\
+\prVal{\Val {\vec k} t {\vec v}} & = & \pr{\LaO {\vec k} t}{\vec v}  & \lab {VI}\\
 \end{array}
 \]
 %\end{defin}
@@ -483,9 +483,9 @@ $\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}
 Note that ``rewriting using the evaluation rules'' results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple (to read as simple application) of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element. 
 Although we do not define it formally, it should be clear how those expressions can be printed by using the printing functions for ordered terms and values (if an expression is a tuple, just print the function part and the argument part separately). In fact, while the function $\ev \cdot \cdot$ is formulated as a big step evaluation, the rewriting process can be understood as the corresponding small step (or one step) evaluation.
 
-In the first five rows of the table, we only have to look at the definitions of the printing functions to see that the printed terms are not only $\beta$ equivalent but also equal. The very last rule requires closer examination: 
+In the first five rows of the table, we only have to look at the definitions of the printing functions to see that the printed terms are not only $\beta$ equivalent but also equal. The very last rule $\lab 6$ requires closer examination: 
 \\
-By definition, the term $\prVal{\Val{\vec k} t {\vec v}}$ is equal to $\LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }} $ for a (sufficiently) fresh variable $z$. Now, the definitions of the printing functions are ``context free'' in a way that guarantees  that $z$ occurs exactly $\length{\vec k}$ times (free) in $\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }$. Furthermore, replacing those occurrences by $\prVal{w}$ results in the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$. This means that, starting with 
+By rule $\lab {IV})$, the term $\prVal{\Val{\vec k} t {\vec v}}$ is equal to $\LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }} $ for a (sufficiently) fresh variable $z$. Now, the definitions of the printing functions are ``context free'' in a way that guarantees  that $z$ occurs exactly $\length{\vec k}$ times (free) in $\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }$. Furthermore, replacing those occurrences by $\prVal{w}$ results in the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$. This means that, starting with 
 $ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $,
 we have to use exactly one $\beta$ reduction step to get the term $  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $.
 
