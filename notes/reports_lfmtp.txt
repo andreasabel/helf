@@ -356,6 +356,7 @@ label its tabular definition!) seems to need disjoint \vec{x} and
 \vec{y} in the top-right inference rule. If so, remark on it, or
 globally insist on freshness in the presentation of the rules.
 % how should we 'name it'? labelling is a good idea, yes. disjoint vecs: no, not needed (?)
+% okay; just named it 'transforming relation'...
 
 
 p.6 bottom. Bad line-break after "we notice that": use an mbox, or
