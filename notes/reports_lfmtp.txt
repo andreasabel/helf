@@ -86,7 +86,7 @@ rather than weak head normal forms?
 A point to note is that your evaluation procedure seems to have an
 outermost, call-by-value strategy built into it.
 
-% hmm.
+% hmm. ok, done.
 
 
 (3) In contexts where unification is at issue, meta variables are
@@ -96,9 +96,10 @@ which means that reductions substutitions have to be suspended at
 these variable locations. Your treatment supports the first
 possibility, but can it be adapted to support the second?
 
-% ?
+% probably not (?)
 
 
+###ÊTODO ###
 (4) Graph based reduction with associated term sharing is often used
 in reduction. Can such an approach be used also with your
 representation? This relates to item (2), which notes the sensitivity
@@ -108,6 +109,7 @@ procedures based on explicit substitutions.
 % I don't know...
 
 
+###ÊTODO ###
 (5) The experimental comparisons are a bit weak. One reason for this
 is that these comparisons are in the setting of a somewhat artificial
 task of reducing to weak head normal forms rather than in a setting
@@ -122,6 +124,7 @@ and should be tried.
 % We do perform those different operations, don't we?
 
 
+### TODO? ###
 On a different note, your discussion in the introduction of lambda
 term representations and implementations is skewed in that it seems to
 ignore the rather substantial work that has been done related to these
@@ -181,7 +184,11 @@ of such experimental comparison is to be encouraged, while the
 nature/methodology of the comparison might be examined in slightly
 closer detail. 
 
-Related work is reasonably treated; if only for the sake of the PC
+Related work is reasonably treated; 
+
+
+### TODO ###
+if only for the sake of the PC
 Chair (Nadathur), a reference to his work in the mid-1990s on
 suspensions might have yielded some deeper points of comparison. The
 authors themselves note that their real (eventual?) target is in
@@ -193,7 +200,6 @@ context of lambda-Prolog.
 Stylistically, the paper could be improved with more comprehensive
 debugging from native English speakers (colleagues in Nottingham could
 help there!), 
-
 % DONE. added thanks to Neil.
 
 
@@ -291,11 +297,15 @@ generality, but only for patterns; is this the common "minor" case
 p.2, line 1: "bears" --> "carries" 
 % DONE
 
+
+### todo? ###
 p.2, para 1: how real is the threat of space leaks? how is this
 affected by adding defintions to the calculus (you only treat lambda
 terms, rather than lambda and let, as real systems use; how much does
 this affect your results?)
 
+
+### todo? ###
 p.2, para 2. Here lies the source of my confusion about your 'linear'
 motivations. Does this help, or hinder, the reader's understanding of
 later technical definitions?
@@ -304,6 +314,8 @@ p.2, last para. "consecutively on the free variables" -->
 "consecutively to the free variables" 
 % DONE
 
+
+###ÊTODO? ###
 p.3 top. The example requires us
 to expect an evaluation which builds the whole explicit substitution
 before trying to reduce the generated term; what happens if you
@@ -340,17 +352,22 @@ p.5 mid-bottom. How expensive are these operations (as above)?
 % DONE
 
 
+### TODO ###
 I first saw the separation of evaluation into a weak-head step,
 together with an application algebra on weak-head normal forms, in the
 1991 paper by Coquand (you cite it, but not here; remedy that?)
 
+
+
+### TODO? ###
 p.6 top. The trick to your representation seems to lie in the observation about 
 free variable: empty environment
 bound occurrence: singleton environment
-
 This seems an invariant which your implementation ought to be able to
 make more use of (for optimisation). Or is the saving in term
 representation paid for in the cost of maintaining this invariant?
+
+
 
 p.6 mid-bottom. The translation relation you define (name it! and
 label its tabular definition!) seems to need disjoint \vec{x} and
@@ -383,6 +400,7 @@ usage (if you convert to GB?).
 % DONE. ok, I am not sure whether I agree. 3/4 significant digits are used for time, 4 for space, so what's the problem with 4 for 3000 MHz, 7999MiB? Anyway, changed to 3 GHz, 8 GB.
 
 
+### TODO ###
 There has been some interesting recent work on profiling basic
 datatypes and their memory footprint in haskell (recent blog posting
 on haskell mailing list). Consider putting your results in the context
@@ -395,7 +413,7 @@ Also, IIRC, the language is "haskell", not "Haskell".
 
 
 
-!!! todo (from here on)
+######## TODO ####### (from here on)
 
 p.10 I think it would be good to spend a bit more effort on analysing
 these results. you say that while "beta normal values perform

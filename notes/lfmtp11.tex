@@ -349,6 +349,7 @@ $\vec k = [k_1, k_2, \ldots, k_n]$ is a vector (i.e. also a list) of  non-negati
 We are now able to define the evaluation function $\ev {\cdot} {\cdot}$ which takes an ordered term $t$ as well as an ordered substitution list $\vec v$ and returns a value. The tuple must always satisfy the condition $\freevars t = \length {\vec v}$. In other words, the list carries neither too little nor redundant information.
 At the start of the evaluation, the ordered substitution list is empty. 
 Additionally, we specify the application $\cdot \ap \cdot$ of two values, which also returns a value and does not need anything else.
+Our evaluation procedure uses a call-by-value strategy:
 
 % this is not how it should be done using latex...
 \[ 
