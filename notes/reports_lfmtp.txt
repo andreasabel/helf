@@ -320,7 +320,7 @@ p.4 top The definition of the S-combinator,and a fully-applied
 instance of it, in your new representation are nice, but have taken a
 while to arrive. Consider moving them forward to the introduction (the
 reader might then get the idea faster than thinking about linearity?)
-% I think about it
+% I think about it (but I won't change it)
 
 
 p.4 bottom "following entry" is ambiguous; "subsequent entry" is not. 
@@ -331,9 +331,10 @@ p.5 "large applications". Such 'spine representations' (and variables
 giving rise to large applications with null spine) are ubiquitous in
 sequent calculus presentations (such as those of Dyckhoff/Pinto,
 Pfenning/Cerevesato, ...). Consider adding a reference?
+% DONE
 
 p.5 mid-bottom. How expensive are these operations (as above)?
-
+% DONE
 
 "neither too less nor redundant information": change "less" --> "little" at a minimum
 % DONE
@@ -393,6 +394,9 @@ Also, IIRC, the language is "haskell", not "Haskell".
 % I cannot find any evidence for this statement. 
 
 
+
+!!! todo (from here on)
+
 p.10 I think it would be good to spend a bit more effort on analysing
 these results. you say that while "beta normal values perform
 significantly worse" (yes!: about 50% worse), "the difference is
@@ -403,6 +407,8 @@ like loose talk without a bit more meat to back it up. Not enough
 experimental evaluation is done in theoretical computer science, but
 it would be good to do it with a little more methodological discipline
 and conviction.
+
+
 
 p.10 bottom "could be seen as an optimised version of director
 strings". How? (this is my ignorance showing here). Please spell this 
