@@ -520,7 +520,10 @@ We need to convince ourselves that \emph{rewriting} according to the rules of th
 By \emph{rewriting}, we mean one step of the \emph{normal} or \emph{leftmost outermost} evaluation. We have demonstrated this in the example at the beginning of Section~\ref{sec:values}.
 %If we have, e.g., the tupel $(t, \vec v)$, printing it should result in a term that is $\beta$ equivalent to the term we get if we rewrite it once before printing. 
 Printing should result in a term that is $\beta$ equivalent to the term we get if we rewrite before printing. 
-This basically means that, for each evaluation rule on the left hand side of the following table, we have to check that the equality on the right hand side holds:
+This basically means that, for each evaluation rule on the left hand
+side of the following table, we have to check that the equality on the
+right hand side holds:
+
 \begin{center}
 \begin{tabular}{|   rcl  |  rcl    | c  }
 \cline{1-6}
@@ -540,6 +543,7 @@ $\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}
 \cline{1-6}
 \end{tabular}
 \end{center}
+
 Note that ``rewriting using the evaluation rules'' results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple (to read as simple application) of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element. 
 Although we do not define it formally, it should be clear how those expressions can be printed by using the printing functions for ordered terms and values (if an expression is a tuple, just print the function part and the argument part separately). In fact, while the function $\ev \cdot \cdot$ is formulated as a big step evaluation, the rewriting process can be understood as the corresponding small step (or one step) evaluation.
 
@@ -769,7 +773,9 @@ Beta Normal Values & 137.7 & 8513 \\
 \hline
 \end{tabular}
 \end{center}
-Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during type checking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. \\
+
+Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during type checking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. 
+
 Although none of the other strategies exhibited any shortcomings in the comparisons above, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures: 
 
 \begin{center}
@@ -789,6 +795,7 @@ Beta Normal Values & 169.8 & 9044  \\
 \hline
 \end{tabular}
 \end{center}
+
 Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind. 
 In comparison, the type checker of the Twelf project, \emph{Twelf
   r1697} (written in \emph{Standard ML} and compiled with
