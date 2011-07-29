@@ -829,8 +829,20 @@ to evaluation of some specific big lambda-terms.  There is no study on
 their relative performance in a realistic application---yet that is
 our concern.
 
-Building on Nadathur's alternative to explicit substitutions, the
-\emph{suspension calculus} \cite{nadathur:jflp99},
+An alternative to explicit substitutions is Nadathur's suspension
+calculus \cite{nadathur:jflp99}, which, in a refinement, also
+maintains information about closedness of subterms.  In this
+refinement, the suspension calculus maintains at least partial
+information about the free variables of a subterm.  
+As the basis of an implementation of
+$\lambda$-Prolog \cite{nadathur:flops01}, 
+Nadathur has proven the efficiency of his term
+representation not only for normalization and equality checking, but
+also for higher-order unification.
+
+% Building on Nadathur's alternative to explicit substitutions, the
+% \emph{suspension calculus} \cite{nadathur:jflp99},
+Building on the suspension calculus,
 Liang, Nadathur, and Qi \cite{liangNadathurQi:jar05} have evaluated
 different term representations in the context of $\lambda$Prolog, a
 study that compares to our study of term representations for the
