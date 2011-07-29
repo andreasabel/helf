@@ -99,7 +99,7 @@ possibility, but can it be adapted to support the second?
 % probably not (?)
 
 
-### TODO ###
+### TODO ###
 (4) Graph based reduction with associated term sharing is often used
 in reduction. Can such an approach be used also with your
 representation? This relates to item (2), which notes the sensitivity
@@ -109,7 +109,7 @@ procedures based on explicit substitutions.
 % I don't know...
 
 
-### TODO ###
+### TODO ###
 (5) The experimental comparisons are a bit weak. One reason for this
 is that these comparisons are in the setting of a somewhat artificial
 task of reducing to weak head normal forms rather than in a setting
@@ -356,7 +356,7 @@ p.5 mid-bottom. How expensive are these operations (as above)?
 I first saw the separation of evaluation into a weak-head step,
 together with an application algebra on weak-head normal forms, in the
 1991 paper by Coquand (you cite it, but not here; remedy that?)
-
+% DO NOTHING
 
 
 ### TODO? ###
@@ -366,7 +366,7 @@ bound occurrence: singleton environment
 This seems an invariant which your implementation ought to be able to
 make more use of (for optimisation). Or is the saving in term
 representation paid for in the cost of maintaining this invariant?
-
+% WHAT?
 
 
 p.6 mid-bottom. The translation relation you define (name it! and
@@ -375,7 +375,7 @@ label its tabular definition!) seems to need disjoint \vec{x} and
 globally insist on freshness in the presentation of the rules.
 % how should we 'name it'? labelling is a good idea, yes. disjoint vecs: no, not needed (?)
 % okay; just named it 'transforming relation'...
-
+%% DONE
 
 p.6 bottom. Bad line-break after "we notice that": use an mbox, or
 rephrase to avoid the notation splitting up.
@@ -386,7 +386,7 @@ On Section 5 generally: it's good to have this material, but it is not
 the most interesting or important part of the paper. It's good
 hygiene/adequacy/faithfulness, but you could push it to an appendix?
 % I don't know. Some parts (/notations) of sec 5 are used in sec 6. Might still be a good idea (?)
-
+%% NO
 
 p.7 bottom "the following tabular" --> "the following table". Similarly page 8, middle. 
 % DONE
@@ -405,11 +405,12 @@ There has been some interesting recent work on profiling basic
 datatypes and their memory footprint in haskell (recent blog posting
 on haskell mailing list). Consider putting your results in the context
 of existing allocation overhead caused by ghc.
-% hmm…
-
+% hmm
+%% FUTURE WORK
 
 Also, IIRC, the language is "haskell", not "Haskell". 
 % I cannot find any evidence for this statement. 
+%% BS
 
 
 
@@ -425,24 +426,28 @@ like loose talk without a bit more meat to back it up. Not enough
 experimental evaluation is done in theoretical computer science, but
 it would be good to do it with a little more methodological discipline
 and conviction.
-
+%% FUTURE WORK
 
 
 p.10 bottom "could be seen as an optimised version of director
 strings". How? (this is my ignorance showing here). Please spell this 
 out (you have the space to do so).
+%% NO
 
 p.11 para. 3 Claim: "not significantly in favour". 
 On what statistical, or other, measure of significance? 
+%% WHATEVER
 
 p.11 para. 3 Claim: "More space leaks are to be expected in
 applications like..."  Substantiate the claim, especially as you seem
 to want to focus on such applications in future work (and this reader
 wants you to do so, as well!). 
+%% CAN'T SUBSTANTIATE
 
 p.11 para. 4 "a performing term representation". Do you mean a term
 representation which performs competitively, or which performs at all?
 Competitively against what competition? etc...
+%% DONE
 
 
 ----------------------- REVIEW 3 ---------------------
