@@ -141,7 +141,8 @@
 %\newcommand{\parseb}[4]{\mbox{$#1 \lhd #2 \rhd  #3[#4]$} }
 %\newcommand{\parse}[3]{\mbox{$#1 \, {  \mathord{\lhd} {#2} \mathord{\rhd}  } \, #3$} }
 \newcommand{\parseFun}[1]{{\left(\mathord{\lhd} {#1} \mathord{\rhd}\right)}}
-\newcommand{\parseFunE}{{\mathfrak {parse } \,}}                                                     % TODO ?
+\newcommand{\parseFunE}{\mathop{\rhd}}
+%\newcommand{\parseFunE}{{\mathfrak {parse } \,}}  
 \newcommand{\print}[3]{{#1 \, {  \mathord{\rhd} {#2} \mathord{\lhd}  } \, #3 }}
 \newcommand{\infru}[2]{{\infer{#2}{#1}}}
 \newcommand{\infnamed}[3]{{\infer[#1]{#3}{#2}}}
@@ -173,3 +174,14 @@
 \newcommand{\evTr}{\mathsf{evalTrees}}
 
 \newcommand{\lab}[1]{\mbox{(#1)}}
+
+\newcommand{\vstart}{\vec v_{start}}
+\newcommand{\vrest}{\vec v_{rest}}
+
+% \newcommand{\vstart}{\vec{v_{start}}}
+% \newcommand{\vrest}{\vec{v_{rest}}}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "lfmtp11"
+%%% End: 

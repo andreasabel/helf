@@ -413,13 +413,18 @@ By writing $\ot \otimes \xl$ (resp. $\ot \otimes \vl$, $\otw \otimes \gl$, $\ldo
 
 % \begin{defin}
 For a finite %multiset 
-set $\Gamma$ of variable names, we define the \define{transforming relation}
+set $\Gamma$ of variable names, we define the \define{correspondance relation}
 % $\parse \cdot \Gamma \cdot \ \subset \  \te \times (\ot \times \xl)$.
-${\parseb \cdot \Gamma \cdot \cdot ~ \subset ~ \te \times \ot \times \xl}$.
+${\parseb \cdot \Gamma \cdot \cdot ~ \subset ~ \te \times \ot \times
+  \xl}$
+(pronounce: ``corresponds in context $\Gamma$ to'').
 The intuition is that ${\parseb M \Gamma u {\vec x}}$ means: 
 % The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse
 % M \Gamma {u \, \vec x}$) means: 
-$M$ is a term that corresponds to the ordered term $u$, where unbound $\ovar$ are replaced by the variables in the list $\vec x$. 
+$M$ is a term that corresponds to the ordered term $u$, where unbound
+$\ovar$ are replaced by the (\emph{not} necessarily pairwise distinct)
+variables in the list $\vec x$. 
+% This list $\vec x$ of variable names may contain duplicates!
 The set $\Gamma$ can be seen as a filter that tells us which free variables do not occur in $u$ but in $\vec x$ instead.
 \[
 \begin{array}{c@{\qquad\qquad} c}
@@ -443,28 +448,46 @@ It is important to note that $\parseb M \Gamma u {\vec x}$ implies that each var
 
 By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parseb M \Gamma u  {\vec x}$, so we can consider $\parseFun \Gamma$ a function $\te \rightarrow \otw \times \gl$. Furthermore, we note that $\parseb M \Gamma u {\vec x}$ always implies $\freevars u = \length {\vec x}$. 
  
-This also works the other way round. For each $\Gamma$ and each tuple $(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a term $M \in \te$ satisfying $\parseb M \Gamma u {\vec x}$. Moreover, this term $M$ is unique up to $\alpha$ equivalence. So, $\parseFun \Gamma$ is actually a bijection between $\te / \alpha$ (the set of $\alpha$ equivalence classes of terms) and $\otw \otimes \gl$. The inference rules above show how to apply this bijection or its inverse to a term or a tuple (in the last rule, any variable satisfying the condition can be chosen for $z$), so we have (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
+This also works the other way round. For each $\Gamma$ and each tuple
+$(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a
+term $M \in \te$ satisfying $\parseb M \Gamma u {\vec x}$. Moreover,
+this term $M$ is unique up to $\alpha$ equivalence. So, $\parseFun
+\Gamma$ is actually a bijection between $\te / \alpha$ (the set of
+$\alpha$ equivalence classes of terms) and $\otw \otimes \gl$. The
+inference rules above show how to apply this bijection or its inverse
+to a term or a tuple (in the last rule, any variable satisfying the
+condition can be chosen for $z$), so we have 
+% (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
+a computable bijection $\te / \alpha \leftrightarrow \otw \otimes \gl$
+determined by the rules for $\parseFun \Gamma$.
 
-Choosing $\Gamma = \emptySet$, we get bijections $\te \leftrightarrow \ot \otimes {\vec \emptySet}$. As $\vec \emptySet$ is only inhabited by the empty vector $\emptyVec$, we naturally get the 
-function $\parseFunE$ which maps $\te / \alpha$ bijectively on $\otc$.
+Choosing $\Gamma = \emptySet$, we get a bijection $\te/\alpha
+\leftrightarrow \ot \otimes {\vec \emptySet}$.  As $\vec \emptySet$ is
+only inhabited by the empty vector $\emptyVec$, we naturally get the
+\define{parse} function $\parseFunE$ which maps $\te / \alpha$
+bijectively on $\otc$.
 
 
 %Choosing $\Gamma = \emptySet$, we get the special cases $\parseFun \emptySet$ and $\parseFun \emptySet ^{-1}$, which are bijections between $\te$ and $\otc$. This also explaines how one representation can be transformed into the other.
 
-The above construction also gives us a function $\otc \rightarrow \te$, but this is not enough. We want to transform the (more general) elements of $\ot \otimes \vl$ or just $\va$ into basic terms $\te$.
+The above construction also gives us a function $\otc \rightarrow
+\te$, but this is not enough. We want to transform closures
+(elements of $\ot \otimes \vl$) and values (elements of $\va$) 
+into basic terms $\te$.
 Therefore, we
 % \begin{defin}
 % We 
-define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alpha$ and $\prValE : \va \rightarrow \te / \alpha$ simultaneously by recursion on the structure:
+define the two \define{print} functions $\prE : \ot \otimes \vl \rightarrow \te / \alpha$ and $\prValE : \va \rightarrow \te / \alpha$ simultaneously by recursion on the structure:
 \[
 \begin{array}{lclc}
 \medskip
 \pr{x}{\emptyVec} & = & x & \lab I \\
 \medskip
 \pr{\ovar}{[v]} & = & \prVal v & \lab {II} \\
-\pr{t \oapp m u}{\vec v} & = & \ApA {\pr {t}{\vec{v_{start}}}  }  {\quad \pr {u}{\vec{v_{rest}}}}  & \lab {III} \\
+\pr{t \oapp m u}{\vec v} & = & \ApA {\pr {t}{\vstart}  }  {\quad \pr
+  {u}{\vrest}}  & \lab {III} \\
 \medskip
-&& \mbox{(split $\vec v$ at position $m$ to get $\vec{v_{start}}$ and $\vec{v_{rest}}$)} \\
+&& \mbox{(split $\vec v$ at position $m$ to get $\vstart$ and $\vrest$)} \\
 % \pr{\LaO {k_1, \ldots, k_m} t}{[v_1, v_2, \ldots, v_n]} & = & \LaA z {\pr {t} {v_1, \ldots, v_{k_1}, z, v_{k_1+1}, \ldots, }}  & \lab {IV} \\
 \pr{\LaO {\vec k} t}{\vec v} & = & \LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }}   & \lab {IV}\\
 \medskip
@@ -475,7 +498,7 @@ define the two printing functions $\prE : \ot \otimes \vl \rightarrow \te / \alp
 \end{array}
 \]
 %\end{defin}
-First, note that the printing functions are well-defined (i.e. they always terminate). This is because during evaluation of $\pr{u}{\vec v}$, we may safely assume that $\pr{t}{\vec w}$ is well-defined as long as $t$ is a strict subterm of $u$ and each value $w'$ in $\vec w$ is either only a variable (so termination of $\prVal {w'}$ is clear) or also in $\vec v$. Similar, during evaluation of $\prVal {x \sspace v_1 \sspace \ldots v_n}$, we may assume that $\prVal {v_i}$ is defined for each $i$.
+First, note that the printing functions are well-defined (i.e., they always terminate). This is because during evaluation of $\pr{u}{\vec v}$, we may safely assume that $\pr{t}{\vec w}$ is well-defined as long as $t$ is a strict subterm of $u$ and each value $w'$ in $\vec w$ is either only a variable (so termination of $\prVal {w'}$ is clear) or also in $\vec v$. Similar, during evaluation of $\prVal {x \sspace v_1 \sspace \ldots v_n}$, we may assume that $\prVal {v_i}$ is defined for each $i$.
 
 For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\parseb M \emptySet t { }$ (which just means $\parseFunE t = M$) as both judgements are defined identically in the case of closed ordered terms. This essentially (with implicit use of the bijection $\otc \leftrightarrow \ot \otimes \vec \emptySet$) means $\prE \circ \parseFunE  = id_{\te}$, i.e. the composition of parsing and printing is the identity.
 
@@ -660,7 +683,9 @@ typed terms of the Edinburgh Logical Framework which were kindly
 provided by Andrew W. Appel (Princeton University). To make this
 possible, an extended syntax has been used that includes $\Pi$-types% and technical elements like
 , constants and definitions. It is straightforward to expand our
-evaluation algorithm to the extended syntax. The substitution lists
+evaluation algorithm to the extended syntax---for details consult the
+Bachelor's thesis of the second author \cite{kraus:bachelor}. 
+The substitution lists
 have been implemented as simple Haskell lists, and also as balanced
 binary trees (following Adams \cite{adams:jfp93})
 for better asymptotic complexity.  Both variants were
@@ -671,7 +696,8 @@ For comparison, the completely analogous algorithm for terms in
 extended basic syntax (i.e. $\te$) has been used [\emph{Simple
   Closures}]. Furthermore, we have tested a strategy that always
 evaluates completely (i.e. produces $\beta$ normal forms) using
-Hereditary Substitution [\emph{Beta Normal Values}].
+Hereditary Substitution [\emph{Beta Normal Values}]
+\cite{watkins:concurrentlftr}.
 
 Our main test file \textsf{w32\_sig\_semant.elf} with a size of
 approximately 21 megabytes contains a proof described in
@@ -803,6 +829,8 @@ to evaluation of some specific big lambda-terms.  There is no study on
 their relative performance in a realistic application---yet that is
 our concern.
 
+Building on Nadathur's alternative to explicit substitutions, the
+\emph{suspension calculus} \cite{nadathur:jflp99},
 Liang, Nadathur, and Qi \cite{liangNadathurQi:jar05} have evaluated
 different term representations in the context of $\lambda$Prolog, a
 study that compares to our study of term representations for the
@@ -848,7 +876,7 @@ In the future, we plan to investigate further term representations
 such as term graphs, and perform more experiments.  The literature on
 experimentally successful term representations is sparse, our work
 contributes to close this gap.  Our long term goal is to find a
-performing term representation to use for Agda's type reconstruction.
+term representation which speeds up Agda's type reconstruction.
 
 
 \paragraph*{Acknowledgements}

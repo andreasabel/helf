@@ -4,17 +4,22 @@
 @STRING{aaecc	= "Applicable Algebra in Engineering, Communication and
 		  Computing" }
 @STRING{acm	= "ACM Press" }
+@STRING{cade99	= "Automated Deduction - CADE-16, 16th International
+		  Conference on Automated Deduction, Trento, Italy, July
+		  7-10, 1999, Proceedings" }
 @STRING{csechalmers="Department of Computer Science and Engineering, Chalmers
 		  University of Technology" }
 @STRING{elsevier= "Elsevier" }
+@STRING{icfp01	= "Proceedings of the sixth ACM SIGPLAN International
+		  Conference on Functional Programming (ICFP 2001)" }
 @STRING{icfp02	= "Proceedings of the seventh ACM SIGPLAN International
 		  Conference on Functional Programming (ICFP '02),
 		  Pittsburgh, Pennsylvania, USA, October 4-6, 2002" }
 @STRING{infcomp	= "Information and Computation" }
 @STRING{jar	= "Journal of Automated Reasoning" }
+@STRING{jflp	= "Journal of Functional and Logic Programming" }
 @STRING{jfp	= "Journal of Functional Programming" }
 @STRING{jlc	= "Journal of Logic and Computation" }
-@STRING{lnai	= "Lecture Notes in Artificial Intelligence" }
 @STRING{lncs	= "Lecture Notes in Computer Science" }
 @STRING{mpc95	= "Mathematics of Program Construction. Selected Papers from
 		  the Third International Conference on the Mathematics of
@@ -43,6 +48,7 @@
   number	= 4,
   year		= 1991,
   pages		= {375--416},
+  ee		= {http://dx.doi.org/10.1017/S0956796800000186},
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
@@ -54,6 +60,7 @@
   number	= 4,
   year		= 1993,
   pages		= {553-561},
+  ee		= {http://dx.doi.org/10.1017/S0956796800000885},
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
@@ -84,6 +91,7 @@
   booktitle	= tlca93,
   year		= 1993,
   pages		= {75-90},
+  ee		= {http://dx.doi.org/10.1007/BFb0037099},
   crossref	= {DBLP:conf/tlca/1993},
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
@@ -139,7 +147,7 @@
 @InProceedings{	  fluetWeeks:icfp01,
   author	= {Matthew Fluet and Stephen Weeks},
   title		= {Contification Using Dominators},
-  booktitle	= {ICFP},
+  booktitle	= icfp01,
   year		= {2001},
   pages		= {2-13},
   ee		= {http://doi.acm.org/10.1145/507635.507639},
@@ -216,6 +224,19 @@
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
+@Article{	  nadathur:jflp99,
+  author	= {Gopalan Nadathur},
+  title		= {A Fine-Grained Notation for Lambda Terms and Its Use in
+		  Intensional Operations},
+  journal	= jflp,
+  volume	= 1999,
+  number	= 2,
+  year		= 1999,
+  url		= {http://danae.uni-muenster.de/lehre/kuchen/JFLP/articles/1999/A99-02/A99-02.html}
+		  ,
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
+}
+
 @Article{	  liangNadathurQi:jar05,
   author	= {Chuck Liang and Gopalan Nadathur and Xiaochu Qi},
   title		= {Choices in representation and reduction strategies for
@@ -224,6 +245,8 @@
   year		= 2005,
   volume	= 33,
   number	= 2,
+  ee		= {http://dx.doi.org/10.1007/s10817-004-6885-1},
+  doi		= {10.1007/s10817-004-6885-1},
   pages		= {89--132}
 }
 
@@ -244,27 +267,21 @@
   booktitle	= tlca99,
   year		= 1999,
   pages		= {295-309},
-  ee		= {http://link.springer.de/link/service/series/0558/bibs/1581/15810295.htm}
-		  ,
+  ee		= {http://dx.doi.org/10.1007/3-540-48959-2_21},
   crossref	= {DBLP:conf/tlca/1999},
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
 @InProceedings{	  carsten:twelf,
-  author	= {Frank Pfenning and Carsten Sch\"u{}rmann},
-  title		= {System description: Twelf - a meta-logical framework for
-		  deductive systems},
-  booktitle	= {Proceedings of the 16th International Conference on
-		  Automated Deduction (CADE-16)},
-  pages		= {202--206},
-  year		= 1999,
-  editor	= {H. Ganzinger},
-  volume	= 1632,
-  series	= lnai,
-  address	= {Trento, Italy},
-  month		= {July},
-  publisher	= springer,
-  url		= {http://www.cs.cmu.edu/\~{}twelf/}
+  author	= {Frank Pfenning and Carsten Sch{\"u}rmann},
+  title		= {System Description: Twelf - A Meta-Logical Framework for
+		  Deductive Systems},
+  booktitle	= cade99,
+  year		= {1999},
+  pages		= {202-206},
+  ee		= {http://dx.doi.org/10.1007/3-540-48660-7_14},
+  crossref	= {DBLP:conf/cade/1999},
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
 @Article{	  fernandezMackieSinot:aaecc05,
@@ -291,6 +308,29 @@
   year		= 2005,
   pages		= {201-218},
   ee		= {http://dx.doi.org/10.1093/logcom/exi010},
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
+}
+
+@TechReport{	  watkins:concurrentLFTR,
+  author	= {Kevin Watkins and Iliano Cervesato and Frank Pfenning and
+		  David Walker},
+  title		= {A concurrent logical framework {I}: Judgements and
+		  properties},
+  institution	= {School of Computer Science, Carnegie Mellon University,
+		  Pittsburgh},
+  year		= 2003,
+  key		= {CMU-CS02-101}
+}
+
+@Proceedings{	  DBLP:conf/cade/1999,
+  editor	= {Harald Ganzinger},
+  title		= cade99,
+  booktitle	= cade99,
+  publisher	= springer,
+  series	= lncs,
+  volume	= 1632,
+  year		= 1999,
+  isbn		= {3-540-66222-7},
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
