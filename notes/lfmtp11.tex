@@ -548,7 +548,6 @@ Note that ``rewriting using the evaluation rules'' results in expressions which 
 Although we do not define it formally, it should be clear how those expressions can be printed by using the printing functions for ordered terms and values (if an expression is a tuple, just print the function part and the argument part separately). In fact, while the function $\ev \cdot \cdot$ is formulated as a big step evaluation, the rewriting process can be understood as the corresponding small step (or one step) evaluation.
 
 In the first five rows of the table, we only have to look at the definitions of the printing functions to see that the printed terms are not only $\beta$ equivalent but also equal. The very last rule $\lab 6$ requires closer examination: 
-\\
 By rule $\lab {IV}$, the term $\prVal{\Val{\vec k} t {\vec v}}$ is equal to $\LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }} $ for a (sufficiently) fresh variable $z$. Now, the definitions of the printing functions are ``context free'' in a way that guarantees  that $z$ occurs exactly $\length{\vec k}$ times (free) in $\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }$. Furthermore, replacing those occurrences by $\prVal{w}$ results in the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$. This means that, starting with 
 $ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $,
 we have to use exactly one $\beta$ reduction step to get the term $  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $.
