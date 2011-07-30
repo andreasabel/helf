@@ -558,9 +558,8 @@ Now we discuss termination. Obviously, our evaluation function $\ev \cdot \cdot$
 The main consequence of this is that evaluation terminates for all well-typed terms. % TODO "all" !
 To prove this statement, assume that there is such a term $s_0 \in \te$ so that the evaluation of $t_0 := \parseFunE s_0$ does not terminate. 
 %
-Then, we get an infinite sequence $t_0, t_1, t_2, \ldots$ where $t_{i+1}$ is the result of rewriting (a subexpression of) $t_i$ using one of the evaluation rules. If we print $t_0, t_1, t_2, \ldots$, we get a sequence $s_0, s_1, s_2, \ldots$ of terms in $\te$, where $s_{i+1}$ is either ($\alpha$) equal to $s_i$ or arises from $s_i$ in exactly one $\beta$ reduction step. If $\beta$ reduction is strongly normalizing on $s_0$, the sequence has to become constant at some point, i.e. $s_N = s_{N+1} = s_{N+2} = \ldots$ for some $N$. This implies that, after the first $N$ rewriting steps, the second $@$ rule (which corresponds to the last line in the table) is not used anymore. Define the \emph{weight} $w(t)$ of an expression $t$ to be $1$, if the expression is just an element of $\ot \otimes \va$, to be $2$, if it is a value of the \emph{closure} type, to be %TODO
-$1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$
-, if it is a value of the form $x \, v_1 v_2 \ldots v_n$ (i.e. a \emph{large application}) and, if it is a tuple of two expressions, as the sum of both weights. Then, each of the rewritings that are induced by the first five lines in the table increase the weight of the expression, so we get $w(t_N) < w(t_{N+1}) < w(t_{N+2}) < \ldots$;  however, as the total number of values (and tuples in $\ot \otimes \va$) is bound by the length of the term we get after printing $t_N$ (or any $t_{N+i}$), the sequence is bounded, resulting in the required contradiction.
+Then, we get an infinite sequence $t_0, t_1, t_2, \ldots$ where $t_{i+1}$ is the result of rewriting (a subexpression of) $t_i$ using one of the evaluation rules. If we print $t_0, t_1, t_2, \ldots$, we get a sequence $s_0, s_1, s_2, \ldots$ of terms in $\te$, where $s_{i+1}$ is either ($\alpha$) equal to $s_i$ or arises from $s_i$ in exactly one $\beta$ reduction step. If $\beta$ reduction is strongly normalizing on $s_0$, the sequence has to become constant at some point, i.e. $s_N = s_{N+1} = s_{N+2} = \ldots$ for some $N$. This implies that, after the first $N$ rewriting steps, rule \lab 6 is not used anymore. Define the \emph{weight} $w(t)$ of an expression $t$ to be $1$, if the expression is just an element of $\ot \otimes \va$, to be $2$, if it is a value of the \emph{closure} type, to be %TODO
+$1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$, if it is a value of the form $x \, v_1 v_2 \ldots v_n$ (i.e. a \emph{large application}) and, if it is a tuple of two expressions, as the sum of both weights. Then, each of the rewritings that are induced by the first five lines in the table increase the weight of the expression, so we get $w(t_N) < w(t_{N+1}) < w(t_{N+2}) < \ldots$;  however, as the total number of values (and tuples in $\ot \otimes \va$) is bound by the length of the term we get after printing $t_N$ (or any $t_{N+i}$), the sequence is bounded, resulting in the required contradiction.
 
 
 
@@ -912,7 +911,7 @@ The final version of this paper was stylistically improved with the highly appre
 
 
 \bibliographystyle{eptcs}
-\bibliography{auto-lfmtp11}
+\bibliography{nonauto-lfmtp11}
 
 
 \end{document}
