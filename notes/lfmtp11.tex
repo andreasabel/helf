@@ -716,7 +716,7 @@ All tests were executed on the same server
 working with a CPU of type \emph{AMD Phenom II X4 B95} (only
 one core used, 3 GHz) and 8 GB system memory. The measurements
 of space and time consumption are given in the following tables (rounded
-average values):
+average values). More specifically, \emph{time} refers to the total time, including parsing the input file and transforming (if necessary) the representation to our ordered representation or to one that uses De Bruijn terms. However, in our tests, the transformation process only took a negligible amount of time. The time value does, however, not include any printing of the terms or the values (with printing, the total time increased significantly). \emph{Space} refers to the peak space usage of the whole process.
 
 \begin{center}
 \begin{tabular}{| l || c | c |}
