@@ -175,11 +175,11 @@ instance (Signature Term sig, MonadReader sig m, MonadTG m) =>
 
 -- * Translation from expressions
 
-type TDict = Map A.Expr Term
-type TransM = StateT TDict ORefM
-type TransT = StateT TDict
+type TDict a = Map a Term
+type TransM a = StateT (TDict a) ORefM
+type TransT a = StateT (TDict a)
 
-addPredefs :: MonadTG m => TDict -> m TDict
+addPredefs :: MonadTG m => TDict A.Expr -> m (TDict A.Expr)
 addPredefs dict = do
   ty <- predefType
   return $ Map.insert A.Typ ty dict
@@ -189,10 +189,13 @@ trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
 trans rho e = -- trace ("translating " ++ show e) $ do
   evalStateT (transT e) =<< addPredefs 
                      (Map.mapKeysMonotonic (A.Ident . A.Var) rho)
-
 transT ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
-  A.Expr -> TransT m Term
-transT e = do
+  A.Expr -> TransT A.Expr m Term
+transT = transG transT'
+
+transG ::  (Signature Term sig, MonadReader sig m, MonadTG m, Ord a, Show a) => 
+  (a -> TransT a m Term') -> a -> TransT a m Term
+transG transT' e = do
   dict <- get
   case Map.lookup e dict of  -- TODO compare upto alpha!
     Just r  -> do
@@ -227,7 +230,7 @@ def :: A.Name -> Type -> Term -> Term'
 def x t v = Def x t v []
 
 transT' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
-  A.Expr -> TransT m Term'
+  A.Expr -> TransT A.Expr m Term'
 transT' e = do
   let (f, sp) = A.appView e
   if null sp then 

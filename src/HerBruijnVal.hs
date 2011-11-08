@@ -178,7 +178,7 @@ evaluate expr env =
 {- THIS IS ONLY FOR DEBUGGING -}
 {-  -- evaluate :: Expr -> Env' -> m HVal
   evaluate expr env =
-    let expr' = transform expr
+    let expr' = toLocallyNameless expr
         result' = evaluate' expr' env
     in 
     (\correctVal -> if checkForPseudofree correctVal then return correctVal else fail $ "EVALUATE did not bind all variables correctly") =<< result'
@@ -255,14 +255,14 @@ evaluate1 expr env = -- (\ w -> assertClosed w (return w)) =<<
       Pi Nothing a b  -> HFun <$> eval a <*> (HK <$> eval b)
       Pi (Just x) a b -> HFun <$> eval a <*> (HLam x . bind x <$> eval b)
 
--- old, uses transform: 
+-- old, uses toLocallyNameless: 
 evaluate2 expr env =
-  let expr' = transform expr
+  let expr' = toLocallyNameless expr
   in evaluate' expr' env
   where
     -- evaluate' :: BTm -> Env' -> m HVal
     evaluate' btm env = case btm of
-      B k n       -> return $ HBound k n []
+      B (DBIndex k n) -> return $ HBound k n []
       BVar x      -> return $ lookupVal (var_ x) env
       BCon x      -> con x . symbType . sigLookup' (uid x) <$> ask
       BDef x      -> do
