@@ -5,3 +5,6 @@ abs : (tm -> tm) -> tm.
 
 eq : tm -> tm -> type.
 eq/id : eq (abs [x]x) (abs [y]y).
+
+id : eq (abs [x]x) (abs [y]y) -> eq (abs [x']x') (abs [y']y') =
+  [z]z.
