@@ -179,50 +179,65 @@ type TDict a = Map a Term
 type TransM a = StateT (TDict a) ORefM
 type TransT a = StateT (TDict a)
 
+{-
 addPredefs :: MonadTG m => TDict A.Expr -> m (TDict A.Expr)
 addPredefs dict = do
   ty <- predefType
   return $ Map.insert A.Typ ty dict
+
 
 trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
   Env -> A.Expr -> m Term
 trans rho e = -- trace ("translating " ++ show e) $ do
   evalStateT (transT e) =<< addPredefs 
                      (Map.mapKeysMonotonic (A.Ident . A.Var) rho)
+-}
 
-{-
+addPredefs :: MonadTG m => TDict BTm -> m (TDict BTm)
+addPredefs dict = do
+  ty <- predefType
+  return $ Map.insert (BSort Type) ty dict
+
+trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+  Env -> A.Expr -> m Term
+trans rho e = -- trace ("translating " ++ show e) $ do
+  evalStateT (transB (toLocallyNameless e)) =<< addPredefs 
+                     (Map.mapKeysMonotonic BVar rho)
+
+
 -- | From locally nameless to Term.
 transB ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
   BTm -> TransT BTm m Term
 transB = transG transB'
 
 transB' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
-  BTm -> TransT BTm m Term'
+  BTm -> TransT BTm m (Either Term Term')
 transB' e = do
   let (f, sp) = appView e
   if null sp then 
       case f of
-         B (DBIndex 
-         BCon x -> con x . symbType . sigLookup' (A.uid x) <$> ask
+         B (DBIndex i n) -> Left <$> transB (BVar n) 
+         BCon x -> Right <$> (con x . symbType . sigLookup' (A.uid x) <$> ask)
          BDef x -> do 
             SigDef t v <- sigLookup' (A.uid x) <$> ask
-            return $ def x t v 
+            Right <$> (return $ def x t v) 
          BVar n -> -- free variable
 --           fail ("transB': unbound variable " ++ A.suggestion n) 
 --           trace ("transB': unbound variable " ++ A.suggestion n) 
-           return $ Var n -- only for binding in Lam and Pi
-         -- A.Typ             -> predefType  -- impossible case
-         BLam n e    -> Abs <$> transB (A.Ident $ A.Var n) <*> transB e
-         BConstLam e -> K   <$> transB e
-         BPi a b     -> Fun <$> transB a <*> transB b
+           Right <$> (return $ Var n) -- only for binding in Lam and Pi
+         BLam n e    -> do
+           x <- transAddBind BVar n 
+           Right . Abs x <$> transB e
+         BConstLam e -> Right . K <$> transB e
+         BPi a b     -> Right <$> (Fun <$> transB a <*> transB b)
    else do
     r <- transB f
-    App r <$> (mapM transB sp)
--}
+    Right . App r <$> (mapM transB sp)
+
 
 -- | Generic to Term translator.
 transG ::  (Signature Term sig, MonadReader sig m, MonadTG m, Ord a, Show a) => 
-  (a -> TransT a m Term') -> a -> TransT a m Term
+  (a -> TransT a m (Either Term Term')) -> a -> TransT a m Term
 transG transT' e = do
   dict <- get
   case Map.lookup e dict of  -- TODO compare upto alpha!
@@ -231,10 +246,14 @@ transG transT' e = do
         traceM $ return ("==> found translation for " ++ show e)
       return r
     Nothing -> do
-      r <- newORef =<< transT' e
-      -- traceM $ return ("adding translation for " ++ show e) 
-      put $ Map.insert e r dict
-      return r
+      rt <- transT' e
+      case rt of
+        Left  r -> return r
+        Right t -> do
+          r <- newORef t
+          -- traceM $ return ("adding translation for " ++ show e) 
+          put $ Map.insert e r dict
+          return r
 
 transAddBind :: (Signature Term sig, MonadReader sig m, MonadTG m, Ord a) => 
   (A.Name -> a) -> A.Name -> TransT a m Term
@@ -266,7 +285,7 @@ def x t v = Def x t v []
 
 transT :: (Signature Term sig, MonadReader sig m, MonadTG m) => 
   A.Expr -> TransT A.Expr m Term
-transT = transG transT'
+transT = transG (Right <.> transT')
 
 transT' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
   A.Expr -> TransT A.Expr m Term'
