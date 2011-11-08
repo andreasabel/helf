@@ -189,10 +189,38 @@ trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
 trans rho e = -- trace ("translating " ++ show e) $ do
   evalStateT (transT e) =<< addPredefs 
                      (Map.mapKeysMonotonic (A.Ident . A.Var) rho)
-transT ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
-  A.Expr -> TransT A.Expr m Term
-transT = transG transT'
 
+{-
+-- | From locally nameless to Term.
+transB ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+  BTm -> TransT BTm m Term
+transB = transG transB'
+
+transB' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+  BTm -> TransT BTm m Term'
+transB' e = do
+  let (f, sp) = appView e
+  if null sp then 
+      case f of
+         B (DBIndex 
+         BCon x -> con x . symbType . sigLookup' (A.uid x) <$> ask
+         BDef x -> do 
+            SigDef t v <- sigLookup' (A.uid x) <$> ask
+            return $ def x t v 
+         BVar n -> -- free variable
+--           fail ("transB': unbound variable " ++ A.suggestion n) 
+--           trace ("transB': unbound variable " ++ A.suggestion n) 
+           return $ Var n -- only for binding in Lam and Pi
+         -- A.Typ             -> predefType  -- impossible case
+         BLam n e    -> Abs <$> transB (A.Ident $ A.Var n) <*> transB e
+         BConstLam e -> K   <$> transB e
+         BPi a b     -> Fun <$> transB a <*> transB b
+   else do
+    r <- transB f
+    App r <$> (mapM transB sp)
+-}
+
+-- | Generic to Term translator.
 transG ::  (Signature Term sig, MonadReader sig m, MonadTG m, Ord a, Show a) => 
   (a -> TransT a m Term') -> a -> TransT a m Term
 transG transT' e = do
@@ -207,6 +235,13 @@ transG transT' e = do
       -- traceM $ return ("adding translation for " ++ show e) 
       put $ Map.insert e r dict
       return r
+
+transAddBind :: (Signature Term sig, MonadReader sig m, MonadTG m, Ord a) => 
+  (A.Name -> a) -> A.Name -> TransT a m Term
+transAddBind toKey n = do
+  r <- newORef (Var n)
+  modify $ Map.insert (toKey n) r
+  return r
 
 {-
 con :: MonadORef m => A.Name -> Term -> m Term 
@@ -229,10 +264,14 @@ con x t = Atom (A.Con x) t []
 def :: A.Name -> Type -> Term -> Term'
 def x t v = Def x t v []
 
+transT :: (Signature Term sig, MonadReader sig m, MonadTG m) => 
+  A.Expr -> TransT A.Expr m Term
+transT = transG transT'
+
 transT' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
   A.Expr -> TransT A.Expr m Term'
 transT' e = do
-  let (f, sp) = A.appView e
+  let (f, sp) = appView e
   if null sp then 
       case f of
          A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> ask
@@ -240,16 +279,14 @@ transT' e = do
             SigDef t v <- sigLookup' (A.uid x) <$> ask
             return $ def x t v 
          A.Ident (A.Var n) -> 
---           fail ("transT': unbound variable " ++ A.suggestion n) 
+           fail ("transT': unbound variable " ++ A.suggestion n) 
 --           trace ("transT': unbound variable " ++ A.suggestion n) 
-           return $ Var n -- only for binding in Lam and Pi
+--           return $ Var n -- only for binding in Lam and Pi
          -- A.Typ             -> predefType  -- impossible case
-{-
          A.Lam n _ e       -> do
-           x <- transT (A.Ident $ A.Var n) 
+           x <- transAddBind (A.Ident . A.Var) n 
            Abs x <$> transT e
- -}
-         A.Lam n _ e       -> Abs <$> transT (A.Ident $ A.Var n) <*> transT e
+--       A.Lam n _ e       -> Abs <$> transT (A.Ident $ A.Var n) <*> transT e
          A.Pi Nothing  a b -> Fun <$> transT a <*> (newORef =<< K <$> transT b)
          A.Pi (Just n) a b -> Fun <$> transT a <*> transT (A.Lam n Nothing b)
    else do

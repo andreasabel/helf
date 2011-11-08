@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable #-}
+{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable, TypeSynonymInstances #-}
 
 module Abstract where
 
@@ -11,6 +11,8 @@ import Data.Foldable
 import Data.Traversable
 
 import qualified Concrete as C 
+
+import Util
 
 -- * Abstract names and identifiers
 
@@ -91,10 +93,16 @@ data Expression id
 
 -- * Spine view
 
+instance IsApp Expr where
+  isApp (App f e) = Just (f, e)
+  isApp _         = Nothing
+
+{- code generalized and moved to Util
 appView :: Expr -> (Expr, [Expr])
 appView = loop [] where
   loop acc (App f e) = loop (e : acc) f
   loop acc f         = (f, acc)
+-}
 
 -- * Queries
 

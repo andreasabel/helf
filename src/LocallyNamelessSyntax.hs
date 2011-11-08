@@ -6,6 +6,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 
 import Abstract as A
+import Util
 import Value
 
 -- * de Bruijn Terms
@@ -30,6 +31,11 @@ data BTm -- names are only used for quoting
   | BSort Value.Sort
   | BPi BTm BTm
     deriving (Eq, Ord)
+
+instance IsApp BTm where
+  isApp (BApp f e) = Just (f, e)
+  isApp _          = Nothing
+  
 
 instance Show BTm where
     show = show . fromLocallyNameless
