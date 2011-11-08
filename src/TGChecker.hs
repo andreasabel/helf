@@ -3,7 +3,7 @@
 -- * environments as finite maps
 
 {-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
-    PatternGuards, TupleSections #-}
+    PatternGuards, TupleSections, TypeSynonymInstances, MultiParamTypeClasses #-}
 
 module TGChecker where
 
@@ -102,6 +102,13 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
   typeTrace tr cont  = -- traceM (showM tr) >>
     enterDoc (prettyM tr) cont
+
+{-
+  traceEval m = do
+    v <- m
+    traceM (showTG v) 
+    return v
+-}
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 

@@ -1,6 +1,7 @@
+{-# LANGUAGE DeriveFunctor #-}
 -- stuff taken from HerBruijnVal
 
-module LocallyNamelessSyntax (BTm(..), DBIndex(..), toLocallyNameless, fromLocallyNameless) where
+module LocallyNamelessSyntax (BTm(..), DBIndex(..), Annotation(..), toLocallyNameless, fromLocallyNameless) where
 
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -11,8 +12,16 @@ import Value
 
 -- * de Bruijn Terms
 
+newtype Annotation a = Annotation { annotation :: a }
+  deriving (Show, Functor)
+
+instance Eq (Annotation a) where
+  a == b = True
+
+instance Ord (Annotation a) where
+  a <= b = True
+
 data DBIndex = DBIndex { index :: Int, identifier :: A.Name }
-  deriving (Ord)
 
 instance Eq DBIndex where
   i == j = index i == index j
@@ -20,13 +29,16 @@ instance Eq DBIndex where
 instance Show DBIndex where
   show (DBIndex i x) = show x ++ "@" ++ show i
 
+instance Ord DBIndex where
+  compare i j = compare (index i) (index j)
+
 data BTm -- names are only used for quoting
   = B DBIndex     -- bound variable: de Bruijn index
   | BVar A.Name   -- free variable: name
   | BCon A.Name
   | BDef A.Name
   | BApp BTm BTm
-  | BLam A.Name BTm  -- name irrelevant for execution
+  | BLam (Annotation A.Name) BTm  -- name irrelevant for execution
   | BConstLam BTm -- these are lambdas, but not counted
   | BSort Value.Sort
   | BPi BTm BTm
@@ -49,11 +61,12 @@ fromLocallyNameless t =
     BDef x -> Ident $ Def x
     BApp t u -> App (fromLocallyNameless t) (fromLocallyNameless u)
     BPi u (BConstLam t) -> Pi Nothing (fromLocallyNameless u) (fromLocallyNameless t)
-    BPi u (BLam x t)    -> Pi (Just x) (fromLocallyNameless u) (fromLocallyNameless t)
+    BPi u (BLam (Annotation x) t)    -> Pi (Just x) (fromLocallyNameless u) (fromLocallyNameless t)
 
-    BLam x t -> Lam x Nothing $ fromLocallyNameless t
+    BLam (Annotation x) t -> Lam x Nothing $ fromLocallyNameless t
+    BConstLam t -> Lam A.noName Nothing $ fromLocallyNameless t
     BSort Type -> Typ
-    -- impossible: BConstLam t, BSort Kind
+    -- impossible:  BSort Kind
 
 -- * transformation, only used for evaluate2
 
@@ -81,7 +94,7 @@ toLocallyNameless = trans lbl_empty where
         Con x -> BCon x
         Def x -> BDef x
   trans lbl (App e1 e2) = BApp (trans lbl e1) (trans lbl e2)
-  trans lbl (Lam name _ e) = BLam name $ trans (insert_lbl name lbl) e
+  trans lbl (Lam name _ e) = BLam (Annotation name) $ trans (insert_lbl name lbl) e
   trans _ Typ = BSort Type
   trans lbl (Pi mname a b) = case mname of
     Just n -> 

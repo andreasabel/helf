@@ -269,7 +269,7 @@ evaluate2 expr env =
                     SigDef t v <- sigLookup' (uid x) <$> ask
                     return $ def x v t
       BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
-      BLam x t    -> (\z -> return $ HLam x z) =<< (evaluate' t env) 
+      BLam (Annotation x) t    -> (\z -> return $ HLam x z) =<< (evaluate' t env) 
                      -- HLam x <$> evaluate' t env
       BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
       BSort sort  -> return $ HSort sort
