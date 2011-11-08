@@ -61,11 +61,19 @@ type CheckExprM = ReaderT SigCxt (ErrorT String TGM)
 
 instance MonadCxt Val Env CheckExprM where
 
+  addLocal n t cont = do
+    Context l gamma rho <- asks locals
+    xv <- newORef $ var n t
+    let cxt = Context (l + 1) (Env.insert n t gamma) (Env.insert n xv rho) 
+    local (\ sc -> sc { locals = cxt }) $ cont xv
+
+{-
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
     xv <- newORef $ var (n { A.uid = l }) t
     let cxt = Context (l + 1) (Env.insert n t gamma) (Env.insert n xv rho) 
     local (\ sc -> sc { locals = cxt }) $ cont xv
+-}
 
   lookupLocal n@(A.Name x _) = do 
     gamma <- asks $ tyEnv . locals
@@ -81,7 +89,8 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
 --  unlessId r1 r2 cont = unless (r1 == r2) cont
   unlessId r1 r2 cont = if (r1 /= r2) then cont else do
-    traceDoc $ text "ref identity fired for" <+> prettyM r1 
+    unlessM (atomic r1) $ do
+      traceDoc $ text "==> ref identity fired for" <+> prettyM r1 
     return ()
 
 -- SKIP equate
@@ -91,7 +100,7 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
   newError err k = k `catchError` (const $ typeError err)
   -- handleError k k' = catchError k (const k')
 
-  typeTrace tr cont  = traceM (showM tr) >>
+  typeTrace tr cont  = -- traceM (showM tr) >>
     enterDoc (prettyM tr) cont
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
@@ -162,7 +171,9 @@ instance PrettyM CheckDeclM Val where
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
+  -- traceM $ return ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
   liftIO . putStrLn =<< showM d  -- UNCOMMENT FOR PRINTING
+  -- traceM $ return ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
   -- liftIO . putStrLn . show $ d -- debugging
   -- enter (show d) $  -- debugging

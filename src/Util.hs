@@ -51,6 +51,17 @@ appM3 f ma mb mc = ma >>= \ a -> mb >>= \ b -> mc >>= f a b
 whenMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
 whenMaybe m cont = maybe (return ()) cont m
 
+ifM :: Monad m => m Bool -> m a -> m a -> m a
+ifM c t e = do
+  b <- c
+  if b then t else e
+
+whenM :: Monad m => m Bool -> m () -> m ()
+whenM cond action = ifM cond action $ return ()
+
+unlessM :: (Applicative m, Monad m) => m Bool -> m () -> m ()
+unlessM cond action = ifM (not <$> cond) action $ return ()
+
 -- * records
 
 -- | @Field@ is a specification of a lens (see Data.Record.Labels).
