@@ -1,7 +1,9 @@
+{-# LANGUAGE TupleSections, UndecidableInstances, TypeSynonymInstances, FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, FlexibleContexts, FunctionalDependencies #-}
 module Util where
 
 import Control.Applicative
 import Control.Monad.Error
+import Control.Monad.State
 
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -61,6 +63,34 @@ whenM cond action = ifM cond action $ return ()
 
 unlessM :: (Applicative m, Monad m) => m Bool -> m () -> m ()
 unlessM cond action = ifM (not <$> cond) action $ return ()
+
+-- | Builds a list, with latest result first in list.
+collectWhile :: Monad m => m (Maybe a) -> m [a]
+collectWhile m = loop []
+  where -- loop :: [a] -> m [a]
+        loop acc = do
+          r <- m  -- run computation
+          case r of
+            Nothing -> return $ acc
+            Just a  -> loop (a:acc)
+
+-- | Generic application view, as an instance of 'collectWhile'.
+gAppView :: (expr -> Maybe (expr, arg)) -> expr -> (expr, [arg])
+gAppView testApp e = (e', as) 
+  where (as, e') = runState (collectWhile (state testApp')) e 
+        testApp' e = 
+          case testApp e of
+            Nothing      -> (Nothing, e)
+            Just (e', a) -> (Just a, e') 
+
+-- | An application view where function and argument are of the same
+--   syntactic class.
+
+class IsApp e where
+  isApp :: e -> Maybe (e, e)
+
+appView :: IsApp e => e -> (e, [e])
+appView = gAppView isApp
 
 -- * records
 
