@@ -13,7 +13,7 @@ bench : helf
 	$(time) $(helf) examples/ltal/w32_sig_semant.elf
 
 current : helf
-	$(helf) test/succeed/z.elf
+	$(helf) test/succeed/y.elf
 
 helf : 
 	make -C src helf

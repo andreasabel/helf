@@ -17,6 +17,7 @@ import Debug.Trace
 import Text.PrettyPrint
 
 import ORef
+import Abstract (Alpha(..))
 import qualified Abstract as A
 import Signature
 import Util hiding (pretty)
@@ -181,17 +182,17 @@ type TransT a = StateT (TDict a)
 
 --  Direct translation from A.Expr
 
-addPredefs :: MonadTG m => TDict A.Expr -> m (TDict A.Expr)
+addPredefs :: MonadTG m => TDict AExpr -> m (TDict AExpr)
 addPredefs dict = do
   ty <- predefType
-  return $ Map.insert A.Typ ty dict
+  return $ Map.insert (Alpha A.Typ) ty dict
 
 
 trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
   Env -> A.Expr -> m Term
 trans rho e = -- trace ("translating " ++ show e) $ do
   evalStateT (transT e) =<< addPredefs 
-                     (Map.mapKeysMonotonic (A.Ident . A.Var) rho)
+                     (Map.mapKeysMonotonic (Alpha . A.Ident . A.Var) rho)
 
 {-
 -- Translation via BTm
@@ -291,13 +292,15 @@ con x t = Atom (A.Con x) t []
 def :: A.Name -> Type -> Term -> Term'
 def x t v = Def x t v []
 
+type AExpr = Alpha A.Expr
+
 transT :: (Signature Term sig, MonadReader sig m, MonadTG m) => 
-  A.Expr -> TransT A.Expr m Term
-transT = transG (Right <.> transT')
+  A.Expr -> TransT AExpr m Term
+transT e = transG (Right <.> transT') (Alpha e)
 
 transT' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
-  A.Expr -> TransT A.Expr m Term'
-transT' e = do
+  AExpr -> TransT AExpr m Term'
+transT' (Alpha e) = do
   let (f, sp) = appView e
   if null sp then 
       case f of
@@ -311,7 +314,7 @@ transT' e = do
 --           return $ Var n -- only for binding in Lam and Pi
          -- A.Typ             -> predefType  -- impossible case
          A.Lam n _ e       -> do
-           x <- transAddBind (A.Ident . A.Var) n 
+           x <- transAddBind (Alpha . A.Ident . A.Var) n 
            Abs x <$> transT e
 --       A.Lam n _ e       -> Abs <$> transT (A.Ident $ A.Var n) <*> transT e
          A.Pi Nothing  a b -> Fun <$> transT a <*> (newORef =<< K <$> transT b)
