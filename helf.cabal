@@ -15,6 +15,7 @@ description:
   HELF = Haskell implementation of the Edinburgh Logical Framework
 
 executable helf
+  ghc-options:      -rtsopts
   hs-source-dirs:   src
   build-depends:    array == 0.3.*,
                     base >= 4.2 && < 4.4,

@@ -91,8 +91,8 @@ data Expression id
 
 -- * Spine view
 
-revAppView :: Expr -> (Expr, [Expr])
-revAppView = loop [] where
+appView :: Expr -> (Expr, [Expr])
+appView = loop [] where
   loop acc (App f e) = loop (e : acc) f
   loop acc f         = (f, acc)
 
