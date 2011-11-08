@@ -179,7 +179,8 @@ type TDict a = Map a Term
 type TransM a = StateT (TDict a) ORefM
 type TransT a = StateT (TDict a)
 
-{-
+--  Direct translation from A.Expr
+
 addPredefs :: MonadTG m => TDict A.Expr -> m (TDict A.Expr)
 addPredefs dict = do
   ty <- predefType
@@ -191,12 +192,9 @@ trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
 trans rho e = -- trace ("translating " ++ show e) $ do
   evalStateT (transT e) =<< addPredefs 
                      (Map.mapKeysMonotonic (A.Ident . A.Var) rho)
--}
 
-addPredefs :: MonadTG m => TDict BTm -> m (TDict BTm)
-addPredefs dict = do
-  ty <- predefType
-  return $ Map.insert (BSort Type) ty dict
+{-
+-- Translation via BTm
 
 trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
   Env -> A.Expr -> m Term
@@ -204,6 +202,11 @@ trans rho e = -- trace ("translating " ++ show e) $ do
   evalStateT (transB (toLocallyNameless e)) =<< addPredefs 
                      (Map.mapKeysMonotonic BVar rho)
 
+addPredefs :: MonadTG m => TDict BTm -> m (TDict BTm)
+addPredefs dict = do
+  ty <- predefType
+  return $ Map.insert (BSort Type) ty dict
+-}
 
 -- | From locally nameless to Term.
 transB ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
@@ -222,14 +225,18 @@ transB' e = do
             SigDef t v <- sigLookup' (A.uid x) <$> ask
             Right <$> (return $ def x t v) 
          BVar n -> -- free variable
---           fail ("transB': unbound variable " ++ A.suggestion n) 
+           fail ("transB': unbound variable " ++ A.suggestion n) 
 --           trace ("transB': unbound variable " ++ A.suggestion n) 
-           Right <$> (return $ Var n) -- only for binding in Lam and Pi
-         BLam n e    -> do
+--           Right <$> (return $ Var n) -- only for binding in Lam and Pi
+         BLam (Annotation n) e    -> do
            x <- transAddBind BVar n 
            Right . Abs x <$> transB e
          BConstLam e -> Right . K <$> transB e
-         BPi a b     -> Right <$> (Fun <$> transB a <*> transB b)
+         BPi a b     -> do
+           a <- transB a
+           b <- transB b
+           return $ Right $ Fun a b
+--         BPi a b     -> Right <$> (Fun <$> transB a <*> transB b)
    else do
     r <- transB f
     Right . App r <$> (mapM transB sp)
@@ -240,10 +247,11 @@ transG ::  (Signature Term sig, MonadReader sig m, MonadTG m, Ord a, Show a) =>
   (a -> TransT a m (Either Term Term')) -> a -> TransT a m Term
 transG transT' e = do
   dict <- get
+  -- traceM $ return ("? searching translation  for " ++ show e  ++ " in dict " ++ show dict)
   case Map.lookup e dict of  -- TODO compare upto alpha!
     Just r  -> do
       unlessM (atomic r) $ do
-        traceM $ return ("==> found translation for " ++ show e)
+        traceM $ return ("==> found translation " ++ show r ++ " for " ++ show e) --  ++ " in dict " ++ show (Map.keys dict))
       return r
     Nothing -> do
       rt <- transT' e
@@ -251,8 +259,8 @@ transG transT' e = do
         Left  r -> return r
         Right t -> do
           r <- newORef t
-          -- traceM $ return ("adding translation for " ++ show e) 
-          put $ Map.insert e r dict
+          -- traceM $ return ("==> adding translation " ++ show r ++ " for " ++ show e) 
+          modify $ Map.insert e r
           return r
 
 transAddBind :: (Signature Term sig, MonadReader sig m, MonadTG m, Ord a) => 
@@ -389,7 +397,7 @@ prettyT r = do
     Nothing -> do
       d <- prettyT' =<< readORef r
       put $ Map.insert r d dict
-      return $ d -- text (show r ++ "@") <> d
+      return $ text (show r ++ "@") <> d
 
 prettyT' :: MonadORef m => Term' -> PrettyT m Doc
 prettyT' t = do
@@ -461,8 +469,10 @@ substT r = do
         traceM $ return ("==> fire subst of " ++ s' ++ " for " ++ s)
       return $ Just r'
     Just (Nothing) -> do
+{-
       x <- showTG r
-      -- traceM $ return ("skipping bound variable " ++ x ++ " with ref " ++ show r)
+      traceM $ return ("skipping bound variable " ++ x ++ " with ref " ++ show r)
+-}
       return Nothing
     Nothing  -> do
       mt <- substT' =<< readORef r

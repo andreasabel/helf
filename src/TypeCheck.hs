@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections, UndecidableInstances, TypeSynonymInstances, FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, FlexibleContexts, FunctionalDependencies #-}
+
 -- A generic bidirectional type-checker for LF
 
 module TypeCheck where
@@ -100,6 +102,9 @@ class (Monad m, -- Scoping.Scope m,
   newError     :: TypeError val -> m a -> m a
   -- handleError  :: m a -> (TypeError val -> m a) -> m a
   typeTrace    :: TypeTrace val -> m a -> m a
+  typeTrace tr cont = cont   -- default: do not trace type checker
+  traceEval    :: m val -> m val
+  traceEval cont = cont      -- default: do not print evaluated term
 
 {-  Type checking   Gamma |- e <=: t
 
@@ -263,7 +268,7 @@ class (Monad m, -- Scoping.Scope m,
   {-# INLINE doCheckExpr #-}
 
   evalExpr    :: Expr -> m val
-  evalExpr     = doCheckExpr . doEval . evaluate' 
+  evalExpr     = doCheckExpr . traceEval . doEval . evaluate' 
 
 {- Rules for checking declarations
 

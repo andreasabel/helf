@@ -10,8 +10,8 @@ profflags=-prof -auto-all
 
 default : helf test
 
-current : helf
-	helf test/succeed/comments.elf
+current : 
+	helf test/succeed/z.elf
 
 helf : ../bin/helf
 
