@@ -1,4 +1,6 @@
 2010-11-18  HELF
 
-Haskell implementation of the Edinburg Logical Framework
+Haskell implementation of the Edinburgh Logical Framework.
+
+cabal install ; make test
 
