@@ -1,0 +1,11 @@
+%% 2011-10-08  testing hash-consing for lambda
+
+tm : type.
+abs : (tm -> tm) -> tm.
+app : tm -> (tm -> tm).
+
+eval : tm -> tm -> type.
+
+eval/id : eval (abs [x] x) (abs [x] x).
+
+
