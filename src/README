@@ -1,0 +1,125 @@
+2011-11-10  Andreas
+
+Helf Pipeline  (from ASCII/Unicode to type-correct values)
+=============
+
+.elf file (sequence of declarations)
+
+  > Lexer >
+  > Parser >
+
+Concrete syntax
+  - for printing
+  - applications do not yet respect operator precedences
+
+  > OperatorPrecedenceParser >
+  > Scoping >
+
+Abstract syntax
+  - names have unique identifiers
+  - applications correct wrt. precedences
+
+  > TypeCheck >
+  > evaluate in specific engine >
+
+Value
+
+Source file overview
+====================
+
+Main.hs                      Helf main program
+
+Parsing
+-------
+
+Concrete.hs                  concrete .elf syntax, printer
+Lexer.x                      Alex lexer file for .elf syntax
+Parser.y                     Happy grammar for .elf syntax modulo precedences
+
+Precendence Resolution and Scope Checking
+-----------------------------------------
+
+Abstract.hs                  abstract syntax grammar, alpha-equivalence
+OperatorPrecedenceParser.hs  port of Frank Pfennings generic op.prec.parser
+Scoping.hs                   concrete->abstract (precedences, unique names)
+                             abstract->concrete
+                             (uses an abstract Scope monad for name handling)
+ScopeMonad.hs                concrete Scope monad, used in Main.hs
+PrettyM.hs                   monadic pretty printer class
+
+Generic Type Checking
+---------------------
+
+Signature.hs                 interface for the global signature of declarations
+Context.hs                   interface for the local typing context
+Value.hs                     abstract values and evaluation monad
+TypeCheck.hs                 generic bidirectional type checker
+
+Tools
+-----
+
+Util.hs                      misc. combinator library
+ListEnv.hs                   environments implemented as associations lists
+MapEnv.hs                    environments implemented as balanced trees
+
+Engines
+=======
+
+Closures  (model implementation)
+--------
+
+ClosVal.hs                   values as closures
+Closures.hs                  
+Test.hs                      unit tests
+
+Monolith  (just one monad for evaluation and type checking)
+--------
+
+MonoVal.hs                   values as closures
+Monolith.hs                  
+
+Ordered Representation (Nicolai Kraus)
+----------------------
+
+DataStructure.hs             
+DynArray.hs                  
+LocallyNamelessSyntax.hs     
+OrderedCom2.hs               
+OrderedComplex2.hs           
+OrderedSubst.hs              
+
+Hereditary Substitutions (Nicolai Kraus)
+------------------------
+
+HeredNormVal.hs              values as beta-normal forms
+HeredNormal.hs               
+
+HerBruijnVal.hs              variant with de Bruijn indices
+HerBruijn.hs                 
+
+Named Terms & Explicit Substitutions (unfinished)
+------------------------------------
+
+Fresh.hs                     
+NamedExplSubst.hs            
+
+Term Graphs
+-----------
+
+ORef.hs                      references instantiating Ord
+TermGraph.hs                 values as DAGs
+TGChecker.hs                 
+                
+Faulty Engine
+-------------
+
+ErrorExpected.hs             this engine contains intentional bugs
+
+
+Unfinished things
+=================
+
+Stream.hs                    lazy stream library.  An attempt to set up
+                               pipeline declaration-wise. 
+
+ExplSubst.hs                 (unfinished engine)

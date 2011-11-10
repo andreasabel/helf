@@ -13,7 +13,7 @@ import qualified Parser as HappyParser
 import qualified Concrete as C
 import qualified Abstract as A
 
-import qualified Stream
+-- import qualified Stream -- NOT USED
 
 import TheMonad
 import qualified Scoping 
