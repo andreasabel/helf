@@ -46,6 +46,7 @@ Scoping.hs                   concrete->abstract (precedences, unique names)
                              (uses an abstract Scope monad for name handling)
 ScopeMonad.hs                concrete Scope monad, used in Main.hs
 PrettyM.hs                   monadic pretty printer class
+TheMonad.hs                  Scope monad used in Main
 
 Generic Type Checking
 ---------------------
@@ -123,3 +124,4 @@ Stream.hs                    lazy stream library.  An attempt to set up
                                pipeline declaration-wise. 
 
 ExplSubst.hs                 (unfinished engine)
+
