@@ -1,0 +1,8 @@
+syntax: glob
+
+*.o
+*.hi
+*~
+dist/*
+src/Parser.y-grm.txt
+bin/helf
