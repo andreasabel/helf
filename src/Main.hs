@@ -16,7 +16,7 @@ import qualified Abstract as A
 -- import qualified Stream -- NOT USED
 
 import TheMonad
-import qualified Scoping 
+import qualified Scoping
 import qualified ScopeMonad as Scoping
 
 -- import ErrorExpected
@@ -29,7 +29,8 @@ import qualified HerBruijn
 import qualified NamedExplSubst
 import qualified TGChecker
 
-import System
+import System.Exit
+import System.Environment (getArgs)
 import System.IO (stdout, hSetBuffering, BufferMode(..))
 import System.Console.GetOpt (getOpt, usageInfo, ArgOrder(Permute,ReturnInOrder)
 			     , OptDescr(..), ArgDescr(..)
@@ -73,21 +74,21 @@ data Flag = Engine Engine
           deriving Show
 
 engineFlag :: String -> Flag
-engineFlag arg = 
+engineFlag arg =
   let engine :: Engine
       engine = read arg
   in  Engine engine
 
 options :: [OptDescr Flag]
-options = 
-  [ Option ['e'] ["engine"] (ReqArg engineFlag "ENGINE") 
+options =
+  [ Option ['e'] ["engine"] (ReqArg engineFlag "ENGINE")
       ("set lambda engine (default = " ++ show defaultEngine ++ "), possible values: " ++ show engines)
-  ] 
+  ]
 
 {-
 
 engineFlag :: String -> Flag Options
-engineFlag arg o = 
+engineFlag arg o =
   let engine :: Engine
       engine = read arg
   in o { optEngine = engine }
@@ -95,10 +96,10 @@ engineFlag arg o =
 
 
 options :: [OptDescr (Flag Options)]
-options = 
-  [ Option ['e'] ["engine"] (ReqArg engineFlag "ENGINE") 
+options =
+  [ Option ['e'] ["engine"] (ReqArg engineFlag "ENGINE")
       ("set lambda engine (default = " ++ show defaultEngine ++ "), possible values: " ++ show engines)
-  ] 
+  ]
 -- | Don't export
 parseOptions' ::
   [String] -> [OptDescr (Flag opts)] -> (String -> Flag opts) -> Flag opts
@@ -138,7 +139,7 @@ mainFile engine fileName = do
   putStrLn $ "%%% opening " ++ show fileName ++ " %%%"
   file <- readFile fileName
 --  putStrLn "%%% lexing %%%"
-  let t = alexScanTokens file 
+  let t = alexScanTokens file
 --  putStrLn (show t)
   putStrLn $ "%%% parsing %%%"
   let cdecls = HappyParser.parse t
@@ -164,27 +165,27 @@ runCheckDecls TGChecker = TGChecker.runCheckDecls
 
 doTypeCheck :: Engine -> Scoping.ScopeState -> A.Declarations -> IO ()
 doTypeCheck engine st decls = do
-  res <- runCheckDecls engine decls 
+  res <- runCheckDecls engine decls
   case res of
-    Left err -> do 
+    Left err -> do
       putStrLn $ "error during typechecking:\n" ++  err
       exitFailure
     Right () -> return ()
 {-
-    Right (edecls, st) -> 
+    Right (edecls, st) ->
       return (edecls, signature st)
 -}
 
 doScopeCheck :: C.Declarations -> IO (A.Declarations, TheState)
 doScopeCheck cdecls = case runTCM (Scoping.parse cdecls) initState of
-     Left err          -> do 
+     Left err          -> do
        putStrLn $ "scope check error: " ++ show err
        exitFailure
      Right (adecls, st) -> return (adecls, st)
 
 {- an unfinished attempt to use streams
 
-data StList s e a 
+data StList s e a
   = Fail e
   | Done s
   | Cons a (StList s e a)
@@ -204,9 +205,9 @@ scopeCheck (C.Declarations cdecls) = build step (cdecls, initState) where
 -}
 
 {-
-scopeCheckStream :: 
-scopeCheckStream cdecls = foldr 
-  (\ cdecl (adecls, st) -> 
+scopeCheckStream ::
+scopeCheckStream cdecls = foldr
+  (\ cdecl (adecls, st) ->
      let (ds, st') = runTCM (Scoping.parse cdecl) st
      in (ds
 -}
@@ -214,13 +215,13 @@ scopeCheckStream cdecls = foldr
 scopeCheckStream :: C.Declarations -> Stream TCM A.Declaration
 scopeCheckStream (C.Declarations cdecls) = loop cdecls initState where
   loop [] st = Stream.empty
-  loop (cdec:cdecls) = 
+  loop (cdec:cdecls) =
 -}
 
 {-
 doUnparse :: A.Declarations -> TheState -> IO C.Declarations
 doUnparse adecls st = case runTCM (Scoping.unparse adecls) st of
-     Left err          -> do 
+     Left err          -> do
        putStrLn $ "error during unparsing: " ++ show err
        exitFailure
      Right (cdecls, _) -> return cdecls

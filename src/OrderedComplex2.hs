@@ -105,11 +105,11 @@ updateSubst osubst k v = DS.insert v k osubst
 
 instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Head Val Env m where
 
-  typ  = return $ Sort Type 
+  typ  = return $ Sort Type
   kind = return $ Sort Kind
   freeVar h t = return $ var h t
 
-  valView v = return $ 
+  valView v = return $
     case v of
       HVar x t vs         -> VNe x t (reverse vs)
       HCon x t vs         -> VNe x t (reverse vs)
@@ -131,38 +131,38 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
                                      -- let xid = uid x
                                      -- in substs (updateEnv (mapM (substs (sgEnv w xid)) env) xid w) v
                                      substs (updateEnv env (uid x) w) v
-            
-  
-  -- evaluate  :: Expr -> Env -> m val  
+
+
+  -- evaluate  :: Expr -> Env -> m val
   evaluate expr e =
     let t = transform expr
     in evalTerm t e emptyOSubst
-  
+
   evaluate' = flip evaluate emptyEnv
 
 
   abstractPi a (_, HVar x _ []) b = return $ Fun a $ Abs x b emptyEnv
   abstractPi _ _ _                = fail $ "can only abstract a free variable"
 
-  unfold v = 
+  unfold v =
     case v of
       HDef d f t vs   -> appsR f vs
       _               -> return v
 
-  unfolds v = 
+  unfolds v =
     case v of
-      HDef d f t vs   -> unfolds =<< appsR' f vs 
+      HDef d f t vs   -> unfolds =<< appsR' f vs
       _               -> return v
 
   -- reify :: Val -> m Expr
   -- reify v = return $ A.Ident $ A.Con $ Name 0 $ "NYI: reify"
-  reify v = quote v A.initSysNameCounter 
+  reify v = quote v A.initSysNameCounter
 
 
 evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> Env -> OSubst -> m Val
 evalTerm t env osubst =
   case t of
-    O                       -> return $ DS.get osubst 0 
+    O                       -> return $ DS.get osubst 0
             -- if size osubst == 1 then DS.get osubst 0 else fail "wrong size of osubst when evaluating a single O"
     OVar x                  -> return $ lookupSafe (uid x) env
     OCon x                  -> con x . symbType . sigLookup' (A.uid x) <$> ask
@@ -180,10 +180,10 @@ evalTerm t env osubst =
                                  a <- evalTerm t1 env osubst1
                                  b <- evalTerm t2 env osubst2
                                  return $ Fun a b
-    
-substs :: (Applicative m, Monad m, MonadEval Head Val Env m) => Env -> Val -> m Val 
+
+substs :: (Applicative m, Monad m, MonadEval Head Val Env m) => Env -> Val -> m Val
 substs env = subst where
-  subst :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> m Val
   subst value = case value of
     HVar x t vs                 -> case lookupEnv (uid x) env of
                                       Just w  -> appsR w =<< mapM subst vs
@@ -194,8 +194,8 @@ substs env = subst where
     Abs x v env'                -> Abs x v <$> (flip Map.union env <$> mapM subst env')
     Sort s                      -> return $ Sort s
     Fun a b                     -> Fun <$> subst a <*> subst b
-    
-    
+
+
 -- * quoting (reify)
 
 quote :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> A.SysNameCounter -> m A.Expr
@@ -216,7 +216,7 @@ quote v i =
     _                             -> do
                                       (x,e) <- quoteFun v i
                                       return $ Lam x Nothing e
-    
+
 -- | @quoteFun n v@ expects @v@ to be a function and returns and its body as an expression.
 quoteFun :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> A.SysNameCounter -> m (A.Name, A.Expr)
 quoteFun f i = do
@@ -228,10 +228,10 @@ quoteFun f i = do
   v <- f `apply` (var_ x)
   (x,) <$> quote v i'
 
-    
+
 -- * transforming A.Expr to OTm
 
-data (Ord name) => LocBoundList name = LBL {lblsize :: Int, bList :: (Map name Int)}
+data LocBoundList name = LBL {lblsize :: Int, bList :: (Map name Int)}
 lbl_empty = LBL 0 (Map.empty)
 
 insert_lbl :: (Ord name) => name -> LocBoundList name -> LocBoundList name
@@ -255,24 +255,24 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
         Just k -> do
           modify $ incrKaddZero (lblsize lbl - 1 - k)
           return (1, O)
-        Nothing -> return (0, OVar x) -- fail $ "variable " ++ show x ++ " is not bound" 
+        Nothing -> return (0, OVar x) -- fail $ "variable " ++ show x ++ " is not bound"
     Con x -> return (0, OCon x)
-    Def x -> return (0, ODef x)  
+    Def x -> return (0, ODef x)
   trans (App e1 e2) = do
     (i1, t1) <- trans e1
     (i2, t2) <- trans e2
     return (i1 + i2, OApp t1 i2 t2)
-  trans (Lam x mty e) = 
-    do 
-    modify ((:) [0]) 
+  trans (Lam x mty e) =
+    do
+    modify ((:) [0])
     (i, t)    <- local (insert_lbl x) $ trans e
     (l':ll')  <- Control.Monad.State.get    --
     put $ ll'                               -- these lines are the same as: modify (tail)
-    return (i + 1 - (length l'), OLam (Just x) (reverse $ tail l') t) 
+    return (i + 1 - (length l'), OLam (Just x) (reverse $ tail l') t)
   trans (Pi mname ty1 ty2) = case mname of
     Just n -> do
       (i1, oty1) <- trans ty1
-      (i2, oty2) <- trans $ Lam n Nothing ty2 
+      (i2, oty2) <- trans $ Lam n Nothing ty2
       return (i1+i2, OPi oty1 i2 oty2)
     Nothing -> do
       (i1, oty1) <- trans ty1
@@ -284,7 +284,7 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
 
 -- * supporting unfolds
 
-appsR' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> [Val] -> m Val 
+appsR' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> [Val] -> m Val
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
 apply' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> Val -> m Val
@@ -293,4 +293,4 @@ apply' f v =
       HDef d w t []   -> apply' w v
       HDef d w t ws   -> appsR' w (v:ws)
       _               -> apply f v
-      
+

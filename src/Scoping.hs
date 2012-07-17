@@ -40,7 +40,11 @@ class (Applicative m, Monad m) => Scope m where
   addDef     :: C.Name -> m A.Name
   addDef      = addGlobal A.Def 
   addFixity  :: C.Name -> C.Fixity -> m ()
+  addLocal   :: (A.Name -> A.Ident) -> C.Name -> (A.Name -> m a) -> m a
   addVar     :: C.Name -> (A.Name -> m a) -> m a
+  addVar      = addLocal A.Var
+  addLet     :: C.Name -> (A.Name -> m a) -> m a
+  addLet      = addLocal A.Let
   getName    :: A.Name -> m C.Name
   getFixity  :: C.Name -> m (Maybe C.Fixity)
   getIdent   :: C.Name -> m A.Ident
@@ -71,6 +75,12 @@ instance Parse C.Declaration [A.Declaration] where
         e  <- parse e
         n  <- addDef n
         return $ A.Defn n mt e 
+{-
+      C.GLet n e -> return <$> do
+        e  <- parse e
+        n  <- addDef n
+        return $ A.GLet n e 
+-}
       C.Fixity n fx -> const [] <$> addFixity n fx
 
 {-
@@ -91,6 +101,9 @@ instance Parse C.Expr A.Expr where
       C.Pi x t1 t2 -> do
         t1 <- parse t1
         addVar x $ \ x -> A.Pi (Just x) t1 <$> parse t2
+      C.LLet x e e' -> do
+        e <- parse e
+        addLet x $ \ x -> A.LLet x e <$> parse e'
       C.Lam x mt e -> do
         mt <- parse mt
         addVar x $ \ x -> A.Lam x mt <$> parse e
@@ -146,43 +159,6 @@ parseApplication is =
 
 -- * unparsing
 
-{-
-class Pretty c => Unparse c a | a -> c where
-  unparse :: ScopeReader m => a -> m c 
-  prettyM :: ScopeReader m => a -> m Doc
-  prettyM a = pretty <$> unparse a
-
-{-
-instance Unparse c a => Unparse (Maybe c) (Maybe a) where
-  unparse = mapM unparse
--}
-
-instance Unparse C.Declarations A.Declarations where
-  unparse (A.Declarations adecls) = C.Declarations <$> mapM unparse adecls
-
-instance Unparse C.Declaration A.Declaration where
-  unparse adecl =
-    case adecl of
-      A.TypeSig n t -> C.TypeSig <$> askName n <*> unparse t
-      A.Defn n mt e -> C.Defn <$> askName n <*> mapM unparse mt <*> unparse e
-
-instance Unparse C.Expr A.Expr where
-  unparse aexpr = 
-    case aexpr of
-      A.Ident a           -> C.Ident <$> unparse a
-      A.Typ               -> return $ C.Typ
-      A.Pi Nothing  t1 t2 -> C.Fun <$> unparse t1 <*> unparse t2
-      A.Pi (Just x) t1 t2 -> C.Pi <$> askName x <*> unparse t1 <*> unparse t2
-      A.Lam x mt e        -> C.Lam <$> askName x <*> mapM unparse mt <*> unparse e
-      A.App{}             -> C.Apps <$> unparseApplication aexpr
-
-instance Unparse C.Name A.Ident where
-  unparse id = askName (A.name id)
-
-unparseApplication :: ScopeReader m => A.Expr -> m [C.Expr] 
-unparseApplication (A.App f a) = mapM unparse [f,a] -- TODO!
--}
-
 {- How to print an expression
 
 We distinguish 3 kinds of abstract names
@@ -226,6 +202,7 @@ instance Print A.Declaration C.Declaration where
     case adecl of
       A.TypeSig n t -> C.TypeSig (A.suggestion n) $ print t
       A.Defn n mt e -> C.Defn (A.suggestion n) (fmap print mt) $ print e
+--      A.GLet n e -> C.GLet (A.suggestion n) $ print e
 
 instance Print A.Expr C.Expr where
   print e = evalState (printExpr e) $ nameSet $ A.globalCNames e 
@@ -249,6 +226,11 @@ printExpr e =
       x  <- bindName x
       return $ C.Pi x t1 t2
 -- C.Pi <$> bindName x <*> printExpr t1 <*> printExpr t2
+    A.LLet x e e'        -> do
+      e  <- printExpr e
+      e' <- printExpr e'
+      x  <- bindName x
+      return $ C.LLet x e e'
     A.Lam x mt e        -> do
       mt <- mapM printExpr mt
       e  <- printExpr e

@@ -45,15 +45,18 @@ data Ident
   = Var { name :: Name }          -- ^ locally bound identifier
   | Con { name :: Name }          -- ^ declared constant
   | Def { name :: Name }          -- ^ defined identifier
+  | Let { name :: Name }          -- ^ shared expression identifier
   deriving (Eq,Ord)
 
 instance Show Ident where
   show (Var n) = "Var " ++ show n
   show (Con n) = "Con " ++ show n
   show (Def n) = "Def " ++ show n
+  show (Let n) = "Let " ++ show n
 
 isGlobalIdent :: Ident -> Bool
 isGlobalIdent (Var{}) = False
+isGlobalIdent (Let{}) = False
 isGlobalIdent _       = True
 
 -- * Generating local names
@@ -83,6 +86,7 @@ newtype Declarations = Declarations { declarations :: [Declaration] }
 data Declaration
   = TypeSig Name Type            -- ^ @c : A.@
   | Defn Name (Maybe Type) Expr  -- ^ @d : A = e.@ or @d = e.@
+--  | GLet Name Expr               -- ^ @[x = e].@  global shared expr
     deriving (Show)
 
 type Type = Expr
@@ -95,6 +99,7 @@ data Expression id
   | Pi   (Maybe Name) (TypeExpr id) (TypeExpr id)   -- ^ @A -> B@ or @{x:A} B@
   | Lam  Name (Maybe (TypeExpr id)) (Expression id) -- ^ @[x:A] E@ or @[x]E@
   | App  (Expression id) (Expression id)            -- ^ @E1 E2@ 
+  | LLet Name (Expression id) (Expression id)       -- ^ @[x = E1] E2@
   deriving (Eq,Ord,Show,Functor,Foldable,Traversable)
 
 -- * Spine view
@@ -175,6 +180,12 @@ instance OrdAlpha Expr where
       , local (M.insert (uid x) (uid x')) $ acmp e e' ]
     (Lam _ _ _, _) -> return LT
     (_, Lam _ _ _) -> return GT
+
+    (LLet x a e, LLet x' a' e') -> lexM 
+      [ acmp a a'
+      , local (M.insert (uid x) (uid x')) $ acmp e e' ]
+    (LLet _ _ _, _) -> return LT
+    (_, LLet _ _ _) -> return GT
 
     (Typ, Typ)   -> return EQ
 {-

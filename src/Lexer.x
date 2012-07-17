@@ -1,6 +1,6 @@
 
 {
-
+{-# LANGUAGE BangPatterns #-}
 module Lexer where
 
 }

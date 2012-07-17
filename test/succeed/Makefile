@@ -8,7 +8,8 @@ helf = helf +RTS -K16M -RTS
 # put helf in your path!
 
 # Getting all lf files
-allelf=$(patsubst %.elf,%,$(shell find . -name "*.elf"))
+excluded=./shared_forall2_i.elf
+allelf=$(patsubst %.elf,%,$(filter-out $(excluded),$(shell find . -name "*.elf")))
 
 all : $(allelf) 
 
