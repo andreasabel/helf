@@ -47,6 +47,7 @@ Declarations
 Declaration :: { C.Declaration }
 Declaration 
   : TypeSig                       { $1 }
+--  | GLet                          { $1 }
   | Defn                          { $1 }
   | '%abbrev' Defn                { $2 }
   | '%clause' Defn                { $2 }
@@ -62,6 +63,11 @@ Prec : id                         { read $1 }
 
 TypeSig :: { C.Declaration }
 TypeSig : id ':' Expr             { C.TypeSig $1 $3 }
+
+{- use Defn instead
+GLet :: { C.Declaration }
+GLet : '[' id '=' Expr ']'        { C.GLet $2 $4 } 
+-}
 
 Defn :: { C.Declaration }
 Defn : id ':' Expr '=' Expr       { C.Defn $1 (Just $3) $5 } 
@@ -87,6 +93,7 @@ Atom :: { C.Expr }
 Atom : type                       { C.Typ  }
      | id                         { C.Ident $1 }
      | '(' Expr ')'               { $2 }
+     | '[' id '=' Expr ']' Expr   { C.LLet $2 $4 $6 } 
      | '[' id ':' Expr ']' Expr   { C.Lam $2 (Just $4) $6 } 
      | '[' id ']' Expr            { C.Lam $2 Nothing $4 }
 {-

@@ -137,13 +137,13 @@ instance ( Applicative m
 
   addFixity n fx = modify $ \ st -> st { fixities = Map.insert n fx (fixities st) } 
 
-  addVar n cont = do
+  addLocal mkId n cont = do
     st <- get
     let i = counter st
     let x = A.Name i n
     put $ st { counter = i + 1 , naming = Map.insert i n (naming st) }
     local (\ cxt -> cxt 
-      { localRen = Map.insert n (A.Var x) (localRen cxt)
+      { localRen = Map.insert n (mkId x) (localRen cxt)
 --      , localNam = Map.insert x n (localNam cxt) -- TODO: shadowing!
       }) $ cont x
 
