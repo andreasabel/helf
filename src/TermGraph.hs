@@ -4,7 +4,7 @@ module TermGraph where
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Error
+import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
 
@@ -104,7 +104,7 @@ instance MonadTG m => MonadTG (StateT s m) where
   predefKind = lift $ predefKind
   dontCare   = lift $ dontCare
 
-instance (Error e, MonadTG m) => MonadTG (ErrorT e m) where
+instance (MonadTG m) => MonadTG (ExceptT e m) where
   predefType = lift $ predefType
   predefKind = lift $ predefKind
   dontCare   = lift $ dontCare

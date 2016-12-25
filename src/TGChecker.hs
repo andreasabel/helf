@@ -10,7 +10,7 @@ module TGChecker where
 
 import Control.Applicative
 import Control.Monad ((<=<))
-import Control.Monad.Error  hiding (mapM)
+import Control.Monad.Except  hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State  hiding (mapM)
 
@@ -58,7 +58,7 @@ emptyContext = Context 0 Env.empty Env.empty
 data SigCxt = SigCxt { globals :: MapSig Val, locals :: Context }
 
 type Err = Either String
-type CheckExprM = ReaderT SigCxt (ErrorT String TGM)
+type CheckExprM = ReaderT SigCxt (ExceptT String TGM)
 
 instance MonadCxt Val Env CheckExprM where
 
@@ -153,21 +153,21 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
 -- * Declarations
 
--- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
-type CheckDeclM = StateT (MapSig Val) (ErrorT String TGM)
+-- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ExceptT String IO))
+type CheckDeclM = StateT (MapSig Val) (ExceptT String TGM)
 
 instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
 
   doCheckExpr cont = do
     sig <- get
-    res <- lift $ lift $ runErrorT $ runReaderT cont $ SigCxt sig emptyContext
+    res <- lift $ lift $ runExceptT $ runReaderT cont $ SigCxt sig emptyContext
     case res of
       Left err -> fail err
       Right a  -> return a
 
 {-
   doCheckExpr cont = do
-     res <- runErrorT . runReaderT cont . sigCxt =<< get
+     res <- runExceptT . runReaderT cont . sigCxt =<< get
      either throwError return res
     where
      sigCxt sig = SigCxt sig emptyContext
@@ -191,11 +191,11 @@ checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations
 
 runCheckDecls :: A.Declarations -> IO (Err ())
-runCheckDecls ds = evalORef $ evalTGM $ runErrorT $ evalStateT (checkDeclarations ds) Map.empty
+runCheckDecls ds = evalORef $ evalTGM $ runExceptT $ evalStateT (checkDeclarations ds) Map.empty
 
 {-
 runCheckDecls :: ScopeState -> A.Declarations -> IO (Err ())
-runCheckDecls st ds = runErrorT $ runReaderT (evalStateT (checkDeclarations ds) Map.empty) st
+runCheckDecls st ds = runExceptT $ runReaderT (evalStateT (checkDeclarations ds) Map.empty) st
 -}
 
 -- * Testing

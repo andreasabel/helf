@@ -6,7 +6,7 @@
 module ORef where
 
 import Control.Applicative
-import Control.Monad.Error
+import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
 
@@ -63,7 +63,7 @@ instance MonadORef m => MonadORef (StateT s m) where
   writeORef r a = StateT $ \ s -> do a <- writeORef r a; return (a, s)
 -}
 
-instance (Error e, MonadORef m) => MonadORef (ErrorT e m) where
+instance (MonadORef m) => MonadORef (ExceptT e m) where
   newORef a     = lift $ newORef a
   readORef r    = lift $ readORef r
   writeORef r a = lift $ writeORef r a

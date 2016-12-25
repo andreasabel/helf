@@ -1,7 +1,7 @@
 module TheMonad where
 
 import Control.Monad.Identity
-import Control.Monad.Error
+import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
 
@@ -20,10 +20,10 @@ initContext = initScopeContext
 
 type TheError   = ParseError
 
-type TCM = StateT TheState (ReaderT TheContext (ErrorT TheError Identity))
+type TCM = StateT TheState (ReaderT TheContext (ExceptT TheError Identity))
 
 runTCM :: TCM a -> TheState -> Either TheError (a, TheState)
-runTCM k st = runIdentity $ runErrorT $ k `runStateT` st `runReaderT` initContext
+runTCM k st = runIdentity $ runExceptT $ k `runStateT` st `runReaderT` initContext
 
 type SRM = Reader TheState
 

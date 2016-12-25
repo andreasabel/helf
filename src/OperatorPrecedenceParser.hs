@@ -2,7 +2,7 @@
 module OperatorPrecedenceParser where
 
 import Control.Applicative
-import Control.Monad.Error
+import Control.Monad.Except
 
 {- Adaption of Frank Pfenning's operator precedence parser for Twelf.
    Original code in SML. -}
@@ -85,8 +85,8 @@ instance Show ParseError where
    show InfixPostfixSamePrec = "Ambiguous: postfix following infix of identical precedence"
    show (GenericError s) = s
 
-instance Error ParseError where
-  strMsg = GenericError
+-- instance Error ParseError where
+--   strMsg = GenericError
 
 -- | @reduce :: <pRed> -> <p>@.  Perform top reduction on stack.
 reduce :: Stack prec a -> Stack prec a

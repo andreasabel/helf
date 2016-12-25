@@ -8,7 +8,7 @@ import Prelude hiding (pi,abs,mapM)
 
 import Control.Applicative
 import Control.Monad ((<=<))
-import Control.Monad.Error  hiding (mapM)
+import Control.Monad.Except  hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State  hiding (mapM)
 
@@ -117,7 +117,7 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt M.empty emptyContext
 
 -- * Declarations
 
-type CheckDeclM = StateT (MapSig HVal) (ErrorT String IO)
+type CheckDeclM = StateT (MapSig HVal) (ExceptT String IO)
 
 instance MonadCheckDecl Head HVal Env' EvalM CheckExprM CheckDeclM where
 
@@ -137,7 +137,7 @@ checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations
 
 runCheckDecls :: A.Declarations -> IO (Err ())
-runCheckDecls ds = runErrorT $ evalStateT (checkDeclarations ds) Map.empty
+runCheckDecls ds = runExceptT $ evalStateT (checkDeclarations ds) Map.empty
 
 
 -- * Testing

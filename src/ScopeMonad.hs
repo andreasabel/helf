@@ -5,7 +5,7 @@
 module ScopeMonad where
 
 import Control.Applicative
-import Control.Monad.Error  hiding (mapM)
+import Control.Monad.Except  hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State  hiding (mapM)
 

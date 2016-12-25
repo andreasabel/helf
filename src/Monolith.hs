@@ -14,7 +14,7 @@ import Prelude hiding (pi,abs,mapM)
 
 import Control.Applicative
 import Control.Monad ((<=<))
-import Control.Monad.Error  hiding (mapM)
+import Control.Monad.Except  hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State  hiding (mapM)
 
@@ -39,7 +39,7 @@ import Data.Char -- testing
 -- import Text.PrettyPrint
 
 -- just one monad for everything
-type TCM = ReaderT Context (StateT (MapSig Val) (ErrorT String IO))
+type TCM = ReaderT Context (StateT (MapSig Val) (ExceptT String IO))
 
 instance Signature Val Context where
 
@@ -115,8 +115,8 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
 -- * Declarations
 
--- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ErrorT String IO))
-type CheckDeclM = TCM -- StateT (MapSig Val) (ErrorT String IO)
+-- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ExceptT String IO))
+type CheckDeclM = TCM -- StateT (MapSig Val) (ExceptT String IO)
 
 instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
 {-
@@ -149,11 +149,11 @@ checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations
 
 runCheckDecls :: A.Declarations -> IO (Err ())
-runCheckDecls ds = runErrorT $ evalStateT (checkDeclarations ds `runReaderT` emptyContext) Map.empty
+runCheckDecls ds = runExceptT $ evalStateT (checkDeclarations ds `runReaderT` emptyContext) Map.empty
 
 {-
 runCheckDecls :: ScopeState -> A.Declarations -> IO (Err ())
-runCheckDecls st ds = runErrorT $ runReaderT (evalStateT (checkDeclarations ds) Map.empty) st
+runCheckDecls st ds = runExceptT $ runReaderT (evalStateT (checkDeclarations ds) Map.empty) st
 -}
 
 -- * Testing

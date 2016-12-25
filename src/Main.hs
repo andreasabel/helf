@@ -2,7 +2,7 @@
 
 module Main where
 
-import Control.Monad.Error ( MonadError(..) )
+import Control.Monad.Except ( MonadError(..) )
 -- import Control.Bifunctor
 
 import qualified Data.List as List
