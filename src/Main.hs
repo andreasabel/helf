@@ -43,7 +43,7 @@ data Engine = Closures | Ordered | HerBruijn | Monolith | TGChecker
 engines :: [Engine]
 engines = [minBound..maxBound]
 
-defaultEngine = TGChecker -- Closures
+defaultEngine = Closures
 
 {-
 data Options = Options

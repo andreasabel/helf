@@ -1,6 +1,4 @@
--- A type checker instance with
--- * values as explicit closures and
--- * environments as finite maps
+-- | A type checker instance with term graphs.
 
 {-# LANGUAGE FlexibleContexts, FlexibleInstances,
     OverlappingInstances, IncoherentInstances, UndecidableInstances,
@@ -32,17 +30,16 @@ import TypeCheck hiding (app)
 import Util
 import Value
 
--- import Text.PrettyPrint
+-- | Evaluation monad
 
--- * Evaluation monad
-
-type  Val = Term
 type EvalM = ReaderT (MapSig Val) TGM
+
+type Val = Term
 
 instance PrettyM EvalM Val where
   prettyM = prettyM <=< reify
 
--- * Context monad
+-- | Context
 
 data Context = Context
   { level  :: Int
@@ -53,12 +50,13 @@ data Context = Context
 emptyContext :: Context
 emptyContext = Context 0 Env.empty Env.empty
 
--- * Type checking monad
+-- | Type checking monad
+
+type CheckExprM = ReaderT SigCxt (ExceptT String TGM)
 
 data SigCxt = SigCxt { globals :: MapSig Val, locals :: Context }
 
 type Err = Either String
-type CheckExprM = ReaderT SigCxt (ExceptT String TGM)
 
 instance MonadCxt Val Env CheckExprM where
 
@@ -88,7 +86,6 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
     sig <- asks globals
     lift $ lift $ runReaderT comp sig
 
---  unlessId r1 r2 cont = unless (r1 == r2) cont
   unlessId r1 r2 cont = if (r1 /= r2) then cont else do
     unlessM (atomic r1) $ do
       traceDoc $ text "==> ref identity fired for" <+> prettyM r1
@@ -154,6 +151,7 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 -- * Declarations
 
 -- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ExceptT String IO))
+
 type CheckDeclM = StateT (MapSig Val) (ExceptT String TGM)
 
 instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
