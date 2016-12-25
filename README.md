@@ -7,10 +7,11 @@ representation of lambda-terms for bidirectional typechecking.
 
 ## Limitations
 
-helf
-+ only understands the fixity pragmas for operators.  It ignores all other pragmas.
-+ only implements bidirectional type checking.  It does not have unification or type reconstruction.
-+ does not give nice error messages.
+helf only understands a subset of the Twelf language and implements only a small subset of Twelf's features.
++ helf does not parse the backarrow `<-` notation for function space.
++ helf only understands the fixity pragmas for operators.  It ignores all other pragmas.
++ helf only implements bidirectional type checking.  It does not have unification or type reconstruction.
++ helf does not give nice error messages.
 
 ## Installation
 
