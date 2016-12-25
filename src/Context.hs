@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies #-}
+
 module Context where
 
 import Control.Applicative
@@ -19,6 +21,3 @@ class MonadCxt val env m | m -> val, m -> env where
   getEnv      :: m env
 
 -- * implementation as reader monad
-
-
-

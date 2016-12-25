@@ -2,7 +2,8 @@
 -- * values as explicit closures and
 -- * environments as finite maps
 
-{-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, TypeSynonymInstances, MultiParamTypeClasses,
+    OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections #-}
 
 module Closures where

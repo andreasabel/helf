@@ -13,7 +13,7 @@ import qualified Data.Map as Map
 import Data.Maybe
 import qualified Data.Traversable as Trav
 
-import Debug.Trace
+import Debug.Trace (trace)
 import Text.PrettyPrint
 
 import ORef

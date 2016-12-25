@@ -1,6 +1,6 @@
 {- | An instance of the Scope monad constructed from monad transformers -}
 
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeSynonymInstances, UndecidableInstances #-}
 
 module ScopeMonad where
 

@@ -1,6 +1,6 @@
 {- | Handling of global definitions -}
 
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, FlexibleInstances, TypeSynonymInstances, UndecidableInstances #-}
 
 module Signature where
 

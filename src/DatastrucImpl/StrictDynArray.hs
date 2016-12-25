@@ -1,4 +1,6 @@
--- a simplified version of DynArray. get, insert, split, join are all O(log n).
+-- | A simplified version of DynArray. get, insert, split, join are all O(log n).
+
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 
 module DatastrucImpl.StrictDynArray where
 

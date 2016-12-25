@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Concrete where
 
 import Text.PrettyPrint

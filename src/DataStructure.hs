@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module DataStructure where
 
 import Text.PrettyPrint (Doc)

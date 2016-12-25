@@ -1,4 +1,5 @@
-{-# LANGUAGE UndecidableInstances, TupleSections #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, TypeSynonymInstances, MultiParamTypeClasses,
+    UndecidableInstances, TupleSections #-}
 
 module OrderedComplex2 where
 

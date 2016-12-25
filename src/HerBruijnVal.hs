@@ -1,4 +1,5 @@
-{-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, FlexibleContexts,
+    OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections, MultiParamTypeClasses #-}
 
 module HerBruijnVal where

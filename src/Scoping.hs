@@ -1,6 +1,6 @@
 {- | Translation from Concrete to Abstract and back -}
 
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeSynonymInstances, UndecidableInstances #-}
 
 module Scoping (Scope(..),Parse(..),ParseError,Print(..)) where
 

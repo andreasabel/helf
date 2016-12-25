@@ -2,7 +2,8 @@
 -- * values as explicit closures and
 -- * environments as finite maps
 
-{-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
+{-# LANGUAGE FlexibleContexts, FlexibleInstances,
+    OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections, TypeSynonymInstances, MultiParamTypeClasses #-}
 
 module TGChecker where

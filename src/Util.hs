@@ -17,7 +17,7 @@ import Control.Monad.State
 import Data.Map (Map)
 import qualified Data.Map as Map
 
-import Debug.Trace
+import Debug.Trace (trace)
 
 -- * pretty printing
 

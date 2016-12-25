@@ -5,7 +5,8 @@
 -- * values for value (free) variables
 -}
 
-{-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, TypeSynonymInstances, MultiParamTypeClasses,
+    OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections #-}
 
 module ClosVal where
