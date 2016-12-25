@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, TypeSynonymInstances, MultiParamTypeClasses,
-    UndecidableInstances, TupleSections #-}
+    UndecidableInstances, TupleSections, InstanceSigs #-}
 
 module OrderedComplex2 where
 
@@ -26,10 +26,8 @@ import Util
 import Value
 
 import DataStructure as DS
--- import DatastrucImpl.SimplDynArray (DynArray)
 import DatastrucImpl.StrictDynArray (DynArray)
 import DatastrucImpl.List (List)
--- import DatastrucImpl.DynArrayInstance
 
 ----------------------------------------------
 
@@ -83,22 +81,18 @@ def x v t = HDef x v t []
 -- * environment handling
 
 emptyEnv = Map.empty
--- updateEnv :: Env -> UID -> Val -> Env
+
+updateEnv :: Env -> UID -> Val -> Env
 updateEnv env x v = Map.insert x v env
+
 sgEnv v x = Map.singleton x v
+
 lookupEnv :: A.UID -> Env -> Maybe Val
 lookupEnv = Map.lookup
 
-{-
-emptyE = Map.empty
-updateE env x v = Map.insert x v env
-sgE v x = Map.singleton x v
-lookupE :: UID -> Env -> Maybe Val
-lookupE = Map.lookup
--}
-
 emptyOSubst :: OSubst
 emptyOSubst = DS.empty
+
 updateSubst :: OSubst -> Int -> Val-> OSubst
 updateSubst osubst k v = DS.insert v k osubst
 
@@ -121,7 +115,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       Fun a b             -> VPi a b
       -- DontCare         -> error "Cannot view DontCare Value"
 
-  -- apply :: Val -> Val -> m Val
+  apply :: Val -> Val -> m Val
   apply f w =
     case f of
       HVar x t vs                 -> return $ HVar x t (w:vs)
@@ -134,7 +128,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
                                      substs (updateEnv env (uid x) w) v
 
 
-  -- evaluate  :: Expr -> Env -> m val
+  evaluate  :: Expr -> Env -> m Val
   evaluate expr e =
     let t = transform expr
     in evalTerm t e emptyOSubst
@@ -155,35 +149,37 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       HDef d f t vs   -> unfolds =<< appsR' f vs
       _               -> return v
 
-  -- reify :: Val -> m Expr
-  -- reify v = return $ A.Ident $ A.Con $ Name 0 $ "NYI: reify"
+  reify :: Val -> m Expr
   reify v = quote v A.initSysNameCounter
 
 
 evalTerm :: (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => OTm -> Env -> OSubst -> m Val
 evalTerm t env osubst =
   case t of
-    O                       -> return $ DS.get osubst 0
-            -- if size osubst == 1 then DS.get osubst 0 else fail "wrong size of osubst when evaluating a single O"
-    OVar x                  -> return $ lookupSafe (uid x) env
-    OCon x                  -> con x . symbType . sigLookup' (A.uid x) <$> ask
-    ODef x                  -> do
-                                SigDef t v <- sigLookup' (uid x) <$> ask
-                                return $ def x v t
-    OApp t1 k t2            -> let
-                                 (osubst1, osubst2) = DS.split (size osubst - k) osubst
-                               in
-                                 Util.appM2 apply (evalTerm t1 env osubst1) (evalTerm t2 env osubst2)
-    OLam mname ks t         -> return $ CLam mname ks t env osubst
-    OSort s		              -> return $ Sort s
-    OPi t1 k t2		          -> let (osubst1, osubst2) = DS.split (size osubst - k) osubst
-                               in do
-                                 a <- evalTerm t1 env osubst1
-                                 b <- evalTerm t2 env osubst2
-                                 return $ Fun a b
+    O               -> return $ DS.get osubst 0
+                       -- if size osubst == 1 then DS.get osubst 0 else fail "wrong size of osubst when evaluating a single O"
+    OVar x          -> return $ lookupSafe (uid x) env
+    OCon x          -> con x . symbType . sigLookup' (A.uid x) <$> ask
+
+    ODef x          -> do
+      SigDef t v <- sigLookup' (uid x) <$> ask
+      return $ def x v t
+
+    OApp t1 k t2    -> do
+      let (osubst1, osubst2) = DS.split (size osubst - k) osubst
+      Util.appM2 apply (evalTerm t1 env osubst1) (evalTerm t2 env osubst2)
+
+    OLam mname ks t -> return $ CLam mname ks t env osubst
+    OSort s         -> return $ Sort s
+    OPi t1 k t2     -> do
+      let (osubst1, osubst2) = DS.split (size osubst - k) osubst
+      a <- evalTerm t1 env osubst1
+      b <- evalTerm t2 env osubst2
+      return $ Fun a b
 
 substs :: (Applicative m, Monad m, MonadEval Head Val Env m) => Env -> Val -> m Val
 substs env = subst where
+
   subst :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> m Val
   subst value = case value of
     HVar x t vs                 -> case lookupEnv (uid x) env of
