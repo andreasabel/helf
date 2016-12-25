@@ -167,6 +167,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m, MonadFre
 
   apply f v = return $ app f v
 
+  evaluate e rho = error "NYI: NamedExplSubst.evaluate"
 --  evaluate e rho = whnf <$> translate e rho
 
   evaluate' e = whnf <$> (translate e =<< renaming)

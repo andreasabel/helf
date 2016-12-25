@@ -108,9 +108,14 @@ class (Monad m, -- Scoping.Scope m,
 
   -- local (lazily checked) let
   addLet       :: Name -> Expr -> m a -> m a
+  addLet       = error "NYI: addLet"
+
   checkLet     :: Name -> val  -> (Expr -> val -> m ()) ->
                                   (val  -> val -> m ()) -> m ()
+  checkLet     = error "NYI: checkLet"
+
   inferLet     :: Name -> (Expr -> m val) -> m val
+  inferLet     = error "NYI: inferLet"
 
     -- check let bound var x.
     -- 1st continuation: If it does not have a type yet, call type checker.

@@ -20,7 +20,6 @@ import Control.Monad.State  hiding (mapM)
 
 import Data.Map (Map)
 import qualified Data.Map as Map
--- import qualified Data.Maybe as Maybe
 import Data.Traversable
 
 import qualified Abstract as A
@@ -28,29 +27,26 @@ import MonoVal
 import qualified ListEnv as Env
 import Context
 import PrettyM
--- import Scoping
--- import ScopeMonad
 import Signature
 import TypeCheck hiding (app)
 import Util
 import Value
 
 import Data.Char -- testing
--- import Text.PrettyPrint
 
--- just one monad for everything
+
+-- | Just one monad for everything.
+
 type TCM = ReaderT Context (StateT (MapSig Val) (ExceptT String IO))
 
-instance Signature Val Context where
+-- | Evaluation monad
 
-
--- * Evaluation monad
 type EvalM = TCM
 
 instance PrettyM EvalM Val where
   prettyM = prettyM <=< reify
 
--- * Context monad
+-- * Context
 
 data Context = Context
   { level  :: Int

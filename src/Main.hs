@@ -128,8 +128,8 @@ main = do
                  (_,_,errs)   -> do
                    putStrLn ("error during parsing commandline:" ++ show errs)
                    exitFailure
-  let isEngine (Engine _) = True
-      isEngine (_)        = False
+  let isEngine Engine{} = True
+      -- isEngine _        = False  -- currently every flag is Engine
   let engine = case List.find isEngine o of
                Nothing -> defaultEngine
                Just (Engine e) -> e
