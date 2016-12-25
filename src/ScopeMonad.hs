@@ -178,6 +178,6 @@ instance ( Applicative m
     (\ cont -> maybe cont return $ Map.lookup n ren) $ do
     ren <- gets renaming
     (\ cont -> maybe cont return $ Map.lookup n ren) $ do
-    fail $ "error unbound concrete identifier " ++ show n
+    genericError $ "Unbound concrete identifier " ++ show n
 
   parseError = throwError

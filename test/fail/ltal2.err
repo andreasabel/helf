@@ -1,0 +1,6 @@
+HELF - Haskell implementation of the Edinburgh Logical Framework
+(C) Andreas Abel and Nicolai Kraus
+%%% opening "ltal2.elf" %%%
+%%% parsing %%%
+%%% scope checking %%%
+scope check error: Unbound concrete identifier "word32"

@@ -14,6 +14,9 @@
 # an error.  Then one has to verify the new error message is actually the
 # intended one (manually), and remove the .err file.
 
+# Enable read -n and 2>&1 |.
+SHELL=bash
+
 helf=helf
 
 # Getting all elf files
@@ -35,7 +38,7 @@ $(allout) : %.err : %.elf
 	@echo "----------------------------------------------------------------------"
 	@echo "$*.elf"
 	@echo "----------------------------------------------------------------------"
-	@if $(helf) $(shell if [ -e $*.flags ]; then cat $*.flags; fi) $< > $*.tmp; \
+	@if $(helf) $(shell if [ -e $*.flags ]; then cat $*.flags; fi) $< 2>&1 > $*.tmp; \
 		then echo "Unexpected success"; rm -f $*.tmp; false; \
     else if [ -s $*.tmp ]; \
 				 then sed -e "s/[^ ]*test.fail.//g" $*.tmp > $@; cat $@; rm -f $*.tmp; true; \
@@ -56,7 +59,7 @@ $(allstems) : % : %.err
 	@echo "$*.elf"
 	@echo "----------------------------------------------------------------------"
 	@if $(helf) $(shell if [ -e $*.flags ]; then cat $*.flags; fi) $*.elf \
-		 > $*.tmp.2; \
+		 2>&1 > $*.tmp.2; \
 		then echo "Unexpected success"; rm -f $*.tmp.2; false; \
     else sed -e "s/[^ ]*test.fail.//g" $*.tmp.2 > $*.tmp; \
 				 echo `tail -1 $*.err` > $*.tmp.2; \

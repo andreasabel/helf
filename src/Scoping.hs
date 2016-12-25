@@ -51,6 +51,8 @@ class (Applicative m, Monad m) => Scope m where
 --  getIdent n  = fst <$> getIdentAndFixity n
 --  getIdentAndFixity :: C.Name -> m (A.Ident, C.Fixity)
   parseError :: ParseError -> m a
+  genericError :: String -> m a
+  genericError = parseError . O.GenericError
 
 -- * parsing
 

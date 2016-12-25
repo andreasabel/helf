@@ -3,10 +3,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 %%% opening "TypeExpected.elf" %%%
 %%% parsing %%%
 %%% scope checking %%%
-%%% type checking with engine TGChecker %%%
-N : type.
-0 : N.
-bla = [x : 0] x.
+%%% type checking with engine Closures %%%
 error during typechecking:
 inferring type of [x : 0] x
   expected 0 to be a type
