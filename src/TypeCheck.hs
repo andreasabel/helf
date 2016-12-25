@@ -82,11 +82,6 @@ class (Monad m, -- Scoping.Scope m,
   -- | Assigning equal things to same ref.
   equate       :: val -> val -> m ()
   equate _ _    = return ()
-{-
-  doCxt        :: mx a -> m a
-  addLocal     :: Name -> val -> (val -> m a) -> m a
-  addLocal x t  = doCxt . addBind x t cont
--}
 
   -- context and signature
   addLocal'    :: val -> val -> (val -> m a) -> m a

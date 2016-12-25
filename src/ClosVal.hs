@@ -16,15 +16,10 @@ import Prelude hiding (pi,abs,mapM)
 import Control.Applicative
 import Control.Monad.Reader hiding (mapM)
 
-{-
-import Data.Map (Map)
-import qualified Data.Map as Map
--}
 import Data.Traversable
 
 import qualified Abstract as A
 import qualified ListEnv as Env
--- import qualified MapEnv as Env
 import Signature
 import Util
 import Value

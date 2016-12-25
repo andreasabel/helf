@@ -15,8 +15,6 @@ import Control.Monad.Reader
 import Data.Set (Set)
 import qualified Data.Set as Set
 
--- import Data.Map (Map)
--- import qualified Data.Map as Map
 import qualified Data.IntMap as M
 
 import Data.Foldable
@@ -32,9 +30,9 @@ type UID = Int
 
 -- | Names in the abstract syntax are unique.
 data Name = Name
-  { uid        :: UID     -- ^ positive numbers come from user,
-                          --   negative from system (e.g. quoting)
-  , suggestion :: C.Name  -- ^ name suggestion for printing
+  { uid        :: UID     -- ^ Positive numbers come from user,
+                          --   negative from system (e.g. quoting).
+  , suggestion :: C.Name  -- ^ Name suggestion for printing.
   }
 
 instance Eq Name where
@@ -48,10 +46,10 @@ instance Show Name where
 
 -- | Local and global names.
 data Ident
-  = Var { name :: Name }          -- ^ locally bound identifier
-  | Con { name :: Name }          -- ^ declared constant
-  | Def { name :: Name }          -- ^ defined identifier
-  | Let { name :: Name }          -- ^ shared expression identifier
+  = Var { name :: Name }          -- ^ Locally bound identifier.
+  | Con { name :: Name }          -- ^ Declared constant.
+  | Def { name :: Name }          -- ^ Defined identifier.
+  | Let { name :: Name }          -- ^ Shared expression identifier.
   deriving (Eq,Ord)
 
 instance Show Ident where
@@ -92,7 +90,7 @@ newtype Declarations = Declarations { declarations :: [Declaration] }
 data Declaration
   = TypeSig Name Type            -- ^ @c : A.@
   | Defn Name (Maybe Type) Expr  -- ^ @d : A = e.@ or @d = e.@
---  | GLet Name Expr               -- ^ @[x = e].@  global shared expr
+--  | GLet Name Expr               -- ^ @[x = e].@  global shared expr. NYI.
     deriving (Show)
 
 type Type = Expr
@@ -114,13 +112,6 @@ instance IsApp Expr where
   isApp (App f e) = Just (f, e)
   isApp _         = Nothing
 
-{- code generalized and moved to Util
-appView :: Expr -> (Expr, [Expr])
-appView = loop [] where
-  loop acc (App f e) = loop (e : acc) f
-  loop acc f         = (f, acc)
--}
-
 -- * alpha equality
 
 newtype Alpha a = Alpha a
@@ -134,7 +125,6 @@ instance Ord (Alpha Expr) where
 
 instance Ord (Alpha a) => Eq (Alpha a) where
   a == a' = compare a a' == EQ
-  -- (Alpha e) == (Alpha e') = aeq e e' Map.empty
 
 type IMap = M.IntMap UID -- map directed from left to right
 type Cmp = Reader IMap
@@ -143,7 +133,6 @@ class OrdAlpha a where
   aCompare :: a -> a -> Ordering
   aCompare e1 e2 = runReader (acmp e1 e2) M.empty
 
---   acmp :: MonadReader IMap m => a -> a -> m Ordering
   acmp :: a -> a -> Cmp Ordering
   acmp e1 e2 = return $ aCompare e1 e2
 
@@ -194,12 +183,12 @@ instance OrdAlpha Expr where
     (_, LLet _ _ _) -> return GT
 
     (Typ, Typ)   -> return EQ
-{-
-    (Typ, _)     -> return LT
-    (_, Typ)     -> return GT
--}
 
--- | Lexicographic comparison
+    -- Redundant:
+    -- (Typ, _)     -> return LT
+    -- (_, Typ)     -> return GT
+
+-- | Lexicographic comparison.
 instance (OrdAlpha a, OrdAlpha b) => OrdAlpha (a,b) where
   acmp (a1,b1) (a2,b2) = lexM [acmp a1 a2, acmp b1 b2]
 
@@ -213,7 +202,7 @@ instance (OrdAlpha a) => OrdAlpha (Maybe a) where
   acmp (Just _) Nothing  = return GT
   acmp (Just a) (Just b) = acmp a b
 
--- | Lazy lexicographic combination..
+-- | Lazy lexicographic combination.
 lexM :: Monad m => [m Ordering] -> m Ordering
 lexM []     = return EQ
 lexM (m:ms) = do

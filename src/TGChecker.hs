@@ -110,30 +110,6 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
---  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
-
-{-
-  addBind x a cont = do
-    Context level tyEnv valEnv <- ask
-    let xv   = freeVar level a
-    let cxt' = Context
-                 (level + 1)
-                 (Map.insert x a tyEnv)
-                 (Map.insert x xv valEnv)
-    local (const cxt') (cont xv)
-
-  addBind' _ a cont = do
-    l <- asks level
-    let xv = freeVar l a
-    local (\ cxt -> cxt { level = level cxt + 1 }) (cont xv)
-
-  lookupVar x = do
-    gamma <- asks tyEnv
-    case Map.lookup x gamma of
-      Just t  -> return t
-      Nothing -> fail $ "unbound variable " ++ x
--}
-
 instance PrettyM CheckExprM Val where
   prettyM = doEval . prettyM
 

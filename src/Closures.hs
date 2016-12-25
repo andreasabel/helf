@@ -16,7 +16,6 @@ import Control.Monad.State  hiding (mapM)
 
 import Data.Map (Map)
 import qualified Data.Map as Map
--- import qualified Data.Maybe as Maybe
 import Data.Traversable
 
 import qualified Abstract as A
@@ -24,14 +23,10 @@ import ClosVal
 import qualified ListEnv as Env
 import Context
 import PrettyM
--- import Scoping
--- import ScopeMonad
 import Signature
 import TypeCheck hiding (app)
 import Util
 import Value
-
--- import Text.PrettyPrint
 
 -- * Evaluation monad
 
@@ -102,30 +97,6 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
---  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
-
-{-
-  addBind x a cont = do
-    Context level tyEnv valEnv <- ask
-    let xv   = freeVar level a
-    let cxt' = Context
-                 (level + 1)
-                 (Map.insert x a tyEnv)
-                 (Map.insert x xv valEnv)
-    local (const cxt') (cont xv)
-
-  addBind' _ a cont = do
-    l <- asks level
-    let xv = freeVar l a
-    local (\ cxt -> cxt { level = level cxt + 1 }) (cont xv)
-
-  lookupVar x = do
-    gamma <- asks tyEnv
-    case Map.lookup x gamma of
-      Just t  -> return t
-      Nothing -> fail $ "unbound variable " ++ x
--}
-
 instance PrettyM CheckExprM Val where
   prettyM = doEval . prettyM
 
@@ -140,22 +111,12 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 
 -- * Declarations
 
--- type CheckDeclM = StateT (MapSig Val) (ReaderT ScopeState (ExceptT String IO))
 type CheckDeclM = StateT (MapSig Val) (ExceptT String IO)
 
 instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
-{-
-  doCheckExpr cont = do
-    sig <- get
-    case runReaderT cont $ SigCxt sig emptyContext of
-      Left err -> fail err
-      Right a  -> return a
--}
-
-  doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get where
-     sigCxt sig = SigCxt sig emptyContext
-
---  doCheckExpr cont = (\ sig -> runReaderT cont $ SigCxt sig emptyContext) <$> get
+  doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get
+    where
+    sigCxt sig = SigCxt sig emptyContext
 
 instance PrettyM CheckDeclM Val where
   prettyM = doCheckExpr . prettyM
@@ -173,11 +134,3 @@ checkDeclarations = mapM_ checkDeclaration . A.declarations
 
 runCheckDecls :: A.Declarations -> IO (Err ())
 runCheckDecls ds = runExceptT $ evalStateT (checkDeclarations ds) Map.empty
-
-{-
-runCheckDecls :: ScopeState -> A.Declarations -> IO (Err ())
-runCheckDecls st ds = runExceptT $ runReaderT (evalStateT (checkDeclarations ds) Map.empty) st
--}
-
--- * Testing
--- see Test.hs

@@ -19,11 +19,9 @@ import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
 import Abstract as A
---import Concrete (Name as CName)
 import Value
 import LocallyNamelessSyntax
 import TypeCheck
--- import Context
 import Signature
 import Util hiding (lookupSafe)
 import Value
@@ -236,7 +234,6 @@ evaluate expr env =
       HDef d f t vs   -> unfolds =<< appsR' f vs
       _               -> return v
 
-  -- reify v = fail $ "not implemented yet"
   reify v = quote v A.initSysNameCounter
 
 
@@ -334,24 +331,6 @@ assert s True  cont = cont
 assert s False cont = fail s
 
 assertClosed w = assert (show w ++ " not closed") (checkClosed 0 w)
-
-{-
-subst :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => HVal -> HVal -> m HVal
-subst t w = assertClosed w $
- sub 0 t where
-  sub :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Int -> HVal -> m HVal
-  sub k t = case t of
-    HBound i n vs   -> if k==i
-                        then appsR w =<< mapM (sub k) vs
-                        else HBound i n <$> mapM (sub k) vs
-    HVar x a vs     -> HVar x a <$> mapM (sub k) vs
-    HCon c a vs     -> HCon c a <$> mapM (sub k) vs
-    HDef x a v vs   -> HDef x a v <$> mapM (sub k) vs
-    HLam x v        -> HLam x <$> sub (k+1) v   -- BUGGY!
-    HK v            -> HK <$> sub k v
-    HFun a b        -> HFun <$> sub k a <*> sub k b
-    anything        -> return anything
--}
 
 
 subst :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => HVal -> HVal -> m HVal
