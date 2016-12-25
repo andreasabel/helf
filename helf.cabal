@@ -55,46 +55,77 @@ executable helf
                     TupleSections
   main-is:          Main.hs
   other-modules:    Abstract
-                    Closures
                     ClosVal
+                    Closures
                     Concrete
                     Context
                     DataStructure
-                    DatastrucImpl.DynArrayInstance
                     DatastrucImpl.List
-                    DatastrucImpl.SimpleDynArray
                     DatastrucImpl.StrictDynArray
-                    DatastrucImpl.TestDynArray
-                    DynArray
-                    ErrorExpected
-                    ExplSubst
                     Fresh
                     HerBruijn
                     HerBruijnVal
-                    HeredNormal
-                    HeredNormVal
                     Lexer
                     ListEnv
                     LocallyNamelessSyntax
                     MapEnv
-                    Monolith
                     MonoVal
+                    Monolith
                     NamedExplSubst
+                    ORef
                     OperatorPrecedenceParser
                     OrderedCom2
                     OrderedComplex2
-                    OrderedSubst
-                    ORef
                     Parser
                     PrettyM
                     ScopeMonad
                     Scoping
                     Signature
-                    Stream
-                    TermGraph
-                    Test
                     TGChecker
+                    TermGraph
                     TheMonad
                     TypeCheck
                     Util
                     Value
+
+--   other-modules:    Abstract
+--                     Closures
+--                     ClosVal
+--                     Concrete
+--                     Context
+--                     DataStructure
+--                     DatastrucImpl.DynArrayInstance
+--                     DatastrucImpl.List
+--                     DatastrucImpl.SimpleDynArray
+--                     DatastrucImpl.StrictDynArray
+--                     DatastrucImpl.TestDynArray
+--                     DynArray
+--                     Fresh
+--                     HerBruijn
+--                     HerBruijnVal
+--                     HeredNormal
+--                     Lexer
+--                     ListEnv
+--                     LocallyNamelessSyntax
+--                     MapEnv
+--                     Monolith
+--                     MonoVal
+--                     NamedExplSubst
+--                     OperatorPrecedenceParser
+--                     OrderedCom2
+--                     OrderedComplex2
+--                     ORef
+--                     Parser
+--                     PrettyM
+--                     ScopeMonad
+--                     Scoping
+--                     Signature
+--                     Stream
+--                     TermGraph
+--                     Test
+--                     TGChecker
+--                     TheMonad
+--                     TypeCheck
+--                     Util
+--                     Value
+--
