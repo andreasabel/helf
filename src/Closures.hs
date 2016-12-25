@@ -1,5 +1,5 @@
--- A type checker instance with 
--- * values as explicit closures and 
+-- A type checker instance with
+-- * values as explicit closures and
 -- * environments as finite maps
 
 {-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
@@ -57,11 +57,11 @@ instance MonadCxt Val Env ContextM where
   addLocal n@(A.Name x _) t cont = do
     l <- asks level
     let xv = Ne (A.Var $ n { A.uid = l }) t []
-    local (\ (Context l gamma rho) -> 
-             Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho)) 
+    local (\ (Context l gamma rho) ->
+             Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho))
           (cont xv)
 
-  lookupLocal x = do 
+  lookupLocal x = do
     gamma <- asks tyEnv
     return $ Env.lookupSafe (A.uid x) gamma
 
@@ -79,20 +79,20 @@ instance MonadCxt Val Env CheckExprM where
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
     let xv  = Ne (A.Var $ n { A.uid = l }) t []
-    let cxt = Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho) 
+    let cxt = Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho)
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
-  lookupLocal n@(A.Name x _) = do 
+  lookupLocal n@(A.Name x _) = do
     gamma <- asks $ tyEnv . locals
     return $ Env.lookupSafe x gamma
 
   getEnv = asks $ valEnv . locals
 
-instance MonadCheckExpr Head Val Env EvalM CheckExprM where  
+instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
   doEval comp    = runReader comp <$> asks globals
 
-  typeError err  = failDoc $ prettyM err 
+  typeError err  = failDoc $ prettyM err
   newError err k = k `catchError` (const $ typeError err)
   -- handleError k k' = catchError k (const k')
 
@@ -102,12 +102,12 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
 --  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
-    
+
 {-
   addBind x a cont = do
     Context level tyEnv valEnv <- ask
     let xv   = freeVar level a
-    let cxt' = Context 
+    let cxt' = Context
                  (level + 1)
                  (Map.insert x a tyEnv)
                  (Map.insert x xv valEnv)
@@ -122,11 +122,11 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
     gamma <- asks tyEnv
     case Map.lookup x gamma of
       Just t  -> return t
-      Nothing -> fail $ "unbound variable " ++ x 
+      Nothing -> fail $ "unbound variable " ++ x
 -}
 
 instance PrettyM CheckExprM Val where
-  prettyM = doEval . prettyM 
+  prettyM = doEval . prettyM
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
@@ -145,7 +145,7 @@ type CheckDeclM = StateT (MapSig Val) (ErrorT String IO)
 instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
 {-
   doCheckExpr cont = do
-    sig <- get 
+    sig <- get
     case runReaderT cont $ SigCxt sig emptyContext of
       Left err -> fail err
       Right a  -> return a
@@ -157,7 +157,7 @@ instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
 --  doCheckExpr cont = (\ sig -> runReaderT cont $ SigCxt sig emptyContext) <$> get
 
 instance PrettyM CheckDeclM Val where
-  prettyM = doCheckExpr . prettyM 
+  prettyM = doCheckExpr . prettyM
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do

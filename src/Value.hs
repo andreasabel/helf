@@ -5,7 +5,7 @@ import Control.Monad
 
 import Abstract
 
-data Sort 
+data Sort
   = Type
   | Kind -- only internally
     deriving (Eq, Ord, Show)
@@ -20,7 +20,7 @@ data ValView head val
 -- | The purpose of @MonadEval@ is read-only access to a global signature
 --   to get the definition of symbols, and potentially IO to have references
 --   to implement call-by-need.
-class (Eq head, Ord head, Functor m, Applicative m, Monad m) => 
+class (Eq head, Ord head, Functor m, Applicative m, Monad m) =>
     MonadEval head val env m | val -> head, m -> val, m -> env where
   typ     :: m val
   kind    :: m val
@@ -28,9 +28,9 @@ class (Eq head, Ord head, Functor m, Applicative m, Monad m) =>
   valView :: val -> m (ValView head val)
 
   apply     :: val  -> val -> m val
-  evaluate  :: Expr -> env -> m val  
+  evaluate  :: Expr -> env -> m val
   evaluate' :: Expr -> m val        -- ^ evaluate a closed expression
-  unfold    :: val -> m val         -- ^ unfold head definition 
+  unfold    :: val -> m val         -- ^ unfold head definition
   unfolds   :: val -> m val         -- ^ unfold definition until constructor
   abstractPi:: val -> (Name, val) -> val -> m val -- ^ abstractPi a x b = pi x:a.b
   reify     :: val -> m Expr        -- ^ quote value as expression
@@ -47,15 +47,14 @@ class (Eq head, Ord head) => Value head val | val -> head where
 --   to implement call-by-need.
 class MonadEval val env m | m -> val, m -> env where
   apply     :: val  -> val -> m val
-  evaluate  :: Expr -> env -> m val  
+  evaluate  :: Expr -> env -> m val
   evaluate' :: Expr -> m val        -- ^ evaluate a closed expression
-  unfold    :: val -> m val         -- ^ unfold head definition 
+  unfold    :: val -> m val         -- ^ unfold head definition
   unfolds   :: val -> m val         -- ^ unfold definition until constructor
   abstractPi:: val -> (Name, val) -> val -> m val -- ^ abstractPi a x b = pi x:a.b
   reify     :: val -> m Expr        -- ^ quote value as expression
 -}
 
 -- | Apply a function to a reversed list of arguments.
-appsR :: (MonadEval head val env m) => val -> [val] -> m val 
+appsR :: (MonadEval head val env m) => val -> [val] -> m val
 appsR f vs = foldr (\ v mf -> mf >>= \ f -> apply f v) (return f) vs
-  

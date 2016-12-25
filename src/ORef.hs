@@ -46,7 +46,7 @@ class (Functor m, Applicative m, MonadIO m) => MonadORef m where
     writeORef r =<< readORef r'
     return r
 
--- * monad liftings    
+-- * monad liftings
 
 instance MonadORef m => MonadORef (ReaderT r m) where
   newORef a     = lift $ newORef a
@@ -64,8 +64,8 @@ instance MonadORef m => MonadORef (StateT s m) where
 -}
 
 instance (Error e, MonadORef m) => MonadORef (ErrorT e m) where
-  newORef a     = lift $ newORef a    
-  readORef r    = lift $ readORef r   
+  newORef a     = lift $ newORef a
+  readORef r    = lift $ readORef r
   writeORef r a = lift $ writeORef r a
 
 -- * concrete ORef monad
@@ -86,10 +86,10 @@ instance MonadORef ORefM where
     i <- ORefM $ next
     r <- liftIO $ newIORef a
     return $ ORef { refId = i, theRef = r }
-    
+
   readORef r = liftIO $ readIORef $ theRef r
 
-  writeORef r a = do 
+  writeORef r a = do
     liftIO $ writeIORef (theRef r) a
     return a
 
@@ -102,4 +102,3 @@ evalORef (ORefM cont) = evalStateT cont 0
 instance Functor ORefM where
   fmap f ma = ma >>= \ a -> return (f a)
 -}
-  

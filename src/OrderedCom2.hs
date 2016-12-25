@@ -23,7 +23,7 @@ import Util
 import Value
 
 import PrettyM
-import Data.Char 
+import Data.Char
 
 import OrderedComplex2
 
@@ -48,16 +48,16 @@ emptyContext = Context 0 emptyEnv emptyEnv
 
 type ContextM = Reader Context
 
-instance MonadCxt Val Env ContextM where 
+instance MonadCxt Val Env ContextM where
 
   addLocal n@(A.Name x _) t cont = do
     l <- asks level
     let xv = HVar (n { A.uid = l }) t []
-    local (\ (Context l gamma rho) -> 
-             Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho)) 
+    local (\ (Context l gamma rho) ->
+             Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho))
           (cont xv)
 
-  lookupLocal x = do 
+  lookupLocal x = do
     gamma <- asks tyEnv
     return $ lookupSafe (A.uid x) gamma
 
@@ -75,10 +75,10 @@ instance MonadCxt Val Env CheckExprM where
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
     let xv  = HVar (n { A.uid = l }) t []
-    let cxt = Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho) 
+    let cxt = Context (l + 1) (Map.insert x t gamma) (Map.insert x xv rho)
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
-  lookupLocal n@(A.Name x _) = do 
+  lookupLocal n@(A.Name x _) = do
     gamma <- asks $ tyEnv . locals
     return $ lookupSafe x gamma
 
@@ -86,15 +86,15 @@ instance MonadCxt Val Env CheckExprM where
 
 
 
-instance MonadCheckExpr Head Val Env EvalM CheckExprM where  
+instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
   doEval comp    = runReader comp <$> asks globals
 
   -- TODO
-  typeError err  = failDoc $ prettyM err 
+  typeError err  = failDoc $ prettyM err
   newError err k = k `catchError` (const $ typeError err)
 {-
-  typeError err  = failDoc $ text "error"  
+  typeError err  = failDoc $ text "error"
   newError err k = failDoc $ text "new error"
 -}
 
@@ -105,12 +105,12 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 {-
 --  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
-    
+
 
   addBind x a cont = do
     Context level tyEnv valEnv <- ask
     let xv   = freeVar level a
-    let cxt' = Context 
+    let cxt' = Context
                  (level + 1)
                  (Map.insert x a tyEnv)
                  (Map.insert x xv valEnv)
@@ -125,11 +125,11 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
     gamma <- asks tyEnv
     case Map.lookup x gamma of
       Just t  -> return t
-      Nothing -> fail $ "unbound variable " ++ x 
+      Nothing -> fail $ "unbound variable " ++ x
 -}
 
 instance PrettyM CheckExprM Val where
-  prettyM = doEval . prettyM 
+  prettyM = doEval . prettyM
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
@@ -151,7 +151,7 @@ instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
      sigCxt sig = SigCxt sig emptyContext
 
 instance PrettyM CheckDeclM Val where
-  prettyM = doCheckExpr . prettyM 
+  prettyM = doCheckExpr . prettyM
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
@@ -175,7 +175,7 @@ runCheckDecls ds = runErrorT $ evalStateT (checkDeclarations ds) Map.empty
 hashString = fromIntegral . foldr f 0
       where f c m = ord c + (m * 128) `rem` 1500007
 
-hash :: String -> A.Name 
+hash :: String -> A.Name
 hash s = A.Name (hashString s) s
 
 var' x   = A.Ident $ A.Var $ hash x
@@ -189,15 +189,15 @@ tid = pi "A" ty $ pi "x" (var' "A") $ var' "A"
 
 arrow a b = A.Pi Nothing a b
 
-tnat = pi "A" ty $ 
-         pi "zero" (var' "A") $ 
+tnat = pi "A" ty $
+         pi "zero" (var' "A") $
          pi "suc"  (var' "A" `arrow` var' "A") $
-           var' "A" 
+           var' "A"
 
 ezero  = abs "A" $ abs "zero" $ abs "suc" $ var' "zero"
 -- problem: esuc is not a nf
-esuc n = abs "A" $ abs "zero" $ abs "suc" $ var' "suc" `app` 
-          (n `app` var' "A" `app` var' "zero" `app` var' "suc")  
+esuc n = abs "A" $ abs "zero" $ abs "suc" $ var' "suc" `app`
+          (n `app` var' "A" `app` var' "zero" `app` var' "suc")
 
 enat e =  abs "A" $ abs "zero" $ abs "suc" $ e
 enats = map enat $ iterate (app (var' "suc")) (var' "zero")
@@ -210,4 +210,3 @@ failure = [(tid,tid)]
 
 runsuccs = map (uncurry runCheck) success
 runtests = map (uncurry runCheck) (success ++ failure)
-

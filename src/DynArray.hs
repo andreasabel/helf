@@ -10,8 +10,8 @@ import qualified Text.PrettyPrint as PP
 
 import Debug.Trace
 
-data DynArr a 
-  = Repeat { entry :: a }  -- ^ an array filled with element @entry@ 
+data DynArr a
+  = Repeat { entry :: a }  -- ^ an array filled with element @entry@
   | Join { leftLen :: Int  -- ^ length of left part
          , left  :: DynArr a -- ^ left part
          , right :: DynArr a -- ^ right part
@@ -20,12 +20,12 @@ data DynArr a
 
 data DynArray a = DynArray { len :: Int, array :: DynArr a }
     deriving (Eq,Ord)
-  
+
 pretty :: Show a => DynArray a -> Doc
 pretty (DynArray 0 _) = text "empty"
 pretty (DynArray 1 (Repeat a)) = text $ show a
 pretty (DynArray n (Repeat a)) = text $ show n ++ " * " ++ show a
-pretty (DynArray n (Join k l r)) = vcat 
+pretty (DynArray n (Join k l r)) = vcat
   [ nest 2 $ pretty $ DynArray k l
   , text (show k)
   , nest 2 $ pretty $ DynArray (n-k) r
@@ -35,7 +35,7 @@ instance Show a => Show (DynArray a) where
   show = render . pretty
 
 
-empty :: DynArray a 
+empty :: DynArray a
 empty = DynArray 0 $ error "empty dynamic array"
 
 repeat :: Int -> a -> DynArray a
@@ -43,13 +43,13 @@ repeat i a = DynArray i $ Repeat a
 
 -- | Array lookup with bounds checking.
 (!) :: DynArray a -> Int -> a
-arr ! i | 0 <= i && i < len arr = get (array arr) i 
+arr ! i | 0 <= i && i < len arr = get (array arr) i
         | otherwise = error $ "index " ++ show i ++ " out of range"
 
 -- | Lookup without bounds checking.
 get :: DynArr a -> Int -> a
 get (Repeat a) i = a
-get (Join llen left right) i 
+get (Join llen left right) i
   | i < llen  = get left i
   | otherwise = get right (i - llen)
 
@@ -75,10 +75,10 @@ My sum above is wrong anyway, I probably meant 1+2+3+...+log(n), which is O((log
  -}
 
 split :: DynArray a -> Int -> (DynArray a, DynArray a)
-split arr i 
+split arr i
   | i <= 0 = (empty, arr)
   | i >= len arr = (arr, empty)
-  | otherwise = 
+  | otherwise =
       let (left, right) = split' (len arr) (array arr) i
       in  (DynArray i left, DynArray (len arr - i) right)
 
@@ -86,10 +86,10 @@ split' :: Int -> DynArr a -> Int -> (DynArr a, DynArr a)
 split' len arr i =
   case arr of
     Repeat a -> (Repeat a, Repeat a)
-    Join llen left right -> 
+    Join llen left right ->
       if llen == i then (left, right)
-       else if i < llen then 
-         let (l1, l2) = split' llen left i 
+       else if i < llen then
+         let (l1, l2) = split' llen left i
              l2' = DynArray (llen - i) l2 `join` DynArray (len - llen) right
          in (l1, array l2')
        else
@@ -106,8 +106,8 @@ join :: DynArray a -> DynArray a -> DynArray a
 join     (DynArray 0  _) a_2@(DynArray n2 _) = a_2
 join a_1@(DynArray n1 _)     (DynArray 0  _) = a_1
 join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = trace ("join " ++ show n1 ++ " " ++ show n2) $
-  let n = n1 + n2 
-      join4 n11 a11 n12 a12 n21 a21 a22 = DynArray n $ Join (n11 + n12) 
+  let n = n1 + n2
+      join4 n11 a11 n12 a12 n21 a21 a22 = DynArray n $ Join (n11 + n12)
         (Join n1 a11 a12) (Join n21 a21 a22) in
   case joinable a_1 a_2 of
     Ok -> DynArray n (Join n1 a1 a2)
@@ -116,23 +116,23 @@ join a_1@(DynArray n1 a1) a_2@(DynArray n2 a2) = trace ("join " ++ show n1 ++ " 
       -- recursively join middle and right part
       let DynArray _ a2'@(Join n21' a21' a22') = DynArray (n1 - n11) a12 `join` a_2
       -- a21'+a22' = a12+a_2 , a21' ~ a22'
-      in  if balanced n11 (n - n11) 
+      in  if balanced n11 (n - n11)
           then DynArray n (Join n11 a11 a2')
            -- the new middle node could be too big
-          else 
+          else
             -- a11 !~ a21'+a22'
-            if balanced n11 n21' && balanced (n11+n21') (n-n11-n21')  
+            if balanced n11 n21' && balanced (n11+n21') (n-n11-n21')
             -- note that this is only possible if a2' =/= Join (n1-n11) a12 a2, which is the case if a2' was build 'trivially'
-              then DynArray n (Join (n11+n21') (Join n11 a11 a21') a22') 
+              then DynArray n (Join (n11+n21') (Join n11 a11 a21') a22')
               else case a21' of -- split middle node
               -- a11 << a21' || a11+a21' >> a22' , a21' = a211'+a212' , a211' ~ a212'
                     -- check that none of a11 !~ a211', a212' !~ a22' , a212' !~ a22' , a1+a211' ~ a212'+a22' is satisfied
                     Join n211' a211' a212' -> join4 n11 a11 n211' a211' (n21' - n211') a212' a22'
-                    Repeat x -> let n211' = n21' `div` 2 
+                    Repeat x -> let n211' = n21' `div` 2
                                 in join4 n11 a11 n211' (Repeat x) (n21' - n211') (Repeat x) a22'
     RightTooBig n21 a21 a22 ->
       let DynArray _ a1'@(Join n11' a11' a12') = a_1 `join` DynArray n21 a21
-      in  if balanced (n1 + n21) (n2 - n21) 
+      in  if balanced (n1 + n21) (n2 - n21)
            then DynArray n (Join (n1 + n21) a1' a22)
            else
              if balanced n11' (n-n11') && balanced (n1+n21-n11') (n2-n21)
@@ -155,7 +155,7 @@ bad = join bad1 bad2
 
 
 
-data Joinable a 
+data Joinable a
   = Ok
   | LeftTooBig Int (DynArr a) (DynArr a)
   | RightTooBig Int (DynArr a) (DynArr a)
@@ -173,12 +173,12 @@ balanced :: Int -> Int -> Bool
 balanced n1 n2 = balancingFactor * abs (n1 - n2) <= n1 + n2
 
 joinable :: DynArray a -> DynArray a -> Joinable a
-joinable (DynArray n1 arr1) (DynArray n2 arr2) = 
+joinable (DynArray n1 arr1) (DynArray n2 arr2) =
   if balanced n1 n2 then Ok
   else case (arr1, arr2) of
-         (Join llen left right, _) | n1 > n2 -> LeftTooBig llen left right 
-         (_, Join llen left right) | n2 > n1 -> RightTooBig llen left right 
---         _ -> Ok          This would cause problems. 
+         (Join llen left right, _) | n1 > n2 -> LeftTooBig llen left right
+         (_, Join llen left right) | n2 > n1 -> RightTooBig llen left right
+--         _ -> Ok          This would cause problems.
 --                          (Using this, we would get a 'pseudo-balanced' tree. The 'too big' Repeat node could be split during the recursive call of join, creating a tree which would not be 'pseudo-balanced' any more, but totally unbalanced.)
 --                          Hence (unfortunately, I do not see any better solution):
          (Repeat x, _) | n1 > n2 -> LeftTooBig (n1 `div` 2) (Repeat x) (Repeat x)
@@ -207,24 +207,24 @@ toList :: DynArray a -> [a]
 toList (DynArray n arr) = map (get arr) [0..n-1]
 
 fromFreqList :: [(Int,a)] -> DynArray a
-fromFreqList l = let n = length l in 
+fromFreqList l = let n = length l in
   if n <= 0 then empty else fromFreqList' n l
 
 fromFreqList' :: Int -> [(Int,a)] -> DynArray a
 fromFreqList' 1 [(i,a)] = repeat i a
-fromFreqList' n l = 
+fromFreqList' n l =
   let nl    = n `div` 2
       nr    = n - nl
       (ll,lr) = splitAt nl l
       DynArray llen left  = fromFreqList'  nl ll
       DynArray rlen right = fromFreqList'  nr lr
-  in  DynArray (llen + rlen) $ Join llen left right     
+  in  DynArray (llen + rlen) $ Join llen left right
 
 mkFreqList :: Eq a => [a] -> [(Int,a)]
 mkFreqList l = map (\ (a:as) -> (length as + 1, a)) $ List.group l
 
 mkArr :: Eq a => [a] -> DynArray a
-mkArr = fromFreqList . mkFreqList 
+mkArr = fromFreqList . mkFreqList
 
 a1 = mkArr "Mississippi"
 l1 = toList a1

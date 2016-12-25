@@ -52,13 +52,13 @@ type Head = A.Ident -- Def not allowed
 {-
 type Var = Int
 
-data Head 
-  = HVar Var      -- (typed) variable 
+data Head
+  = HVar Var      -- (typed) variable
   | HCon Name   -- (typed) constructor
   deriving (Eq,Ord,Show)
 -}
 
-data Val 
+data Val
   = Ne   Head Val [Val]     -- x^a vs^-1 | c^a vs^-1
   | Sort Sort               -- type or kind
   | Clos OExpr OSubst       -- (\x e) osubst
@@ -76,10 +76,10 @@ instance Value Head Val where
   tyView (Fun a b) = VPi a b
   tyView (Sort s)  = VSort s
   tyView _         = VBase
- 
+
   tmView (Ne h t vs) = VNe h t (reverse vs)
   tmView _           = VVal
-  
+
 -- * smart constructors
 
 var :: Name -> Val -> Val
@@ -102,18 +102,18 @@ evaluate e osubst = case e of
     OCon x         -> con x . symbType . sigLookup' x <$> ask
     ODef x         -> symbDef  . sigLookup' x <$> ask
     O              -> return $ DS.get osubst 0
-    OApp oe1 k oe2 -> let (osubst1, osubst2) = split ((DS.size osubst) - k) osubst 
+    OApp oe1 k oe2 -> let (osubst1, osubst2) = split ((DS.size osubst) - k) osubst
                       in Util.appM2 OrderedSubst.apply (OrderedSubst.evaluate oe1 osubst1) (OrderedSubst.evaluate oe2 osubst2)
     OAbs _ _       -> return $ Clos e osubst
     OPi ty1 k ty2  -> --return $ Sort Type
                       let (osubst1, osubst2) = split ((DS.size osubst) - k) osubst
-                      in 
+                      in
                       do
                       mty1 <- OrderedSubst.evaluate ty1 osubst1
                       mty2 <- OrderedSubst.evaluate ty2 osubst2
                       return $ Fun mty1 mty2
                       -- (OrderedSubst.evaluate ty1 osubst1) >>= (\ a -> (OrderedSubst.evaluate ty2 osubst2) >>= (\ b ->  return $ Fun a b))
-                      
+
     OType          -> return $ typ
 
 
@@ -158,14 +158,14 @@ instance MonadEval Val OSubst EvalM where
   apply = OrderedSubst.apply
   evaluate  e = OrderedSubst.evaluate (transform e)
   evaluate' e = OrderedSubst.evaluate (transform e) DS.empty
-  
+
   -- Here we get a problem: In this file, values are always closed. As b is a value, we can only form a "fake"-dependent type (which is not really dependent).
   -- TODO !!
   abstractPi a _ b = do
                       b' <- OrderedSubst.apply (Clos (OAbs [0] O) DS.empty) b
                       return $ Fun a b'
   reify v = quote v A.initSysNameCounter
-  
+
 
 -- hConst x = Ne (HConst x) []
 -- hConst :: A.Name -> Val -> Val
@@ -205,7 +205,7 @@ type Transform = ReaderT (LocBoundList Name) (State LambdaLists)
 
 transform :: Expr -> OExpr
 transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
-  
+
   trans :: Expr -> Transform (Int, OExpr)
   trans (Ident ident) = case ident of
     Var x -> do
@@ -219,9 +219,9 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
         Nothing -> fail $ "variable " ++ show x ++ " is not bound"
     Con x -> return (0, OCon x)
     Def x -> return (0, ODef x)
-  
+
   {-
-    trans (Apps (e:es)) = 
+    trans (Apps (e:es)) =
     let
     trShortApp :: Expr -> Expr -> OExpr
     trShortApp e1 e2 = do
@@ -231,19 +231,19 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
     in
     foldl trShortApp e es
   -}
-  
+
   trans (App e1 e2) = do
     (i1, oexpr1) <- trans e1
     (i2, oexpr2) <- trans e2
     return (i1 + i2, OApp oexpr1 i2 oexpr2)
-  
+
   trans (Lam x mty e) = do -- !! Maybe Type !!
-    modify ((:) [0]) 
+    modify ((:) [0])
     (i, oexpr) <- local (OrderedSubst.insert x) $ trans e
     (l':ll')   <- Control.Monad.State.get
     put $ ll'
-    return (i + 1 - (length l'), OAbs (reverse $ tail l') oexpr) 
-  
+    return (i + 1 - (length l'), OAbs (reverse $ tail l') oexpr)
+
   trans (Pi name ty1 ty2) = case name of
     Just n -> do
       (i1, oexpr1) <- trans ty1
@@ -253,7 +253,7 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
       (i1, oexpr1) <- trans ty1
       (i2, oexpr2) <- trans ty2
       return (i1+i2, OPi oexpr1 i2 $ OAbs [] oexpr2)
-  
+
   -- trans (Sort Type) = return (0, OType)
   -- trans (Sort Kind) = return (0, OKind)
 
@@ -265,10 +265,10 @@ data Expr
   | Typ                           -- ^ type
   | Pi    (Maybe Name) Type Type  -- ^ A -> B or {x:A} B
   | Lam   Name (Maybe Type) Expr  -- ^ [x:A] E or [x]E
-  | App   Expr Expr               -- ^ E1 E2 
+  | App   Expr Expr               -- ^ E1 E2
   deriving (Show)
 
-data Ident 
+data Ident
   = Var { name :: Name }          -- ^ locally bound identifier
   | Con { name :: Name }          -- ^ declared constant
   | Def { name :: Name }          -- ^ defined identifier
@@ -282,23 +282,23 @@ data Ident
 {-
 transform0 :: Expr -> OExpr
 transform0 e =
-  let 
-  
+  let
+
   -- takes: an expression e, the list containing bound variable names which is valid for e, the binding lists of the lambdas 'above' e).
   -- returns the build expression's number of "not-yet-bound" bound variables (i.e. number of O which are not bound in the returned 'subexpression') and, after that, all the modified information in the same order as it was taken
   trans :: Expr -> (LocBoundList Name) -> LambdaLists -> (Int, OExpr, LambdaLists) -- why would we need the new LocBoundList ??
   trans (Var x) lbl ll = case Map.lookup x (bList lbl) of
     Just k  -> (1, O, incrKaddZero ((lblsize lbl) - 1 - k) ll)
     Nothing -> (0, OVarFree x, ll)
-  trans (App e1 e2) lbl ll = 
+  trans (App e1 e2) lbl ll =
     let
     (i1, oexpr1, ll1) = trans e1 lbl ll
     (i2, oexpr2, ll2) = trans e2 lbl ll1
-    in 
+    in
     (i1+i2, OApp oexpr1 i2 oexpr2, ll2)
-  trans (Abs x e) lbl ll = 
+  trans (Abs x e) lbl ll =
     let
-    (i, oexpr, l':ll') = trans e (OrderedSubst.insert x lbl) ([0]:ll) 
+    (i, oexpr, l':ll') = trans e (OrderedSubst.insert x lbl) ([0]:ll)
     l'' = reverse (tail l') -- TODO: check whether reversing is really necessary!
     ibound = length l''
     in
@@ -306,9 +306,9 @@ transform0 e =
 
   -- TODO: check whether the following is correct!
 
-  trans (Pi name ty1 ty2) lbl ll = 
+  trans (Pi name ty1 ty2) lbl ll =
     case name of
-      Just n -> 
+      Just n ->
         let
         (i1, oexpr1, ll1) = trans ty1 lbl ll
         (i2, oexpr2, ll2) = trans (Abs n ty2) lbl ll1 -- TODO: correct??
@@ -323,9 +323,9 @@ transform0 e =
         (i1+i2, OPi oexpr1 oexpr2', ll2)
   trans (Sort Type) lbl ll = (0, OType, ll)
   trans (Sort Kind) lbl ll = (0, OKind, ll)
-  
+
   (i, oexpr, ll) = trans e lbl_empty []
-  in 
+  in
   oexpr
 -}
 
@@ -343,15 +343,15 @@ tid = pi "A" ty $ pi "x" (Var "A") $ Var "A"
 
 arrow a b = Pi Nothing a b
 
-tnat = pi "A" ty $ 
-         pi "zero" (Var "A") $ 
+tnat = pi "A" ty $
+         pi "zero" (Var "A") $
          pi "suc"  (Var "A" `arrow` Var "A") $
-           Var "A" 
+           Var "A"
 
 ezero  = Abs "A" $ Abs "zero" $ Abs "suc" $ Var "zero"
 -- problem: esuc is not a nf
-esuc n = Abs "A" $ Abs "zero" $ Abs "suc" $ Var "suc" `App` 
-          (n `App` Var "A" `App` Var "zero" `App` Var "suc")  
+esuc n = Abs "A" $ Abs "zero" $ Abs "suc" $ Var "suc" `App`
+          (n `App` Var "A" `App` Var "zero" `App` Var "suc")
 
 enat e =  Abs "A" $ Abs "zero" $ Abs "suc" $ e
 enats = map enat $ iterate (App (Var "suc")) (Var "zero")

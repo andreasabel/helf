@@ -9,7 +9,7 @@ type Env k v = [(k,v)]
 lookup :: (Eq k) => k -> Env k v -> Maybe v
 lookup = Prelude.lookup
 
-lookupSafe :: (Eq k, Show k) => k -> Env k v -> v 
+lookupSafe :: (Eq k, Show k) => k -> Env k v -> v
 lookupSafe k = maybe (error $ "internal error: unbound key " ++ show k) id .
   ListEnv.lookup k
 
@@ -35,4 +35,3 @@ map f = Prelude.map (\ (k,v) -> (k, f v))
 
 mapM :: (Monad m) => (v -> m w) -> Env k v -> m (Env k w)
 mapM f = Prelude.mapM (\ (k,v) -> f v >>= return . (k,))
-

@@ -31,11 +31,11 @@ import Util
 - a map from A.Name to (A.Ident, C.Fixity)
 
   this resolves the parsed concrete names into unique identifiers
-  with their fixity 
+  with their fixity
 
   My view: A fixity can only be set before the name is first used.
   Twelf  : A fixity can be set and reset at any time.
-           Thus, a fixity is attached to the concrete name and not 
+           Thus, a fixity is attached to the concrete name and not
            the abstract name.
 
   I assume the set of fixity declarations to be small, thus, it does
@@ -65,7 +65,7 @@ initScopeState = ScopeState
 data ScopeEntry = ScopeEntry
   { ident   :: A.Ident -- ^ to increase sharing, keep the whole ident here
   , fixity :: C.Fixity
-  , name   :: C.Name -- ^ needs to be changed if shadowed 
+  , name   :: C.Name -- ^ needs to be changed if shadowed
   }
 -}
 
@@ -125,24 +125,24 @@ instance ( Applicative m
     ScopeState { counter = x, renaming = ren, naming = nam } <- get
     let mx   = Map.lookup n ren -- TODO: shadowing!!
         ren' = Map.insert n x ren
-        it   = ScopeEntry 
-                { ident = A.Con x 
+        it   = ScopeEntry
+                { ident = A.Con x
                 , fixity = O.Nofix
                 , name = n -- TODO: shadowing!
                 }
         nam' = Map.insert x it nam
     put $ ScopeState (x + 1) ren' nam'
     return x
--} 
+-}
 
-  addFixity n fx = modify $ \ st -> st { fixities = Map.insert n fx (fixities st) } 
+  addFixity n fx = modify $ \ st -> st { fixities = Map.insert n fx (fixities st) }
 
   addLocal mkId n cont = do
     st <- get
     let i = counter st
     let x = A.Name i n
     put $ st { counter = i + 1 , naming = Map.insert i n (naming st) }
-    local (\ cxt -> cxt 
+    local (\ cxt -> cxt
       { localRen = Map.insert n (mkId x) (localRen cxt)
 --      , localNam = Map.insert x n (localNam cxt) -- TODO: shadowing!
       }) $ cont x
@@ -152,7 +152,7 @@ instance ( Applicative m
     st <- get
     let x = counter st
     put $ st { counter = x + 1 }
-    local (\ cxt -> cxt 
+    local (\ cxt -> cxt
       { localRen = Map.insert n (A.Var x) (localRen cxt)
       , localNam = Map.insert x n (localNam cxt) -- TODO: shadowing!
       }) $ cont x

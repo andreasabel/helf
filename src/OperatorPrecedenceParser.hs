@@ -8,7 +8,7 @@ import Control.Monad.Error
    Original code in SML. -}
 
 -- | Associativity of infix operators.
-data Associativity 
+data Associativity
   = AssocLeft
   | AssocRight
   | AssocNone
@@ -41,9 +41,9 @@ juxOp = Op (Infix maxBound AssocLeft) (\ [f,x] -> juxtaposition f x)
  <pAtom>   ::= Atom : <pOp?>
  <pOp?>    ::= [] | <pOp>
  <pOp>     ::= Infix : <pAtom> : <pOp?>
-	     | Prefix : <pOp?>
+             | Prefix : <pOp?>
  <pRed>    ::= Postfix : Atom : <pOp?>
-	     | Atom : <pOp>
+             | Atom : <pOp>
 @
 -}
 type Stack prec a = [Item prec a]
@@ -52,7 +52,7 @@ type Stack prec a = [Item prec a]
 type Result = Either ParseError
 
 -- | Possible errors of operator precedence parsing.
-data ParseError 
+data ParseError
   = IncompleteInfix
   | IncompletePrefix
   | EmptyExpression
@@ -68,7 +68,7 @@ data ParseError
   | InfixPostfixSamePrec
   | GenericError String
   deriving (Eq)
-  
+
 instance Show ParseError where
    show IncompleteInfix  = "Incomplete infix expression"
    show IncompletePrefix = "Incomplete prefix expression"
@@ -93,14 +93,14 @@ reduce :: Stack prec a -> Stack prec a
 reduce (Atom b : Op Infix{} f : Atom a : s) = Atom (f[a,b]) : s
 reduce (Atom a : Op Prefix{} f         : s) = Atom (f[a])   : s
 reduce (Op Postfix{} f  : Atom a       : s) = Atom (f[a])   : s
--- no other cases should be possible by stack invariant 
+-- no other cases should be possible by stack invariant
 
 -- | @reduceRec : <pStable> -> a@.  Performs all remaining reductions on safe stack.
 reduceRec :: Stack prec a -> a
 reduceRec [Atom a] = a
 reduceRec s = reduceRec (reduce s)
 
--- | @reduceAll : <p> -> ExtSyn.term@.  
+-- | @reduceAll : <p> -> ExtSyn.term@.
 --   Performs all reductions, top of stack might be unsound.
 reduceAll :: Stack prec a -> Result a
 reduceAll (Op Infix{} _  : s) = throwError IncompleteInfix
@@ -116,13 +116,13 @@ shiftAtom a s@(Atom{} : _) = reduce (Atom a : juxOp : s)
 shiftAtom a s = Atom a : s
 
 
--- | @shift : Item -> <pStable> -> <p>@.  
+-- | @shift : Item -> <pStable> -> <p>@.
 --   Fails on consecutive operators that cannot be reconciled.
-shift :: (Bounded prec, Juxtaposition a) => 
+shift :: (Bounded prec, Juxtaposition a) =>
          Item prec a -> Stack prec a -> Result (Stack prec a)
 
 -- ill-formed sequences:
-shift (Op Infix{} _)     s@(Op Infix{} _ : _)  = throwError InfixInfix 
+shift (Op Infix{} _)     s@(Op Infix{} _ : _)  = throwError InfixInfix
 shift (Op Infix{} _)     s@(Op Prefix{} _ : _) = throwError PrefixInfix
 shift (Op Infix{} _)     []                    = throwError LeadingInfix
 shift (Op Postfix{} _)   s@(Op Infix{} _ : _)  = throwError InfixPostfix
@@ -136,21 +136,21 @@ shift op@(Op Prefix{} _) s@(Atom{} : _) = return $ op : juxOp : s
   -- cannot reduce now, prefix operator waits for its argument
 
 -- remaining cases:
--- * Atom/Infix: shift 
--- * Atom/Prefix: shift 
--- * Atom/Postfix cannot arise 
--- * Atom/Empty: shift 
--- * Infix/Atom: shift 
--- * Infix/Postfix cannot arise 
--- * Prefix/{Infix,Prefix,Empty}: shift 
--- * Prefix/Postfix cannot arise 
--- * Postfix/Atom: shift, reduced immediately 
--- * Postfix/Postfix cannot arise 
+-- * Atom/Infix: shift
+-- * Atom/Prefix: shift
+-- * Atom/Postfix cannot arise
+-- * Atom/Empty: shift
+-- * Infix/Atom: shift
+-- * Infix/Postfix cannot arise
+-- * Prefix/{Infix,Prefix,Empty}: shift
+-- * Prefix/Postfix cannot arise
+-- * Postfix/Atom: shift, reduced immediately
+-- * Postfix/Postfix cannot arise
 shift op s = return $ op : s
 
 -- | Decides, based on precedence of opr compared to the top of the
 --   stack whether to shift the new operator or reduce the stack.
-resolve :: (Ord prec, Bounded prec, Juxtaposition a) => 
+resolve :: (Ord prec, Bounded prec, Juxtaposition a) =>
            Item prec a -> Stack prec a -> Result (Stack prec a)
 
 resolve op@(Op (Infix prec assoc) _) s@(Atom{} : Op (Infix prec' assoc') _ : _) =
@@ -167,9 +167,9 @@ resolve op@(Op (Infix prec _) _) s@(Atom{} : Op (Prefix prec') _ : _) =
     LT -> resolve op (reduce s)
     _  -> throwError PrefixInfixSamePrec
 
--- infix/atom/atom cannot arise 
--- infix/atom/postfix cannot arise 
--- infix/atom/<empty>: shift 
+-- infix/atom/atom cannot arise
+-- infix/atom/postfix cannot arise
+-- infix/atom/<empty>: shift
 
 -- always reduce postfix, possibly after prior reduction
 resolve op@(Op (Postfix prec) _) s@(Atom{} : Op (Prefix prec') _ : _) =
@@ -188,7 +188,7 @@ resolve op@(Op (Postfix prec) _) s@(Atom{} : Op (Infix prec' _) _ : _) =
 resolve op@(Op (Postfix prec) _) s@[Atom{}] = reduce <$> shift op s
 
 -- always shift prefix
--- default is shift 
+-- default is shift
 resolve op s = shift op s
 
 -- | Take a non-empty list $E1 E2 ... En$ of items and parse it.

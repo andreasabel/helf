@@ -27,7 +27,7 @@ proof/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove/ X Y Z P.
 %% Numbers and arithmetic
 EOF
 cat $* | $arithexpr > $tmp1
-cat $tmp1 $* | $numbers 
-cat $tmp1 $* 
+cat $tmp1 $* | $numbers
+cat $tmp1 $*
 
 rm -rf $tmp.*.tmp

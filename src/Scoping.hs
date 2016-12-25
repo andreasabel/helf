@@ -10,9 +10,9 @@ import Control.Applicative
 import Control.Monad.State hiding (mapM)
 
 import Data.Map (Map)
-import qualified Data.Map as Map 
+import qualified Data.Map as Map
 import Data.Set (Set)
-import qualified Data.Set as Set 
+import qualified Data.Set as Set
 
 import Data.Traversable
 
@@ -38,7 +38,7 @@ class (Applicative m, Monad m) => Scope m where
   addCon     :: C.Name -> m A.Name
   addCon      = addGlobal A.Con
   addDef     :: C.Name -> m A.Name
-  addDef      = addGlobal A.Def 
+  addDef      = addGlobal A.Def
   addFixity  :: C.Name -> C.Fixity -> m ()
   addLocal   :: (A.Name -> A.Ident) -> C.Name -> (A.Name -> m a) -> m a
   addVar     :: C.Name -> (A.Name -> m a) -> m a
@@ -48,13 +48,13 @@ class (Applicative m, Monad m) => Scope m where
   getName    :: A.Name -> m C.Name
   getFixity  :: C.Name -> m (Maybe C.Fixity)
   getIdent   :: C.Name -> m A.Ident
---  getIdent n  = fst <$> getIdentAndFixity n  
+--  getIdent n  = fst <$> getIdentAndFixity n
 --  getIdentAndFixity :: C.Name -> m (A.Ident, C.Fixity)
   parseError :: ParseError -> m a
-  
+
 -- * parsing
 
-class Parse c a where 
+class Parse c a where
   parse :: Scope m => c -> m a
 
 instance Parse c a => Parse (Maybe c) (Maybe a) where
@@ -64,28 +64,28 @@ instance Parse C.Declarations A.Declarations where
   parse (C.Declarations cdecls) = A.Declarations . concat <$> mapM parse cdecls
 
 instance Parse C.Declaration [A.Declaration] where
-  parse cdecl = 
+  parse cdecl =
     case cdecl of
       C.TypeSig n t -> return <$> do
         t <- parse t
-        n <- addCon n 
+        n <- addCon n
         return $ A.TypeSig n t
       C.Defn n mt e -> return <$> do
-        mt <- parse mt 
+        mt <- parse mt
         e  <- parse e
         n  <- addDef n
-        return $ A.Defn n mt e 
+        return $ A.Defn n mt e
 {-
       C.GLet n e -> return <$> do
         e  <- parse e
         n  <- addDef n
-        return $ A.GLet n e 
+        return $ A.GLet n e
 -}
       C.Fixity n fx -> const [] <$> addFixity n fx
 
 {-
 instance Parse C.Atom A.Atom where
-  parse a = 
+  parse a =
     case a of
       C.Typ     -> return $ A.Typ
       C.Ident n -> getAtom n
@@ -109,14 +109,14 @@ instance Parse C.Expr A.Expr where
         addVar x $ \ x -> A.Lam x mt <$> parse e
       C.Apps es -> parseApplication =<< mapM parse es
 
--- applications [C.Expr] are parsed into list of Stack items 
+-- applications [C.Expr] are parsed into list of Stack items
 -- which is then resolved into an A.Expr
 
 type Item = O.Item Int A.Expr
 
-{- 
+{-
 instance Parse C.Atom Item where
-  parse catom = 
+  parse catom =
     case catom of
       C.Typ     -> return $ O.Atom (A.Atom A.Typ)
       C.Ident n -> do
@@ -152,9 +152,9 @@ instance O.Juxtaposition A.Expr where
   juxtaposition = A.App
 
 parseApplication :: Scope m => [Item] -> m A.Expr
-parseApplication is =  
+parseApplication is =
   case O.parseApplication is of
-    Left err -> parseError err 
+    Left err -> parseError err
     Right e  -> return e
 
 -- * unparsing
@@ -163,13 +163,13 @@ parseApplication is =
 
 We distinguish 3 kinds of abstract names
 - global names (Con,Def)
-- user-generated local names 
+- user-generated local names
 - system-generated local names (e.g., from quote)
 
 We can print an expression from left-to-right, bottom-up as follows:
 
 a) never shadow a global name by a local name
-- state: 
+- state:
    * used concrete names, initially the set of all global names
    * map from abstract names to concrete names
 - when encountering a global id, just look up its name
@@ -198,24 +198,24 @@ instance Print A.Declarations C.Declarations where
   print (A.Declarations adecls) = C.Declarations $ map print adecls
 
 instance Print A.Declaration C.Declaration where
-  print adecl =  
+  print adecl =
     case adecl of
       A.TypeSig n t -> C.TypeSig (A.suggestion n) $ print t
       A.Defn n mt e -> C.Defn (A.suggestion n) (fmap print mt) $ print e
 --      A.GLet n e -> C.GLet (A.suggestion n) $ print e
 
 instance Print A.Expr C.Expr where
-  print e = evalState (printExpr e) $ nameSet $ A.globalCNames e 
---   print e = fst $ printExpr e $ nameSet $ A.globalCNames e 
-     
+  print e = evalState (printExpr e) $ nameSet $ A.globalCNames e
+--   print e = fst $ printExpr e $ nameSet $ A.globalCNames e
+
 printIdent :: A.Ident -> NameM C.Name
-printIdent id = 
+printIdent id =
   case id of
     A.Var n -> askName n                   -- locals are potentially renamed
     _ -> return $ A.suggestion $ A.name id -- globals have unique concrete name
 
 printExpr :: A.Expr -> NameM C.Expr
-printExpr e = 
+printExpr e =
   case e of
     A.Ident a           -> C.Ident <$> printIdent a
     A.Typ               -> return $ C.Typ
@@ -240,14 +240,14 @@ printExpr e =
     A.App f e           -> C.Apps <$> printApp f [e]
 
 printApp :: A.Expr -> [A.Expr] -> NameM [C.Expr]
-printApp f es = 
+printApp f es =
   case f of
     A.App f e -> printApp f (e : es)
     -- put extra parentheses around lambda if it is in the head:
     A.Lam{}   -> printExpr f >>= \ f -> (C.Apps [f] :) <$> mapM printExpr es
     _         -> mapM printExpr (f : es)
 
-data NameSet = NameSet 
+data NameSet = NameSet
   { usedNames :: Set C.Name
   , naming    :: Map A.UID C.Name
   }
@@ -269,15 +269,15 @@ bindName (A.Name x n) = do
       put $ NameSet (Set.delete n' (usedNames ns)) (Map.delete x nam)
       return n'
     Nothing -> nextVariant n
- 
+
 -- | Retrieve or insert name.
 askName :: A.Name -> NameM C.Name
 askName n = do
   nam <- gets naming
---  maybe (internalError ["Scoping.askName: not in map", show n]) return $ 
-  maybe (nextName n) return $ 
+--  maybe (internalError ["Scoping.askName: not in map", show n]) return $
+  maybe (nextName n) return $
     Map.lookup (A.uid n) nam
- 
+
 nextName :: A.Name -> NameM C.Name
 nextName (A.Name x n) = do
   n' <- nextVariant n
@@ -292,16 +292,13 @@ nextVariant n = do
       let n' = variant n i
       if Set.member n' ns then loop (i+1)
        else return n'
-  loop 0 
+  loop 0
 
 variant :: C.Name -> Int -> C.Name
-variant n i = 
+variant n i =
   case i of
     0 -> n
     1 -> n ++ "'"
     2 -> n ++ "''"
     3 -> n ++ "'''"
     _ -> n ++ "'" ++ show i
-
-
- 

@@ -5,12 +5,12 @@ files=Main Lexer Parser Util Concrete Abstract OperatorPrecedenceParser Scoping 
 hsfiles=$(foreach file,$(files),$(file).hs)
 # ghcflags=-fglasgow-exts -ignore-package monads-fd -O -rtsopts
 ghcflags=-fglasgow-exts -ignore-package monads-fd -O -rtsopts
-profflags=-prof -auto-all 
+profflags=-prof -auto-all
 .PHONY : test examples current default helf
 
 default : helf test
 
-current : 
+current :
 	helf test/succeed/z.elf
 
 helf : ../bin/helf
@@ -32,7 +32,7 @@ Lexer.hs : Lexer.x
 %arser.hs : %arser.y Lexer.hs
 	happy --info=$<-grm.txt $<
 
-test : helf         
+test : helf
 	@echo "======================================================================"
 	@echo "===================== Suite of successfull tests ====================="
 	@echo "======================================================================"
@@ -49,8 +49,8 @@ examples : helf
 	make -C ../examples
 
 
-clean : 
-	-rm *.o *.hi ../bin/helf	
+clean :
+	-rm *.o *.hi ../bin/helf
 #	make -C test/fail clean
 
 

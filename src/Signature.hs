@@ -20,7 +20,7 @@ import qualified Abstract as A
 import PrettyM
 import Util
 
--- * Abstract signature 
+-- * Abstract signature
 --
 -- A signature is a collection of signature entries.
 
@@ -31,7 +31,7 @@ data SigEntry val
            , symbDef  :: val }
 
 instance PrettyM m val => PrettyM m (SigEntry val) where
-  prettyM it = 
+  prettyM it =
     case it of
       SigCon t   -> prettyM t
       SigDef t v -> prettyM t <+> equals <+> prettyM v
@@ -97,7 +97,7 @@ instance Signature val sig => Signature val (a,sig) where
 -}
 
 -- * Abstract signature monad
- 
+
 class (Applicative m) => MonadSig val m where
   addGlobal   :: A.Name -> SigEntry val -> m ()
   addCon      :: A.Name -> val -> m ()
@@ -116,13 +116,13 @@ class (Applicative m) => MonadSig val m where
 
 instance ( Applicative m
          -- , PrettyM m val     -- for debugging
-         , MArray arr (SigEntry val) m 
+         , MArray arr (SigEntry val) m
          , Field (arr A.UID (SigEntry val)) st
          , MonadState st m ) => MonadSig val m where
 
   addGlobal n it = --  traceM (((A.suggestion n ++ " : ") ++) <$> showM it) $
     modify $ modF $ \ arr -> writeArray arr (A.uid n) it
-  
+
   lookupName n = flip readArray (A.uid n) . getF <$> get
 
 -}
@@ -139,7 +139,7 @@ instance ( Applicative m
 
   addGlobal n it = --  traceM (((A.suggestion n ++ " : ") ++) <$> showM it) $
     modify $ modF $ sigAdd (A.uid n) it
-  
+
   lookupName n = sigLookup' (A.uid n) . getF <$> get
 
 {-
@@ -147,19 +147,19 @@ instance ( Applicative m
     sig <- get
     case sigLookup n sig of
       Just it -> return it
-      Nothing -> do 
+      Nothing -> do
         c <- Scoping.getName n
-        fail $ "internal error: unbound global identifier, abstract = " ++ show n ++ " concrete = " ++ show c 
+        fail $ "internal error: unbound global identifier, abstract = " ++ show n ++ " concrete = " ++ show c
 -}
 
 {-
   addGlobal n it = modify $ Signature . Map.insert n it . signature
-  
+
   lookupName n = do
-    sig <- gets signature 
+    sig <- gets signature
     case Map.lookup n sig of
       Just it -> return it
-      Nothing -> do 
+      Nothing -> do
         c <- Scoping.getName n
-        fail $ "unbound global identifier, abstract = " ++ show n ++ " concrete = " ++ show c 
+        fail $ "unbound global identifier, abstract = " ++ show n ++ " concrete = " ++ show c
 -}

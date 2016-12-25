@@ -32,12 +32,12 @@ import Value
 type Var = A.UID
 
 -- | Heads are identifiers excluding @A.Def@.
-type Head = A.Ident 
- 
+type Head = A.Ident
+
 type Term = Val
-data Val 
-  = Ne   Head       Val [Term]       -- ^ @x^a cls^-1 | c^a cls^-1@ 
-  | Df   A.Name Val Val [Term]       -- ^ @d=v^a vs^-1@  
+data Val
+  = Ne   Head       Val [Term]       -- ^ @x^a cls^-1 | c^a cls^-1@
+  | Df   A.Name Val Val [Term]       -- ^ @d=v^a vs^-1@
                                      --   last argument first in list!
   | Sort Sort                        -- ^ @s@
   | K    Term                        -- ^ constant function
@@ -47,7 +47,7 @@ data Val
   | DontCare
 
 instance Value Head Val where
-  typ  = Sort Type 
+  typ  = Sort Type
   kind = Sort Kind
   freeVar h t = Ne h t []
 
@@ -86,7 +86,7 @@ boundName _ = A.noName
 type Env = Env.Env Var Val
 
 -- * Evaluation
-  
+
 -- instance (Applicative m, Monad m, MonadReader (MapSig Val) m) => MonadEval Val Env m where
 -- instance MonadEval Val Env EvalM where
 instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val Env m where
@@ -97,9 +97,9 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       K w                -> return $ w
       Ne h t vs          -> return $ Ne h t (v:vs)
       Df h w t vs        -> return $ Df h w t (v:vs)
-      Abs x w            -> flip substs w (singleton (A.uid x) v) 
+      Abs x w            -> flip substs w (singleton (A.uid x) v)
       ESub (Abs x w) rho -> flip substs w (Env.update rho (A.uid x) v)
-      
+
   evaluate e rho = do
     v <- evaluate' e
     substs rho v
@@ -108,30 +108,30 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
   evaluate' e =
     case e of
       A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> ask
-      A.Ident (A.Def x) -> do 
+      A.Ident (A.Def x) -> do
         SigDef t v <- sigLookup' (A.uid x) <$> ask
-        return $ def x v t 
+        return $ def x v t
       A.Ident (A.Var x) -> return $ var x
       A.App f e    -> Util.appM2 apply (evaluate' f) (evaluate' e)
       A.Lam x mt e -> Abs x <$> evaluate' e
       A.Pi mx e e' -> Fun <$> (evaluate e) <*> case mx of
-                        Just x  -> Abs x <$> evaluate' e' 
-                        Nothing -> K <$> evaluate e'  
+                        Just x  -> Abs x <$> evaluate' e'
+                        Nothing -> K <$> evaluate e'
       A.Typ        -> return typ
 
-  unfold v = 
+  unfold v =
     case v of
       Df x f t vs  -> appsR f vs
       _            -> return v
 
-  unfolds v = 
+  unfolds v =
     case v of
       Df x f t vs  -> unfolds =<< appsR' f vs -- unfolding application
       _            -> return v
 
-  abstractPi a (n, Ne (A.Var x) _ []) b = return $ Fun a $ Abs x b 
+  abstractPi a (n, Ne (A.Var x) _ []) b = return $ Fun a $ Abs x b
 
-  reify v = quote v A.initSysNameCounter 
+  reify v = quote v A.initSysNameCounter
 
 -- * Substitution for free variables
 
@@ -139,15 +139,15 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
 -- | @substFree v x w = [v/x]w@
 -- substFree :: Val -> Var -> Val -> EvalM Val
 substFree :: (Applicative m, Monad m, MonadEval Val Env m) =>
-             Val -> Var -> Val -> m Val 
+             Val -> Var -> Val -> m Val
 substFree w x = substs (Env.singleton w x)
 -}
 
 -- substs :: Env -> Val -> EvalM Val
-substs :: (Applicative m, Monad m, MonadEval Val Env m) => 
-          Env -> Val -> m Val 
+substs :: (Applicative m, Monad m, MonadEval Val Env m) =>
+          Env -> Val -> m Val
 substs sigma = subst where
-  subst :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> m Val
   subst (Ne h@(A.Var y) a vs) = case lookup (A.uid y) sigma of
     Just w  -> appsR w =<< mapM subst vs
     Nothing -> Ne h <$> subst a <*> mapM subst vs
@@ -176,10 +176,10 @@ apps f vs = foldl (\ mf v -> mf >>= \ f -> apply f v) (return f) vs
 
 -- | Unfold head definitions during applying.
 -- appsR' :: Val -> [Val] -> EvalM Val
-appsR' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> [Val] -> m Val 
+appsR' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> [Val] -> m Val
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
--- apply' :: Val -> Val -> EvalM Val 
+-- apply' :: Val -> Val -> EvalM Val
 apply' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> Val -> m Val
 apply' f v =
     case f of

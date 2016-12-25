@@ -1,4 +1,13 @@
-{-# LANGUAGE TupleSections, UndecidableInstances, TypeSynonymInstances, FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, FlexibleContexts, FunctionalDependencies #-}
+{-# LANGUAGE TupleSections
+  , UndecidableInstances
+  , TypeSynonymInstances
+  , FlexibleInstances
+  , MultiParamTypeClasses
+  , GeneralizedNewtypeDeriving
+  , FlexibleContexts
+  , FunctionalDependencies
+  #-}
+
 module Util where
 
 import Control.Applicative
@@ -15,11 +24,11 @@ import Debug.Trace
 import Text.PrettyPrint
 
 class Pretty a where
-  pretty        :: a -> Doc
-  prettyPrec	:: Int -> a -> Doc
+  pretty     :: a -> Doc
+  prettyPrec :: Int -> a -> Doc
 
-  pretty	= prettyPrec 0
-  prettyPrec	= const pretty
+  pretty     = prettyPrec 0
+  prettyPrec = const pretty
 
 dot :: Doc
 dot = text "."
@@ -76,12 +85,12 @@ collectWhile m = loop []
 
 -- | Generic application view, as an instance of 'collectWhile'.
 gAppView :: (expr -> Maybe (expr, arg)) -> expr -> (expr, [arg])
-gAppView testApp e = (e', as) 
-  where (as, e') = runState (collectWhile (state testApp')) e 
-        testApp' e = 
+gAppView testApp e = (e', as)
+  where (as, e') = runState (collectWhile (state testApp')) e
+        testApp' e =
           case testApp e of
             Nothing      -> (Nothing, e)
-            Just (e', a) -> (Just a, e') 
+            Just (e', a) -> (Just a, e')
 
 -- | An application view where function and argument are of the same
 --   syntactic class.

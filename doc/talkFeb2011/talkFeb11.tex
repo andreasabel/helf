@@ -5,7 +5,7 @@
 %\usepackage{beamerthemelined}
 \usetheme[width=2cm]{Goettingen}
 \usecolortheme{sidebartab}
-\setbeamercovered{highly dynamic} 
+\setbeamercovered{highly dynamic}
 \usepackage{xspace}
 \usepackage{ifthen}
 \usepackage{amsmath}
@@ -188,7 +188,7 @@ t,u & ::= 	\visible<2->{&       & x & \mbox{free variable (named $x$)} } \\
 \re &      \ovar[g]  \lspace \ovar[n]  \lspace (\ovar[f]  \lspace \ovar[n]) }& \\
 \\
 \visible<7->{
-\re &      g \sspace n  \sspace (f \sspace n) & } 
+\re &      g \sspace n  \sspace (f \sspace n) & }
 \end{array}
 \]
 }
@@ -196,9 +196,9 @@ t,u & ::= 	\visible<2->{&       & x & \mbox{free variable (named $x$)} } \\
 \subsection{Ordered Values}
 \frame{
 \frametitle{Ordered Values}
-\[ 
+\[
 \begin{array}{lrlll}
-v,w & ::= 	\visible<2->{& h \vec v & \mbox{large application}  \\ 
+v,w & ::= 	\visible<2->{& h \vec v & \mbox{large application}  \\
 &&& \mbox{($h$ is a free variable)} \\ }
 \\
 % 	\visible<3->{& \mid 	& \left( \ovlam {\vec k} t\right) \left[ \vec u \right] & \mbox{closure} } % !! really "closure" ??
@@ -211,9 +211,9 @@ v,w & ::= 	\visible<2->{& h \vec v & \mbox{large application}  \\
 \subsection{Ordered Evaluation}
 \frame{
 \frametitle{Ordered Evaluation}
-\[ 
+\[
 \begin{array}{llll}
-& \ev x \varrho {()} & = & \varrho(x) 
+& \ev x \varrho {()} & = & \varrho(x)
 \\[1em]
 \visible<2->{ & \ev \ovar \varrho {(v_1)} & = & v_1 }
 \\[1em]
@@ -252,9 +252,9 @@ t,u, A, B & ::= 	&       & x & \mbox{free variable (named $x$)}  \\
 
 \frame{
 \frametitle{Ordered Values (Extension)}
-\[ 
+\[
 \begin{array}{lrlll}
-v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\ 
+v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\
 &&& \mbox{($h$ is a free variable)} \\ }
 \\
 % 	\visible<3->{& \mid 	& \left( \ovlam {\vec k} t\right) \left[ \vec u \right] & \mbox{closure} } % !! really "closure" ??
@@ -264,24 +264,24 @@ v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\
 	\\
 	\visible<3->{& \mid 	& \ovpi V W & \mbox{function type} } \\
 	\\
-	\visible<4->{& \mid 	& \mathsf{Sort} & \mbox{} } 
+	\visible<4->{& \mid 	& \mathsf{Sort} & \mbox{} }
 \end{array}
 \]
 }
 
 \frame{
 \frametitle{Ordered Evaluation (Extension)}
-\[ 
+\[
 \begin{array}{llll}
 
-\visible<1->{& \ev {\opi A k B}  \varrho {(v_1, \ldots, v_n)} & = & \ovpi \hspace{1ex} \ev{A} \varrho {(v_1, \ldots, v_{n-k})} \ev{B} \varrho {(v_{n-k+1}, \ldots, v_n)} } 
+\visible<1->{& \ev {\opi A k B}  \varrho {(v_1, \ldots, v_n)} & = & \ovpi \hspace{1ex} \ev{A} \varrho {(v_1, \ldots, v_{n-k})} \ev{B} \varrho {(v_{n-k+1}, \ldots, v_n)} }
 \\[1em]
-\visible<2->{& \left( \la x.v\right)^\eta \ap w & = & \llparenthesis v \rrparenthesis^{\eta [x \mapsto w]}} 
+\visible<2->{& \left( \la x.v\right)^\eta \ap w & = & \llparenthesis v \rrparenthesis^{\eta [x \mapsto w]}}
 \\[1em]
 \\
-\visible<3->{& \llparenthesis \left( \la y.v'\right)^{\eta'} \rrparenthesis^\eta   & = &  \left( \la y.v'\right)^{\eta''}  } 
+\visible<3->{& \llparenthesis \left( \la y.v'\right)^{\eta'} \rrparenthesis^\eta   & = &  \left( \la y.v'\right)^{\eta''}  }
 \\[1em]
-\visible<4->{& \llparenthesis \left( \ovlam {\vec k} t\right)_{ \vec v }^{\eta'} \rrparenthesis^\eta   & = &  
+\visible<4->{& \llparenthesis \left( \ovlam {\vec k} t\right)_{ \vec v }^{\eta'} \rrparenthesis^\eta   & = &
 \left( \ovlam {\vec k} t\right)_{ \llparenthesis \vec v \rrparenthesis^\eta }^{\eta''} }
 \\[1em]
 \visible<5->{& \llparenthesis h \vec v \rrparenthesis^\eta   & = &
@@ -291,8 +291,8 @@ v,w,V,W & ::= 	\visible<1->{& h \vec v & \mbox{large application}  \\
 \]
 \\
 \[ \visible<3->{
-\eta''(x) = 
-\begin{cases} 
+\eta''(x) =
+\begin{cases}
 \eta(x) & \text{if possible, i.e. if $x$ is mentioned in $\eta$}
 \\
 \llparenthesis \eta'(x) \rrparenthesis^\eta & \text{otherwise.}
@@ -325,7 +325,7 @@ t,u,A,B & ::= & x & \mbox{variable (named $x$)} \\
 % 			                   & \mid & \Pi x^?:A.\,B  & \mbox{function type} \\
 			                   & \mid & \Pi x:A.\,B  & \mbox{function type} \\
 			                   & \mid & \mathsf{constant} & \\
-			                   & \mid & \mathsf{definition} & 
+			                   & \mid & \mathsf{definition} &
 \end{array}
 \]
 }
@@ -338,7 +338,7 @@ t,u,A,B & ::= & x & \mbox{variable (named $x$)} \\
 
 \[
 \begin{array}{lrlll}
-v,w,V,W & ::= 	\visible<1->{& h \sspace \vec v & \mbox{large application}  \\ 
+v,w,V,W & ::= 	\visible<1->{& h \sspace \vec v & \mbox{large application}  \\
 % &&& \mbox{($h$ is a free variable, constant or definition)} \\ }
 &&& \mbox{($h$ is a free variable, } \\
 &&& \mbox{constant or definition)} \\ }
@@ -350,7 +350,7 @@ v,w,V,W & ::= 	\visible<1->{& h \sspace \vec v & \mbox{large application}  \\
 	\\
 	\visible<4->{& \mid 	& \ovpi V W & \mbox{function type} } \\
 	\\
-	\visible<5->{& \mid 	& \mathsf{Sort} & \mbox{} } 
+	\visible<5->{& \mid 	& \mathsf{Sort} & \mbox{} }
 \end{array}
 \]
 }
@@ -377,7 +377,7 @@ $^{(*)}$ K. Watkins, I. Cervesato, F. Pfenning, D. Walker (2003). \emph{A Concur
 %   | HCon A.Name HVal  [HVal]       -- }-> Head
 %   | HDef A.Name HVal HVal [HVal]   -- }
 %   | HLam A.Name HVal
-%   | HK HVal                        -- constant Lambda, not binding anything and therefore not counted by de Bruijn indices 
+%   | HK HVal                        -- constant Lambda, not binding anything and therefore not counted by de Bruijn indices
 %   | HSort Value.Sort
 %   | HFun HVal HVal
 %   | HDontCare
@@ -389,12 +389,12 @@ $^{(*)}$ K. Watkins, I. Cervesato, F. Pfenning, D. Walker (2003). \emph{A Concur
 \frametitle{Typechecking}
 % \begin{itemize}
 % \item comparison of the implementations:
-% \item typechecking large Twelf-files using the 
+% \item typechecking large Twelf-files using the
 % \end{itemize}
 \begin{center}
-comparison of the implementations:\\ 
+comparison of the implementations:\\
 
-typechecking large LF terms 
+typechecking large LF terms
 \end{center}
 }
 
@@ -503,7 +503,7 @@ $^{(*)}$ kindly provided by Andrew W. Appel, Princeton University
 % \section{Literatur}
 % \frame[squeeze]{
 % 	\frametitle{Literatur}
-% 	
+%
 % 	%\nocite{bla}
 % 	%\bibliographystyle{apacite}
 % 	%\bibliography{vortrag}

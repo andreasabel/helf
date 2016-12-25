@@ -1,4 +1,4 @@
-{- 
+{-
 An example that should cause errors.
 Those lines are labeled "CORRUPTED"
 -}
@@ -36,18 +36,18 @@ import PrettyM
 import Signature
 import TypeCheck hiding (app)
 
-import Data.Char 
+import Data.Char
 
 
 -- * Values
 
 type Var = A.UID
 
-type Head = A.Ident 
+type Head = A.Ident
 
-data Val 
-  = Ne   Head       Val [Val]        -- ^ @x^a vs^-1 | c^a vs^-1@ 
-  | Df   A.Name Val Val [Val]        -- ^ @d=v^a vs^-1@  
+data Val
+  = Ne   Head       Val [Val]        -- ^ @x^a vs^-1 | c^a vs^-1@
+  | Df   A.Name Val Val [Val]        -- ^ @d=v^a vs^-1@
                                      --   last argument first in list!
   | Sort Sort                        -- ^ @s@
   | CLam A.Name A.Expr Env           -- ^ @(\xe) rho@
@@ -57,7 +57,7 @@ data Val
   | DontCare
 
 instance Value Head Val where
-  typ  = Sort Type 
+  typ  = Sort Type
   kind = Sort Kind
   freeVar h t = Ne h t []
 
@@ -104,8 +104,8 @@ updateSubst = Env.update
 lookupSubst = Env.lookup
 
 -- * Evaluation
-  
-  
+
+
 instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => MonadEval Val Env m where
 
   apply f v =
@@ -115,50 +115,50 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
       --Df h w t vs       -> return $ Df h w t (v:vs)                 !CORRUPTED!
       --CLam x e rho      -> evaluate e (Env.update rho (A.uid x) v)  !CORRUPTED!
       Abs x w sigma     -> substs (updateSubst sigma (A.uid x) v) w
-  
+
   evaluate e rho =
     case e of
       A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> ask
-      A.Ident (A.Def x) -> do 
+      A.Ident (A.Def x) -> do
         SigDef t v <- sigLookup' (A.uid x) <$> ask
-        return $ def x v t 
+        return $ def x v t
 --      A.Ident (A.Var x) -> return $ Env.lookupSafe (A.uid x) rho        !CORRUPTED!
 --      A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)!CORRUPTED!
 --      A.Lam x mt e -> return $ CLam x e rho                             !CORRUPTED!
       A.Pi mx e e' -> Fun <$> (evaluate e rho) <*> case mx of
                         Just x  -> return $ CLam x e' rho
-                        Nothing -> K <$> evaluate e' rho 
+                        Nothing -> K <$> evaluate e' rho
 --      A.Typ        -> return typ                                        !CORRUPTED!
 
   evaluate' e = evaluate e Env.empty
 
-  unfold v = 
+  unfold v =
     case v of
       Df x f t vs  -> appsR f vs
       _            -> return v
 
-  unfolds v = 
+  unfolds v =
     case v of
       Df x f t vs  -> unfolds =<< appsR' f vs -- unfolding application
       _            -> return v
 
   abstractPi a (n, Ne (A.Var x) _ []) b = return $ Fun a $ Abs x b emptySubst
 
-  reify v = quote v A.initSysNameCounter 
+  reify v = quote v A.initSysNameCounter
 
 -- * Substitution for free variables
 
 -- | @substFree v x w = [v/x]w@
 -- substFree :: Val -> Var -> Val -> EvalM Val
 substFree :: (Applicative m, Monad m, MonadEval Val Env m) =>
-             Val -> Var -> Val -> m Val 
+             Val -> Var -> Val -> m Val
 substFree w x = substs (sgSubst w x)
 
 -- substs :: Subst -> Val -> EvalM Val
-substs :: (Applicative m, Monad m, MonadEval Val Env m) => 
-          Subst -> Val -> m Val 
+substs :: (Applicative m, Monad m, MonadEval Val Env m) =>
+          Subst -> Val -> m Val
 substs sigma = subst where
-  subst :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> m Val
   subst (Ne h@(A.Var y) a vs) = case lookupSubst (A.uid y) sigma of
     Just w  -> appsR w =<< mapM subst vs
     Nothing -> Ne h <$> subst a <*> mapM subst vs
@@ -175,10 +175,10 @@ substs sigma = subst where
 
 -- | Unfold head definitions during applying.
 -- appsR' :: Val -> [Val] -> EvalM Val
-appsR' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> [Val] -> m Val 
+appsR' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> [Val] -> m Val
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
--- apply' :: Val -> Val -> EvalM Val 
+-- apply' :: Val -> Val -> EvalM Val
 apply' :: (Applicative m, Monad m, MonadEval Val Env m) => Val -> Val -> m Val
 apply' f v =
     case f of
@@ -221,8 +221,8 @@ quoteFun f i = do
   v <- f `apply` (var_ x)
   (x,) <$> quote v i'
 
-  
-  
+
+
 -----------------------
 
 
@@ -250,11 +250,11 @@ instance MonadCxt Val Env ContextM where
   addLocal n@(A.Name x _) t cont = do
     l <- asks level
     let xv = Ne (A.Var $ n { A.uid = l }) t []
-    local (\ (Context l gamma rho) -> 
-             Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho)) 
+    local (\ (Context l gamma rho) ->
+             Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho))
           (cont xv)
 
-  lookupLocal x = do 
+  lookupLocal x = do
     gamma <- asks tyEnv
     return $ Env.lookupSafe (A.uid x) gamma
 
@@ -272,30 +272,30 @@ instance MonadCxt Val Env CheckExprM where
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
     let xv  = Ne (A.Var $ n { A.uid = l }) t []
-    let cxt = Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho) 
+    let cxt = Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho)
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
-  lookupLocal n@(A.Name x _) = do 
+  lookupLocal n@(A.Name x _) = do
     gamma <- asks $ tyEnv . locals
     return $ Env.lookupSafe x gamma
 
   getEnv = asks $ valEnv . locals
 
-instance MonadCheckExpr Val Env EvalM CheckExprM where  
+instance MonadCheckExpr Val Env EvalM CheckExprM where
 
   doEval comp    = runReader comp <$> asks globals
 
-  typeError err  = failDoc $ prettyM err 
+  typeError err  = failDoc $ prettyM err
   newError err k = k `catchError` (const $ typeError err)
 
   typeTrace tr   =  (enterDoc $ prettyM tr)
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
-    
+
 
 instance PrettyM CheckExprM Val where
-  prettyM = doEval . prettyM 
+  prettyM = doEval . prettyM
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
@@ -314,7 +314,7 @@ type CheckDeclM = StateT (MapSig Val) (ErrorT String IO)
 instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
 {-
   doCheckExpr cont = do
-    sig <- get 
+    sig <- get
     case runReaderT cont $ SigCxt sig emptyContext of
       Left err -> fail err
       Right a  -> return a
@@ -326,7 +326,7 @@ instance MonadCheckDecl Val Env EvalM CheckExprM CheckDeclM where
 --  doCheckExpr cont = (\ sig -> runReaderT cont $ SigCxt sig emptyContext) <$> get
 
 instance PrettyM CheckDeclM Val where
-  prettyM = doCheckExpr . prettyM 
+  prettyM = doCheckExpr . prettyM
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do
@@ -348,7 +348,7 @@ runCheckDecls ds = runErrorT $ evalStateT (checkDeclarations ds) Map.empty
 hashString = fromIntegral . foldr f 0
       where f c m = ord c + (m * 128) `rem` 1500007
 
-hash :: String -> A.Name 
+hash :: String -> A.Name
 hash s = A.Name (hashString s) s
 
 var' x   = A.Ident $ A.Var $ hash x
@@ -362,15 +362,15 @@ tid = pi "A" ty $ pi "x" (var' "A") $ var' "A"
 
 arrow a b = A.Pi Nothing a b
 
-tnat = pi "A" ty $ 
-         pi "zero" (var' "A") $ 
+tnat = pi "A" ty $
+         pi "zero" (var' "A") $
          pi "suc"  (var' "A" `arrow` var' "A") $
-           var' "A" 
+           var' "A"
 
 ezero  = abs "A" $ abs "zero" $ abs "suc" $ var' "zero"
 -- problem: esuc is not a nf
-esuc n = abs "A" $ abs "zero" $ abs "suc" $ var' "suc" `app` 
-          (n `app` var' "A" `app` var' "zero" `app` var' "suc")  
+esuc n = abs "A" $ abs "zero" $ abs "suc" $ var' "suc" `app`
+          (n `app` var' "A" `app` var' "zero" `app` var' "suc")
 
 enat e =  abs "A" $ abs "zero" $ abs "suc" $ e
 enats = map enat $ iterate (app (var' "suc")) (var' "zero")
@@ -383,4 +383,3 @@ failure = [(tid,tid)]
 
 runsuccs = map (uncurry runCheck) success
 runtests = map (uncurry runCheck) (success ++ failure)
-

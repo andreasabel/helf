@@ -1,4 +1,10 @@
-{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable, TypeSynonymInstances, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE DeriveFunctor
+  , DeriveFoldable
+  , DeriveTraversable
+  , TypeSynonymInstances
+  , FlexibleInstances
+  , FlexibleContexts
+  , UndecidableInstances #-}
 
 module Abstract where
 
@@ -7,16 +13,16 @@ import Prelude hiding (foldr)
 import Control.Monad.Reader
 
 import Data.Set (Set)
-import qualified Data.Set as Set 
+import qualified Data.Set as Set
 
 -- import Data.Map (Map)
--- import qualified Data.Map as Map 
-import qualified Data.IntMap as M 
+-- import qualified Data.Map as Map
+import qualified Data.IntMap as M
 
 import Data.Foldable
 import Data.Traversable
 
-import qualified Concrete as C 
+import qualified Concrete as C
 
 import Util
 
@@ -25,11 +31,11 @@ import Util
 type UID = Int
 
 -- | Names in the abstract syntax are unique.
-data Name = Name 
-  { uid        :: UID     -- ^ positive numbers come from user, 
+data Name = Name
+  { uid        :: UID     -- ^ positive numbers come from user,
                           --   negative from system (e.g. quoting)
   , suggestion :: C.Name  -- ^ name suggestion for printing
-  } 
+  }
 
 instance Eq Name where
   x == y = uid x == uid y
@@ -41,7 +47,7 @@ instance Show Name where
   show x = suggestion x ++ ":" ++ show (uid x)
 
 -- | Local and global names.
-data Ident 
+data Ident
   = Var { name :: Name }          -- ^ locally bound identifier
   | Con { name :: Name }          -- ^ declared constant
   | Def { name :: Name }          -- ^ defined identifier
@@ -98,7 +104,7 @@ data Expression id
   | Typ                                             -- ^ @type@
   | Pi   (Maybe Name) (TypeExpr id) (TypeExpr id)   -- ^ @A -> B@ or @{x:A} B@
   | Lam  Name (Maybe (TypeExpr id)) (Expression id) -- ^ @[x:A] E@ or @[x]E@
-  | App  (Expression id) (Expression id)            -- ^ @E1 E2@ 
+  | App  (Expression id) (Expression id)            -- ^ @E1 E2@
   | LLet Name (Expression id) (Expression id)       -- ^ @[x = E1] E2@
   deriving (Eq,Ord,Show,Functor,Foldable,Traversable)
 
@@ -142,7 +148,7 @@ class OrdAlpha a where
   acmp e1 e2 = return $ aCompare e1 e2
 
 instance OrdAlpha Name where
-  acmp (Name x _) (Name y _) 
+  acmp (Name x _) (Name y _)
     | x == y = return EQ
     | otherwise = do
         m <- ask
@@ -169,19 +175,19 @@ instance OrdAlpha Expr where
     (Pi Nothing _ _, _) -> return LT
     (_, Pi Nothing _ _) -> return GT
 
-    (Pi (Just x) a b, Pi (Just x') a' b') -> lexM 
+    (Pi (Just x) a b, Pi (Just x') a' b') -> lexM
       [ acmp a a'
       , local (M.insert (uid x) (uid x')) $ acmp b b' ]
     (Pi (Just _) _ _, _) -> return LT
     (_, Pi (Just _) _ _) -> return GT
 
-    (Lam x a e, Lam x' a' e') -> lexM 
+    (Lam x a e, Lam x' a' e') -> lexM
       [ acmp a a'
       , local (M.insert (uid x) (uid x')) $ acmp e e' ]
     (Lam _ _ _, _) -> return LT
     (_, Lam _ _ _) -> return GT
 
-    (LLet x a e, LLet x' a' e') -> lexM 
+    (LLet x a e, LLet x' a' e') -> lexM
       [ acmp a a'
       , local (M.insert (uid x) (uid x')) $ acmp e e' ]
     (LLet _ _ _, _) -> return LT
@@ -224,6 +230,6 @@ globalIds = foldr (\ n ns -> if isGlobalIdent n then Set.insert n ns else ns)
                   Set.empty
 
 globalCNames :: Expr -> Set C.Name
-globalCNames = 
+globalCNames =
   foldr (\ n ns -> if isGlobalIdent n then Set.insert (suggestion $ name n) ns else ns)
         Set.empty

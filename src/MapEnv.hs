@@ -12,7 +12,7 @@ type Env = Map
 lookup :: (Ord k) => k -> Env k v -> Maybe v
 lookup = Map.lookup
 
-lookupSafe :: (Ord k, Show k) => k -> Env k v -> v 
+lookupSafe :: (Ord k, Show k) => k -> Env k v -> v
 lookupSafe k = maybe (error $ "internal error: unbound key " ++ show k) id .
   MapEnv.lookup k
 

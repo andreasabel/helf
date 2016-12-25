@@ -1,5 +1,5 @@
--- A type checker instance with 
--- * values as explicit closures and 
+-- A type checker instance with
+-- * values as explicit closures and
 -- * environments as finite maps
 
 {-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
@@ -64,39 +64,39 @@ instance MonadCxt Val Env CheckExprM where
   addLocal n t cont = do
     Context l gamma rho <- asks locals
     xv <- newORef $ var n t
-    let cxt = Context (l + 1) (Env.insert n t gamma) (Env.insert n xv rho) 
+    let cxt = Context (l + 1) (Env.insert n t gamma) (Env.insert n xv rho)
     local (\ sc -> sc { locals = cxt }) $ cont xv
 
 {-
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- asks locals
     xv <- newORef $ var (n { A.uid = l }) t
-    let cxt = Context (l + 1) (Env.insert n t gamma) (Env.insert n xv rho) 
+    let cxt = Context (l + 1) (Env.insert n t gamma) (Env.insert n xv rho)
     local (\ sc -> sc { locals = cxt }) $ cont xv
 -}
 
-  lookupLocal n@(A.Name x _) = do 
+  lookupLocal n@(A.Name x _) = do
     gamma <- asks $ tyEnv . locals
     return $ Env.lookupSafe n gamma
 
   getEnv = asks $ valEnv . locals
 
-instance MonadCheckExpr Head Val Env EvalM CheckExprM where  
+instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
-  doEval comp    = do 
+  doEval comp    = do
     sig <- asks globals
     lift $ lift $ runReaderT comp sig
 
 --  unlessId r1 r2 cont = unless (r1 == r2) cont
   unlessId r1 r2 cont = if (r1 /= r2) then cont else do
     unlessM (atomic r1) $ do
-      traceDoc $ text "==> ref identity fired for" <+> prettyM r1 
+      traceDoc $ text "==> ref identity fired for" <+> prettyM r1
     return ()
 
 -- SKIP equate
 --  equate r1 r2 = trace ("equate fired!") $ assign r1 r2 >> return ()
-  
-  typeError err  = failDoc $ prettyM err 
+
+  typeError err  = failDoc $ prettyM err
   newError err k = k `catchError` (const $ typeError err)
   -- handleError k k' = catchError k (const k')
 
@@ -106,19 +106,19 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 {-
   traceEval m = do
     v <- m
-    traceM (showTG v) 
+    traceM (showTG v)
     return v
 -}
 
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
 --  lookupGlobal x = ReaderT $ \ sig -> return $ lookupSafe x sig
-    
+
 {-
   addBind x a cont = do
     Context level tyEnv valEnv <- ask
     let xv   = freeVar level a
-    let cxt' = Context 
+    let cxt' = Context
                  (level + 1)
                  (Map.insert x a tyEnv)
                  (Map.insert x xv valEnv)
@@ -133,11 +133,11 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
     gamma <- asks tyEnv
     case Map.lookup x gamma of
       Just t  -> return t
-      Nothing -> fail $ "unbound variable " ++ x 
+      Nothing -> fail $ "unbound variable " ++ x
 -}
 
 instance PrettyM CheckExprM Val where
-  prettyM = doEval . prettyM 
+  prettyM = doEval . prettyM
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
@@ -160,21 +160,21 @@ instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
   doCheckExpr cont = do
     sig <- get
     res <- lift $ lift $ runErrorT $ runReaderT cont $ SigCxt sig emptyContext
-    case res of 
+    case res of
       Left err -> fail err
       Right a  -> return a
 
 {-
-  doCheckExpr cont = do 
+  doCheckExpr cont = do
      res <- runErrorT . runReaderT cont . sigCxt =<< get
-     either throwError return res 
+     either throwError return res
     where
      sigCxt sig = SigCxt sig emptyContext
 -}
 --  doCheckExpr cont = (\ sig -> runReaderT cont $ SigCxt sig emptyContext) <$> get
 
 instance PrettyM CheckDeclM Val where
-  prettyM = doCheckExpr . prettyM 
+  prettyM = doCheckExpr . prettyM
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
 checkDeclaration d = do

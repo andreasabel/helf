@@ -26,12 +26,12 @@ import Value
 import LocallyNamelessSyntax
 
 (<.>) :: Applicative m => (b -> c) -> (a -> m b) -> a -> m c
-(<.>) f g x = f <$> g x  
+(<.>) f g x = f <$> g x
 
 {- Term graphs -}
 
 -- | Heads are identifiers excluding @A.Def@.
-type Head = A.Ident 
+type Head = A.Ident
 
 type Term = ORef Term'
 type Type = Term
@@ -41,7 +41,7 @@ type Spine = [Term] -- not reversed
 -- instance Show Term where
 --   show _ = "*"
 
-data Term' 
+data Term'
   = Atom  Head Type      Spine -- ^ typed free variable or constant
   | Def A.Name Type Term Spine -- ^ typed definition and its value
   | Var A.Name                 -- ^ bound variable
@@ -123,7 +123,7 @@ instance MonadORef TGM where
 
 type Env = Map A.Name Term
 
-instance (Signature Term sig, MonadReader sig m, MonadTG m) => 
+instance (Signature Term sig, MonadReader sig m, MonadTG m) =>
   MonadEval Head Term Env m where
 
   typ         = predefType
@@ -134,7 +134,7 @@ instance (Signature Term sig, MonadReader sig m, MonadTG m) =>
     u <- whnf' r
     case u of
       Atom h t sp  -> return $ VNe h t sp
-      Def h t v sp -> return $ VDef (A.Def h) t sp 
+      Def h t v sp -> return $ VDef (A.Def h) t sp
       Sort s       -> return $ VSort s
       Fun u t      -> return $ VPi u t
       K{}          -> return $ VAbs
@@ -153,7 +153,7 @@ instance (Signature Term sig, MonadReader sig m, MonadTG m) =>
       _            -> return r
 
   unfolds r = do
-      u <- whnf' r 
+      u <- whnf' r
       case u of
         Def h t v sp -> unfolds =<< app v sp
         _            -> return r
@@ -169,7 +169,7 @@ instance (Signature Term sig, MonadReader sig m, MonadTG m) =>
         _            -> return r
 -}
 
-  reify r = quote r A.initSysNameCounter 
+  reify r = quote r A.initSysNameCounter
 
   abstractPi a (x,xv) b = newORef . Fun a =<< newORef (Abs xv b)
     -- note: xv is an Atom not a Var, but this does not seem to harm
@@ -188,19 +188,19 @@ addPredefs dict = do
   return $ Map.insert (Alpha A.Typ) ty dict
 
 
-trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
   Env -> A.Expr -> m Term
 trans rho e = -- trace ("translating " ++ show e) $ do
-  evalStateT (transT e) =<< addPredefs 
+  evalStateT (transT e) =<< addPredefs
                      (Map.mapKeysMonotonic (Alpha . A.Ident . A.Var) rho)
 
 {-
 -- Translation via BTm
 
-trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+trans ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
   Env -> A.Expr -> m Term
 trans rho e = -- trace ("translating " ++ show e) $ do
-  evalStateT (transB (toLocallyNameless e)) =<< addPredefs 
+  evalStateT (transB (toLocallyNameless e)) =<< addPredefs
                      (Map.mapKeysMonotonic BVar rho)
 
 addPredefs :: MonadTG m => TDict BTm -> m (TDict BTm)
@@ -210,27 +210,27 @@ addPredefs dict = do
 -}
 
 -- | From locally nameless to Term.
-transB ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+transB ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
   BTm -> TransT BTm m Term
 transB = transG transB'
 
-transB' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+transB' ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
   BTm -> TransT BTm m (Either Term Term')
 transB' e = do
   let (f, sp) = appView e
-  if null sp then 
+  if null sp then
       case f of
-         B (DBIndex i n) -> Left <$> transB (BVar n) 
+         B (DBIndex i n) -> Left <$> transB (BVar n)
          BCon x -> Right <$> (con x . symbType . sigLookup' (A.uid x) <$> ask)
-         BDef x -> do 
+         BDef x -> do
             SigDef t v <- sigLookup' (A.uid x) <$> ask
-            Right <$> (return $ def x t v) 
+            Right <$> (return $ def x t v)
          BVar n -> -- free variable
-           fail ("transB': unbound variable " ++ A.suggestion n) 
---           trace ("transB': unbound variable " ++ A.suggestion n) 
+           fail ("transB': unbound variable " ++ A.suggestion n)
+--           trace ("transB': unbound variable " ++ A.suggestion n)
 --           Right <$> (return $ Var n) -- only for binding in Lam and Pi
          BLam (Annotation n) e    -> do
-           x <- transAddBind BVar n 
+           x <- transAddBind BVar n
            Right . Abs x <$> transB e
          BConstLam e -> Right . K <$> transB e
          BPi a b     -> do
@@ -244,7 +244,7 @@ transB' e = do
 
 
 -- | Generic to Term translator.
-transG ::  (Signature Term sig, MonadReader sig m, MonadTG m, Ord a, Show a) => 
+transG ::  (Signature Term sig, MonadReader sig m, MonadTG m, Ord a, Show a) =>
   (a -> TransT a m (Either Term Term')) -> a -> TransT a m Term
 transG transT' e = do
   dict <- get
@@ -260,11 +260,11 @@ transG transT' e = do
         Left  r -> return r
         Right t -> do
           r <- newORef t
-          -- traceM $ return ("==> adding translation " ++ show r ++ " for " ++ show e) 
+          -- traceM $ return ("==> adding translation " ++ show r ++ " for " ++ show e)
           modify $ Map.insert e r
           return r
 
-transAddBind :: (Signature Term sig, MonadReader sig m, MonadTG m, Ord a) => 
+transAddBind :: (Signature Term sig, MonadReader sig m, MonadTG m, Ord a) =>
   (A.Name -> a) -> A.Name -> TransT a m Term
 transAddBind toKey n = do
   r <- newORef (Var n)
@@ -272,21 +272,21 @@ transAddBind toKey n = do
   return r
 
 {-
-con :: MonadORef m => A.Name -> Term -> m Term 
+con :: MonadORef m => A.Name -> Term -> m Term
 con x t = newORef $ Atom (A.Con x) t []
 
 def :: MonadORef m => A.Name -> Term -> Term -> m Term
 def x v t = newORef $ Def x v t []
 -}
 {-
-var_ :: A.Name -> Term' 
+var_ :: A.Name -> Term'
 var_ x = var x (error "var_: type annotation not given")
 -}
 
-var :: A.Name -> Type -> Term' 
+var :: A.Name -> Type -> Term'
 var x t = Atom (A.Var x) t []
 
-con :: A.Name -> Type -> Term' 
+con :: A.Name -> Type -> Term'
 con x t = Atom (A.Con x) t []
 
 def :: A.Name -> Type -> Term -> Term'
@@ -294,27 +294,27 @@ def x t v = Def x t v []
 
 type AExpr = Alpha A.Expr
 
-transT :: (Signature Term sig, MonadReader sig m, MonadTG m) => 
+transT :: (Signature Term sig, MonadReader sig m, MonadTG m) =>
   A.Expr -> TransT AExpr m Term
 transT e = transG (Right <.> transT') (Alpha e)
 
-transT' ::  (Signature Term sig, MonadReader sig m, MonadTG m) => 
+transT' ::  (Signature Term sig, MonadReader sig m, MonadTG m) =>
   AExpr -> TransT AExpr m Term'
 transT' (Alpha e) = do
   let (f, sp) = appView e
-  if null sp then 
+  if null sp then
       case f of
          A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> ask
-         A.Ident (A.Def x) -> do 
+         A.Ident (A.Def x) -> do
             SigDef t v <- sigLookup' (A.uid x) <$> ask
-            return $ def x t v 
-         A.Ident (A.Var n) -> 
-           fail ("transT': unbound variable " ++ A.suggestion n) 
---           trace ("transT': unbound variable " ++ A.suggestion n) 
+            return $ def x t v
+         A.Ident (A.Var n) ->
+           fail ("transT': unbound variable " ++ A.suggestion n)
+--           trace ("transT': unbound variable " ++ A.suggestion n)
 --           return $ Var n -- only for binding in Lam and Pi
          -- A.Typ             -> predefType  -- impossible case
          A.Lam n _ e       -> do
-           x <- transAddBind (Alpha . A.Ident . A.Var) n 
+           x <- transAddBind (Alpha . A.Ident . A.Var) n
            Abs x <$> transT e
 --       A.Lam n _ e       -> Abs <$> transT (A.Ident $ A.Var n) <*> transT e
          A.Pi Nothing  a b -> Fun <$> transT a <*> (newORef =<< K <$> transT b)
@@ -384,7 +384,7 @@ app r sp@(u:us) = do
 -- * Conversion to String
 
 type Printed = Map Term Doc  -- term alreday printed?
-type PrettyT = StateT Printed 
+type PrettyT = StateT Printed
 
 showTG :: MonadORef m => Term -> m String
 showTG t = render <$> prettyTG t
@@ -433,13 +433,13 @@ prettyT' t = do
       -- d' <- prettyT tm
       ds <- mapM prettyT sp
       return $ parens $ hsep ( -- parens (
-        text (show h)          -- <+> colon <+> d <+> equals <+> d') 
+        text (show h)          -- <+> colon <+> d <+> equals <+> d')
           : ds)
     DontCare -> return $ text "_"
-    
+
 prettyH :: Head -> Doc
 prettyH h = text $ show $ A.name h
-    
+
 
 -- * Substituition
 
@@ -453,7 +453,7 @@ subst t x u = do
   traceM $ return ("substituting  " ++ su ++ " for " ++ sx ++ " in " ++ st)
 -}
   maybe (return t) return =<< (evalStateT (substT t) $ Map.singleton x (Just u))
-  
+
 type SubstM = StateT Subst ORefM
 type SubstT = StateT Subst
 
@@ -466,7 +466,7 @@ substT r = do
   dict <- get
   case Map.lookup r dict of
     Just (Just r') -> do
-      s  <- show1 r 
+      s  <- show1 r
       s' <- show1 r'
       unlessM (atomic r) $ do
         traceM $ return ("==> fire subst of " ++ s' ++ " for " ++ s)
@@ -480,7 +480,7 @@ substT r = do
     Nothing  -> do
       mt <- substT' =<< readORef r
       mr <- Trav.mapM newORef mt
-      -- mr <- maybe (return Nothing) (Just <.> newORef) mt 
+      -- mr <- maybe (return Nothing) (Just <.> newORef) mt
       put $ Map.insert r mr dict
       return mr
 
@@ -489,9 +489,9 @@ substT r = do
 substT' :: MonadORef m => Term' -> SubstT m (Maybe Term')
 substT' t = do
   case t of
-    Abs x u -> do 
+    Abs x u -> do
 {-
-      sx <- showTG x 
+      sx <- showTG x
       trace ("substT': traversing bound variable " ++ sx ++ " with ref " ++ show x) $ return ()
 -}
       modify $ Map.insert x Nothing -- bound variable, do not change!
@@ -508,7 +508,7 @@ substT' t = do
       -- do not subst in atoms and constants:
     Atom h ty  sp -> (fmap $ Atom h ty)  <$> (maybeUpd sp <$> mapM substT sp)
     Def h ty v sp -> (fmap $ Def h ty v) <$> (maybeUpd sp <$> mapM substT sp)
-    Sort{} -> return Nothing 
+    Sort{} -> return Nothing
     Var n -> do
       dict <- get
       fail $ "substT': unbound variable " ++ show n ++ " keys: " ++ show (Map.keys dict)
@@ -584,7 +584,7 @@ getVarName x = do
 -- * Copying everything
 
 clone :: Term -> ORefM Term
-clone r = evalStateT (cloneT r) Map.empty 
+clone r = evalStateT (cloneT r) Map.empty
 
 type Dict = Map Term Term
 type CloneM = StateT Dict ORefM
@@ -597,7 +597,7 @@ cloneT r = do
     Nothing -> do
       r' <- newORef =<< cloneT' =<< readORef r
       put $ Map.insert r r' dict
-      return r' 
+      return r'
 
 cloneT' :: Term' -> CloneM Term'
 cloneT' t = do

@@ -4,7 +4,7 @@
 tp     : type.
 tm     : tp -> type.
 form   : tp.
-tform  : type = tm form. 
+tform  : type = tm form.
 arrow  : tp -> tp -> tp.  %infix right 14 arrow.
 pf     : tform -> type.
 
@@ -149,7 +149,7 @@ xor : tform -> tform -> tform =
 %infix right 11 xor.
 
 _kleene_star : {T : tp} (tm T -> tm T -> tform) -> tm T -> tm T -> tform =
-  [T : tp][R : tm T -> tm T -> tform][V : tm T][W : tm T] 
+  [T : tp][R : tm T -> tm T -> tform][V : tm T][W : tm T]
    _forall  (T arrow T arrow form) [S : tm (T arrow T arrow form)]
    (_forall T [Z : tm T] _@2 T T form S Z Z) imp
    (_forall3 T T T [X : tm T][Y : tm T][Z : tm T]

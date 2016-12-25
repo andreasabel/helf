@@ -1,4 +1,4 @@
-{ 
+{
 module Parser where
 
 import qualified Lexer as T
@@ -40,12 +40,12 @@ TopLevel :: { C.Declarations }
 TopLevel : Declarations { C.Declarations $1}
 
 Declarations :: { [C.Declaration] }
-Declarations 
+Declarations
   : {- empty -}                    { [] }
   | Declaration '.' Declarations   { $1 : $3 }
 
 Declaration :: { C.Declaration }
-Declaration 
+Declaration
   : TypeSig                       { $1 }
 --  | GLet                          { $1 }
   | Defn                          { $1 }
@@ -55,7 +55,7 @@ Declaration
   | '%prefix' Prec id             { C.Fixity $3 (C.Prefix $2) }
   | '%postfix' Prec id            { C.Fixity $3 (C.Postfix $2) }
 
-Assoc :: { C.Associativity }    
+Assoc :: { C.Associativity }
 Assoc : id                        { read $1 }
 
 Prec :: { Int }
@@ -66,16 +66,16 @@ TypeSig : id ':' Expr             { C.TypeSig $1 $3 }
 
 {- use Defn instead
 GLet :: { C.Declaration }
-GLet : '[' id '=' Expr ']'        { C.GLet $2 $4 } 
+GLet : '[' id '=' Expr ']'        { C.GLet $2 $4 }
 -}
 
 Defn :: { C.Declaration }
-Defn : id ':' Expr '=' Expr       { C.Defn $1 (Just $3) $5 } 
-     | id '=' Expr                { C.Defn $1 Nothing $3 } 
+Defn : id ':' Expr '=' Expr       { C.Defn $1 (Just $3) $5 }
+     | id '=' Expr                { C.Defn $1 Nothing $3 }
 
 -- general form of expression
 Expr :: { C.Expr }
-Expr : '{' id ':' Expr '}' Expr   { C.Pi $2 $4 $6 }  
+Expr : '{' id ':' Expr '}' Expr   { C.Pi $2 $4 $6 }
      | Expr1 '->' Expr            { C.Fun $1 $3 }
      | Expr1                      { $1 }
 
@@ -93,8 +93,8 @@ Atom :: { C.Expr }
 Atom : type                       { C.Typ  }
      | id                         { C.Ident $1 }
      | '(' Expr ')'               { $2 }
-     | '[' id '=' Expr ']' Expr   { C.LLet $2 $4 $6 } 
-     | '[' id ':' Expr ']' Expr   { C.Lam $2 (Just $4) $6 } 
+     | '[' id '=' Expr ']' Expr   { C.LLet $2 $4 $6 }
+     | '[' id ':' Expr ']' Expr   { C.Lam $2 (Just $4) $6 }
      | '[' id ']' Expr            { C.Lam $2 Nothing $4 }
 {-
      | '_'                        { C.Unknown }
@@ -104,11 +104,6 @@ Atom : type                       { C.Typ  }
 
 parseError :: [T.Token] -> a
 parseError [] = error "Parse error at EOF"
-parseError (x : xs) = error ("Parse error at token " ++ T.prettyTok x) 
+parseError (x : xs) = error ("Parse error at token " ++ T.prettyTok x)
 
 }
-
- 
-
-
-

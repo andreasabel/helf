@@ -93,7 +93,7 @@
 \author{Andreas Abel, Nicolai Kraus}
 \institute{
   Department of Computer Science \\
-  Ludwig-Maximilians-University Munich \\ 
+  Ludwig-Maximilians-University Munich \\
   \email{andreas.abel@ifi.lmu.de}
 }
 \date{October 2010}
@@ -107,9 +107,9 @@
   lambda-abstraction.  Our term representation enables access to the
   set of free variables in constant time.  To maintain the free
   variable set we have a logarithmic overhead in the decomposition of
-  applications and abstractions. 
+  applications and abstractions.
   We get evaluation using
-  explicit substitutions without memory leaks.  
+  explicit substitutions without memory leaks.
 \end{abstract}
 
 \section{Syntax}
@@ -136,23 +136,23 @@ defined by the following rules.
     }{\Gamma,\Delta^k \der t \oapp k u : B}
 \qquad
   \ru{\Gamma_0,A,\Gamma_1,\dots,A,\Gamma_n \der t : B
-    }{\Gamma_0^{k_0},\Gamma_1^{k_1},\dots,\Gamma_n^{k_n} \der 
-        \olam {\vec k} t : A \to B} 
+    }{\Gamma_0^{k_0},\Gamma_1^{k_1},\dots,\Gamma_n^{k_n} \der
+        \olam {\vec k} t : A \to B}
 \end{gather*}
 The typing rules for variable and application are linear, but the
 abstraction rule has explicit sharing built in.  Explicit sharing is,
 on a global scale, as powerful as structural rules for weakening,
 contraction, and exchange.
 
-\paradot{Printing}  We define a conversion $\oprint t {\vec x}$ 
+\paradot{Printing}  We define a conversion $\oprint t {\vec x}$
 from ordered syntax $t$ to named syntax $M$.
 \[
 \begin{array}{lll}
-  \oprint \ovar x 
+  \oprint \ovar x
     & = & x \\
-  \oprintp {t \oapp k u} {\vec x,\vec y^k} 
+  \oprintp {t \oapp k u} {\vec x,\vec y^k}
     & = & \oprint t {\vec x} \, \oprint u {\vec y} \\
-  \oprintp {\olam {\vec k} t} 
+  \oprintp {\olam {\vec k} t}
     {\vec x_0^{k_0},\vec x_1^{k_1},\dots,\vec x_n^{k_n}}
     & = & \lambda x.\, \oprint t {\vec x_0,x,\vec x_1,\dots,x,\vec x_n} \\
 \end{array}
@@ -163,7 +163,7 @@ judgement $\osyn M t {\vec x}$, given inductively by the following rules.
 \begin{gather*}
   \ru{}{\osyn x \ovar x}
 \qquad
-  \ru{\osyn M t {\vec x} \qquad 
+  \ru{\osyn M t {\vec x} \qquad
       \osyn N u {\vec y^k}
     }{\osynp {M\,N} {t \oapp k u} {\vec x, \vec y}}
 \\[2ex]
@@ -183,7 +183,7 @@ $\Gamma \der \sigma : \Delta$ which is given inductively by the
 following rules:
 % \[
 % \begin{array}{lllrl@{\qquad}l}
-%   \Subst & \ni & \sigma,\tau & ::= & 
+%   \Subst & \ni & \sigma,\tau & ::= &
 % \end{array}
 % \]
 \begin{gather*}
@@ -210,12 +210,12 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
   \esubstp {\olam {\vec k} t} {\sigma_0^{k_0},\dots,\sigma_n^{k_n}} \oapp k u
   & \red & \esubst t {\sigma_0,\oann k u,\sigma_1, \dots, \oann k u,\sigma_n}
 \\[1ex]
-  \esubst \ovar {\oann k u} 
-  & \red & u 
+  \esubst \ovar {\oann k u}
+  & \red & u
 \\
-  \esubstp {t \oapp k u} {\sigma,\oann l {\tau^k}} 
-  & \red & \esubst t \sigma \oapp l \esubst u \tau 
-\\ 
+  \esubstp {t \oapp k u} {\sigma,\oann l {\tau^k}}
+  & \red & \esubst t \sigma \oapp l \esubst u \tau
+\\
   \esubstp {\olam {\vec k} t} {\oann{l_0}{\sigma_0^{k_0}},\dots,\oann{l_n}{\sigma_n^{k_n}}}
   & \red & \olam {\vec l} \esubst t {\sigma_0,\oann 1
     \ovar,\sigma_1,\dots,\oann 1 \ovar,\sigma_n}
@@ -229,8 +229,8 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
 \begin{array}{lllrl@{\qquad}l}
 \Sort & \ni & s & ::= & \ttype \mid \tkind & \mbox{sort} \\[1ex]
 \Const & \ni & c &&& \mbox{constant} \\
-\Tm    & \ni & M,N,A,B & ::= & s \mid c \mid x \mid \lam x A M 
-  \mid \lambda x M \mid M \, N \mid \Pi\,A\,\lambda x B 
+\Tm    & \ni & M,N,A,B & ::= & s \mid c \mid x \mid \lam x A M
+  \mid \lambda x M \mid M \, N \mid \Pi\,A\,\lambda x B
    & \mbox{named term}\\
 \end{array}
 \]
@@ -244,7 +244,7 @@ $\ovar$s of length $n$.  Clearly, $\Gamma^n \der \sid^n : \Gamma^n$.
 &&& \mid & \olam {\vec k} t & \mbox{abstraction} \\
 &&& \mid & c \mid s & \mbox{constant, sort} \\
 &&& \mid & \opi U k T & \mbox{function type} \\
-&&& \mid & \esubst t \sigma & \mbox{explicit substitution} 
+&&& \mid & \esubst t \sigma & \mbox{explicit substitution}
 \\[1ex]
 \OSubst & \ni & \sigma,\tau & ::= & \vec t & \mbox{sequence of terms}\\
 \end{array}
@@ -260,7 +260,7 @@ judgement $\osyn M t {\vec x}$, given inductively by the following rules.
 \qquad
   \ru{}{\osyn x \ovar x}
 \qquad
-  \ru{\osyn M t {\vec x} \qquad 
+  \ru{\osyn M t {\vec x} \qquad
       \osyn N u {\vec y^k}
     }{\osynp {M\,N} {t \oapp k u} {\vec x, \vec y}}
 \\[2ex]
@@ -273,7 +273,7 @@ judgement $\osyn M t {\vec x}$, given inductively by the following rules.
        \osyn B T {\vec x_0^{k_0},x,\vec x_1^{k_1},\dots,x,\vec x_n^{k_n}}
      }{\osynp {\funT x A B} {\opi U k {\olam {\vec k} t}}
          {\vec y,\vec x_0,\vec x_1,\dots,\vec x_n}
-     }{x \not\in \vec x_0,\dots,\vec x_n; 
+     }{x \not\in \vec x_0,\dots,\vec x_n;
        k = \sum_{i=0}^n k_i}
 \end{gather*}
 Parsing and printing are inverses of each other.
@@ -297,7 +297,7 @@ C\Val& \ni & P,Q & ::= & \esubst V {\vec x} & \mbox{name-closed value} \\
 \para{Application and evaluation} $f \appa v$ and $\eval t \rho$.
 \[
 \begin{array}{lll}
-  h \,{\vec v} \appa v 
+  h \,{\vec v} \appa v
     & = & h \, {(\vec v,v)} \\
   \esubst{(\olam {\vec k} t)}{\rho_0^{k_0},\dots,\rho_n^{k_n}} \appa v
     & = & \eval t
@@ -308,22 +308,22 @@ C\Val& \ni & P,Q & ::= & \esubst V {\vec x} & \mbox{name-closed value} \\
   \eval {\olam{\vec k}t} \rho & = & \esubst {(\olam{\vec k}t)} \rho
   \\
   \eval {t \oapp k u} {v_n,\dots,v_{k+1},
-                       v_k,\dots,v_1} 
+                       v_k,\dots,v_1}
     & = & \eval t {v_n,\dots,v_{k+1}} \appa \eval u {v_k,\dots,v_1}
-\\ 
+\\
   \eval s \sempty & = & s \\
   \eval {\opi U k T} {v_n,\dots,v_{k+1},
-                      v_k,\dots,v_1} 
+                      v_k,\dots,v_1}
     & = & \piT {\eval U {v_n,\dots,v_{k+1}}} {\eval T {v_k,\dots,v_1}}
-\\ 
+\\
 \end{array}
 \]
 
 \paradot{Contexts}
 \[
 \begin{array}{lllrl@{\qquad}l}
-&& \Gamma,\Delta & ::= & \cempty \mid \Delta, x \of \oclos{T}{\vec y} 
-  & \mbox{typing context } (\vec y \subseteq \dom(\Delta)) 
+&& \Gamma,\Delta & ::= & \cempty \mid \Delta, x \of \oclos{T}{\vec y}
+  & \mbox{typing context } (\vec y \subseteq \dom(\Delta))
 \\
 && \vec x &&& \mbox{occurrence context} \\
 \end{array}
@@ -343,10 +343,10 @@ C\Val& \ni & P,Q & ::= & \esubst V {\vec x} & \mbox{name-closed value} \\
   \Delta \der P = Q & \mbox{types $P$ and $Q$ are equal}
   \\
   \Delta \der p = p' \jchk P & \mbox{values $p$ and $p'$ are equal at
-    type $P$} 
+    type $P$}
   \\
   \Delta \der p = p' \jinf P & \mbox{neutral values $p$ and $p'$ are
-    equal, inferring type $P$} 
+    equal, inferring type $P$}
   \\
 \end{array}
 \]
@@ -358,14 +358,14 @@ Rules for inference:
       \ochk \Delta N {\vec x} V \qquad
       \osyn N u {{\vec z}^m} \qquad
       \eval u {\ovar^m} = v
-    }{\oinf \Delta {M\,N} {\vec y,\vec z} {(W \vapp m v)}} 
+    }{\oinf \Delta {M\,N} {\vec y,\vec z} {(W \vapp m v)}}
 \\[2ex]
   \rux{\ochk \Delta A {\sempty} \ttype \qquad
       \osyn A U {{\vec y}^m} \qquad
       \evalid U m = V \\
-      \oinf {\Delta, x \of \oclos V {\vec y}} M 
+      \oinf {\Delta, x \of \oclos V {\vec y}} M
             {{\vec x_0}^{k_0},x,\dots,x,{\vec x_n}^{k_n}} W
-    }{\oinf \Delta {\lambda x \of A.\,M} {\vec y,\vec x_0,\dots,\vec x_n} 
+    }{\oinf \Delta {\lambda x \of A.\,M} {\vec y,\vec x_0,\dots,\vec x_n}
             {(\opi V {k} {\olam {\vec k} W})}
     }{k = \sum_{i=0}^n k_i}
 \\[2ex]
@@ -395,43 +395,43 @@ Rules for checking:
 \end{gather*}
 Rules for equality (inference mode):
 \begin{gather*}
-  \ru{}{\Delta \der \oclos c \sempty = \oclos c \sempty \jinf \Sigma(c)} 
+  \ru{}{\Delta \der \oclos c \sempty = \oclos c \sempty \jinf \Sigma(c)}
 \qquad
   \ru{}{\Delta \der \oclos \ovar x = \oclos \ovar x \jinf \Delta(x)}
 \\[2ex]
-  \ru{\Delta \der \oclos f {\vec x} = \oclos {f'}{\vec x'} \jinf 
+  \ru{\Delta \der \oclos f {\vec x} = \oclos {f'}{\vec x'} \jinf
         \oclosp{\opi V l F}{\vec z,{\vec {z'}}^l} \qquad
       \Delta \der \oclos v {\vec y} = \oclos {v'}{\vec y'} \jchk
         \oclos V {\vec z}
-    }{\Delta \der \oclosp {f \oapp k v}{\vec x,\vec y^k} 
+    }{\Delta \der \oclosp {f \oapp k v}{\vec x,\vec y^k}
                 = \oclosp {f' \oapp {k'} v'}{\vec x',{\vec {y'}}^{k'}}
                 \jinf \oclosp{F \vapp{k} v}{\vec z',\vec y}
-    } 
+    }
 \end{gather*}
 Rules for equality (checking mode):
 \begin{gather*}
-  \ru{\Delta, x \of \oclos V {\vec y} \der 
-        \oclosp {f  \vapp 1 \ovar}{\vec x ,x} = 
-        \oclosp {f' \vapp 1 \ovar}{\vec x',x}  \jchk 
-        \oclosp {F  \vapp 1 \ovar}{\vec z, x} 
+  \ru{\Delta, x \of \oclos V {\vec y} \der
+        \oclosp {f  \vapp 1 \ovar}{\vec x ,x} =
+        \oclosp {f' \vapp 1 \ovar}{\vec x',x}  \jchk
+        \oclosp {F  \vapp 1 \ovar}{\vec z, x}
     }{\Delta \der \oclos f {\vec x} = \oclos {f'} {\vec x'}
-          \jchk \oclosp {\opi V k F}{\vec y,\vec z^k}} 
+          \jchk \oclosp {\opi V k F}{\vec y,\vec z^k}}
 \\[2ex]
   \rux{\Delta \der p = p' \jinf P
      }{\Delta \der p = p' \jchk Q
-     }{Q \mbox{ not a function type}} 
+     }{Q \mbox{ not a function type}}
 \end{gather*}
 Rules for equality (type mode):
 \begin{gather*}
-  \ru{}{\Delta \der \oclos s \sempty = \oclos s \sempty} 
+  \ru{}{\Delta \der \oclos s \sempty = \oclos s \sempty}
 \qquad
   \ru{\Delta \der P = P' \jinf \oclos \ttype \sempty
     }{\Delta \der P = P'}
 \\[2ex]
   \ru{\Delta \der \oclos V {\vec x} = \oclos {V'}{\vec x'} \qquad
-      \Delta, x\of\oclos V {\vec x} \der 
+      \Delta, x\of\oclos V {\vec x} \der
          \oclosp{F  \vapp 1 \ovar}{\vec y,x} =
-         \oclosp{F' \vapp 1 \ovar}{\vec y',x} 
+         \oclosp{F' \vapp 1 \ovar}{\vec y',x}
     }{\Delta \der \oclosp {\opi {V }{k }{F }}{\vec x ,\vec y^k}
                =  \oclosp {\opi {V'}{k'}{F'}}{\vec x',\vec {y'}^{k'}}
     }
@@ -441,4 +441,3 @@ Rules for equality (type mode):
 
 
 \end{document}
-

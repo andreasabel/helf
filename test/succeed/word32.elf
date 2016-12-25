@@ -343,7 +343,7 @@ proof/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove/ X Y Z P.
 65536 : word32.
 2147483648 : word32.
 4294967295 : word32.
-%{ 
+%{
 Goals involving + and * are immediately solved if at least two of
 the arguments are ground objects (i.e. numbers), and delayed as
 constraints otherwise. In particular

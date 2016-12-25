@@ -36,18 +36,18 @@ We introduce a new nameless representation of lambda terms inspired by
 ordered logic.  At a lambda abstraction, number and relative
 position of all occurrences of the bound variable are stored, and
 application carries the additional information where to cut the
-variable context into function and argument part.  This way, 
+variable context into function and argument part.  This way,
 complete information about free variable occurrence is available at each
 subterm without requiring a traversal, and environments can
 be kept exact such that they only assign values to variables that
 actually occur in the associated term.
-Our approach avoids space leaks in interpreters that build 
-function closures.  
+Our approach avoids space leaks in interpreters that build
+function closures.
 
 In this article, we prove correctness of the new representation and
 present an experimental evaluation of its performance in a proof
 checker for the Edinburgh Logical Framework.
-  
+
 Keywords:
 representation of binders,
 explicit substitutions,
@@ -55,7 +55,7 @@ ordered contexts,
 space leaks,
 Logical Framework.
 
-% We introduce a nameless representation of lambda terms inspired by ordered logic. 
+% We introduce a nameless representation of lambda terms inspired by ordered logic.
 % Information about number and places of variables bound by a lambda is available without examining the whole term, thus making it possible to drop unneeded substitutions early to avoid memory leaks.
 % % We describe an implementation of this and other representations as well as suggested evaluation algorithms. These implementations were tested in Haskell by using them for typechecking large dependently typed terms of the logical framework (LF). The different needs of time and space are documented and compared.\\
 % We also describe our implementation experiments and present some results.
@@ -74,36 +74,36 @@ of types.  Efficiency of type checking is mostly identical with
 efficiency of evaluation\footnote{Evaluation is necessary to reduce
   types to weak head normal form and compare types for equality.
   Subtracting these operations, type checking has linear complexity.
-} 
+}
 (and, in case of type reconstruction,
-efficiency of unification), and remains a challenge as of today.  
+efficiency of unification), and remains a challenge as of today.
 In seminal work, Gregoire and Leroy \cite{gregoireLeroy:icfp02} have
 sped up Coq type checking by compiling to byte-code instead of
 using an interpreter.  Boespflug \cite{boespflug:padl10} has obtained
-further speed-ups by producing native code using stock-compilers.  
+further speed-ups by producing native code using stock-compilers.
 
 While compilation approaches are successful on batch type \emph{checking}
 fully explicit programs, they have not been attempted on type
 \emph{reconstruction} using higher-order unification or on interactive
 program construction such as in Agda and Epigram \cite{mcBrideMcKinna:view}.
-These languages are involved and constantly evolving, 
+These languages are involved and constantly evolving,
 and their implementations are
 prototypes and frequently modified and extended.  Implementing a
 full compiler just to get type reconstruction going is deterring;
 furthermore, compilation has not (yet) proven its feasibility in minor
 evaluation tasks (like weak head evaluation)
-that dominate higher-order unification.  
+that dominate higher-order unification.
 At least for language prototyping, smart
-interpreters are, and may remain, competitive with compilation.  
+interpreters are, and may remain, competitive with compilation.
 
-For instance, Twelf's interpreter is sufficiently fast; it is 
-inspired by a term representation with de Bruijn indices 
-\cite{deBruijn:nameless} and explicit substitutions 
+For instance, Twelf's interpreter is sufficiently fast; it is
+inspired by a term representation with de Bruijn indices
+\cite{deBruijn:nameless} and explicit substitutions
 \cite{abadiCardelliCurienLevy:jfp91}.  In the context of functional
 programming, explicit substitutions are known as \emph{closures},
 consisting of the code of a function plus an environment, assigning
-values to the free variables appearing in the code.  
-In typical implementations of interpreters \cite{coquand:type}, 
+values to the free variables appearing in the code.
+In typical implementations of interpreters \cite{coquand:type},
 these environments are not
 precise; they assign values to all variables that are statically in
 scope rather than only to those that are actually referred to in the
@@ -127,7 +127,7 @@ $\lambda$-terms.   Kesner and Lengrand \cite{kesnerLengrand:infcomp07}
 achieve this by introducing explicit term constructs for weakening and
 contraction.  We pursue a different path: we incorporate information
 about variable use and multiplicity directly into abstraction and
-application. 
+application.
 
 In the context of linear $\lambda$-calculus, the free
 variables of a function application are the disjoint union of the free
@@ -163,13 +163,13 @@ their position; and environments are simply sequences of values.
 
 Since we are not interested in proof terms of ordered logic per se,
 but only borrow the \emph{ordered context} idea for our
-representation of untyped $\lambda$-calculus, 
+representation of untyped $\lambda$-calculus,
 we need to allow multiple occurrences of the same
 variable.  In fact, the context shall list the variable
 \emph{occurrences} in order.  At a lambda abstraction, we bind all
 occurrences of the same variable.  Thus, at an abstraction node we
 specify at which positions the bound variable should be inserted in
-the scoping context.  This concludes the presentation of our idea.  
+the scoping context.  This concludes the presentation of our idea.
 
 In the rest of the paper, after an introductory example
 (Section~\ref{sec:example}) we formally define our term representation
@@ -197,26 +197,26 @@ This article summarizes the B.Sc.\ thesis of the second author
 %To demonstrate the problem we want to deal with, we apply the term we just mentioned on the free variables $g$ and $f$, consecutively.
 %To get rid of the beta redexes, we could reduce it in the way shown below. By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurrence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
 
-To demonstrate the discussed risk of space-leaks during evaluation, we apply the term $\LaA x {\LaA y {\ApA{\ApA a b} y}}$ in basic syntax consecutively to the free variables $g$ and $f$. A possible (and, if the mentioned closures are used, typical) sequence of reduction steps is given below.  
+To demonstrate the discussed risk of space-leaks during evaluation, we apply the term $\LaA x {\LaA y {\ApA{\ApA a b} y}}$ in basic syntax consecutively to the free variables $g$ and $f$. A possible (and, if the mentioned closures are used, typical) sequence of reduction steps is given below.
 By writing $t\multisubs {s_1} {x_1} {s_n} {x_n}$, we want to express that in the term $t$, each occurrence of the variable $x_1$ ($x_2, \ldots, x_n$) has to be replaced by the term $s_1$ (resp. $s_2, \ldots, s_n$) simultaneously. Such a substitution list always applies only to the directly preceding term:
 \[
 \begin{array}{lr@{}l}
-\shspace &(\LaA x {\LaA y {\ApA{\ApA a b} y}}) & \sspace g \sspace f \\ 
-\shspace\re &(\LaA y {\ApA{\ApA a b} y}) & \sub g x \lspace f \\ 
-\shspace\re &      (\ApA{\ApA a b} y) & \subs g x f y \\ 
-\shspace\re &      \multicolumn 2 l {(a\sspace b)\subs g x f y \lspace y\subs g x f y} \\ 
-\shspace\re &      \multicolumn 2 l {a\subs g x f y \lspace b\subs g x f y \lspace f} \\ 
-\shspace\re &      \multicolumn 2 {c} {a \sspace b \sspace f}  \\ 
+\shspace &(\LaA x {\LaA y {\ApA{\ApA a b} y}}) & \sspace g \sspace f \\
+\shspace\re &(\LaA y {\ApA{\ApA a b} y}) & \sub g x \lspace f \\
+\shspace\re &      (\ApA{\ApA a b} y) & \subs g x f y \\
+\shspace\re &      \multicolumn 2 l {(a\sspace b)\subs g x f y \lspace y\subs g x f y} \\
+\shspace\re &      \multicolumn 2 l {a\subs g x f y \lspace b\subs g x f y \lspace f} \\
+\shspace\re &      \multicolumn 2 {c} {a \sspace b \sspace f}  \\
 \end{array}
 \]
-Here, the substitution $\sub g x$ could be dropped instantly and there is no need to apply the other substitution $\sub f y$ to the term $\ApA a b$. 
+Here, the substitution $\sub g x$ could be dropped instantly and there is no need to apply the other substitution $\sub f y$ to the term $\ApA a b$.
 However, the term representation used above comes along with the problem that such an evaluation algorithm does not have the required information in time.
-This is due to the fact that the binding information is always split between the $\la$ and the actual variable occurrence, as they both carry the variable name.  
+This is due to the fact that the binding information is always split between the $\la$ and the actual variable occurrence, as they both carry the variable name.
 In contrast, using de Bruijn indices would make it possible to remove the piece of information from the $\la$.
 Our goal is to do it the other way round: We want the whole information to be available at the $\la$, thus making it possible to know the number and places of the bound variable occurrences without looking at the whole term.
 
 
-%A term representation always has to have a way to represent that a variable is bound by a lambda. 
+%A term representation always has to have a way to represent that a variable is bound by a lambda.
 %For example, in the term $\LaA x {\LaA y {\ApA{\ApA a b} y}}$ in basic syntax, the information about the connection between the second $\la$ and the last variable is split: We have to look at both the $\la y$ and the $y$ in order to know what is going on. This may lead to some unnecessary difficulties. In contrast, the usage of de Bruijn indices makes it possible to remove the information from the $\la$ and concentrate them on the variable. Our goal is to do it the other way round: We want the whole information to be available at the $\la$.
 
 
@@ -230,21 +230,21 @@ In this article, we only cover the core constructs of the lambda calculus as the
 \[
 \begin{array}{lllrll@{\qquad}}
 \mathsf{ordered \ preterms}       & \ni & t,u & ::= & x & \mbox{free variable (named $x$)} \\
-			                   &&& \mid & \ovar & \mbox{bound variable (nameless)} \\
-			                   &&& \mid & \ApO t m u & \mbox{application} \\
-			                   &&& \mid & \LaO {\vec k} t & \mbox{abstraction} \\
+                                           &&& \mid & \ovar & \mbox{bound variable (nameless)} \\
+                                           &&& \mid & \ApO t m u & \mbox{application} \\
+                                           &&& \mid & \LaO {\vec k} t & \mbox{abstraction} \\
 \end{array}
 \]
-\emph{Free variables} are denoted by their name like in the standard syntax. \emph{Bound variables}, however, are just denoted by a dot $\ovar$, which does not carry any information beside the fact that it is a bound variable. 
-% This, for example, means that if $\left(\ApO \ovar 1 \ovar \right)$ is a subterm, it is not possible to tell whether we have two different variables or two times the same one without looking at the whole term.\footnote{However, the latter possibility could not be well-typed.} 
-In the case of an \emph{application}, there is a first term (the function part) and a second term (the argument) as usual. 
-Furthermore, the application carries an integer $m$ as an additional piece of information that will be important for the evaluation process and is explained 
+\emph{Free variables} are denoted by their name like in the standard syntax. \emph{Bound variables}, however, are just denoted by a dot $\ovar$, which does not carry any information beside the fact that it is a bound variable.
+% This, for example, means that if $\left(\ApO \ovar 1 \ovar \right)$ is a subterm, it is not possible to tell whether we have two different variables or two times the same one without looking at the whole term.\footnote{However, the latter possibility could not be well-typed.}
+In the case of an \emph{application}, there is a first term (the function part) and a second term (the argument) as usual.
+Furthermore, the application carries an integer $m$ as an additional piece of information that will be important for the evaluation process and is explained
 in a moment.
 %the number of dots $\ovar$ in the first term which are not bound by lambdas in the first term itself should be denoted by the integer $k$. % COMMENT - there is no reason anymore to prefer the second to the first term. It might be a good idea to use the first term instead!? I have changed it now.
-%This will be important for the evaluation process. 
-The most interesting part is the \emph{abstraction} $\LaO {\vec k} t$. The vector $\vec k = \ve{k_1, k_2, \ldots, k_n}$ is nothing else but a list of non-negative  integers of length $n$. It determines which dots $\ovar$ are bound by the $\la$ in the following way: Consider all $\ovar$ in the term $t$ which are not bound in $t$ itself. Now, the first $k_1$ of these are not bound by the $\la$, the next one is, the following $k_2$ are again not bound and so on (see examples below). 
+%This will be important for the evaluation process.
+The most interesting part is the \emph{abstraction} $\LaO {\vec k} t$. The vector $\vec k = \ve{k_1, k_2, \ldots, k_n}$ is nothing else but a list of non-negative  integers of length $n$. It determines which dots $\ovar$ are bound by the $\la$ in the following way: Consider all $\ovar$ in the term $t$ which are not bound in $t$ itself. Now, the first $k_1$ of these are not bound by the $\la$, the next one is, the following $k_2$ are again not bound and so on (see examples below).
 
-We denote the number of unbound $\ovar$ in an ordered preterm $t$ by $\freevars t$. Consequently, $\freevars \cdot$ is simply defined by: 
+We denote the number of unbound $\ovar$ in an ordered preterm $t$ by $\freevars t$. Consequently, $\freevars \cdot$ is simply defined by:
 \[
 \begin{array}{cccc}
 \freevars x = 0, & \freevars \ovar = 1, & \freevars {\ApO t m u} = \freevars {t} + \freevars{u}, & \freevars {\LaO {\ve {k_1, \ldots, k_n}} t} = \freevars t - n.
@@ -252,21 +252,21 @@ We denote the number of unbound $\ovar$ in an ordered preterm $t$ by $\freevars 
 \]
 %Note that in the case of $\ApO t k u$, we have $k = \freevars u$ by definition of $k$. \\
 % new:
-We call an ordered preterm $u$ an \define{ordered term} iff each sub-preterm $w$ of $u$ fulfils the following condition: If $w$ is an application $\ApO t m u$, the equation $m = \freevars t$ holds and if it is an abstraction $\LaO {\ve {k_1, \ldots, k_n}} t$, then $n + \sum_i k_i \leq \freevars t$ is satisfied. The latter condition states that if a $\la$ in $u$ binds a variable, this variable must actually exist while the first one just gives a meaning to the integer carried by an application. Clearly, any sub-preterm of an ordered term is again an ordered term. 
+We call an ordered preterm $u$ an \define{ordered term} iff each sub-preterm $w$ of $u$ fulfils the following condition: If $w$ is an application $\ApO t m u$, the equation $m = \freevars t$ holds and if it is an abstraction $\LaO {\ve {k_1, \ldots, k_n}} t$, then $n + \sum_i k_i \leq \freevars t$ is satisfied. The latter condition states that if a $\la$ in $u$ binds a variable, this variable must actually exist while the first one just gives a meaning to the integer carried by an application. Clearly, any sub-preterm of an ordered term is again an ordered term.
 %
 %Any ordered preterm $u$ is an \define{ordered term} if each lambda abstraction $\LaO {\ve {k_1, \ldots, k_n}} t$ which is a sub-preterm of $u$ satisfies the condition $n + \sum_i k_i \leq \freevars t$. In other words, if a $\la$ in $u$ binds a variable, this variable must actually exist. In addition, each sub-preterm $\ApO t m u$ has to fulfil the condition $m = \freevars t$.
 $u$ is called \define{closed} if $\freevars t = 0$.
 % From now on, we only handle terms and forget about invalid preterms.
 
 Here are some examples of closed terms.
-The $S$ combinator 
+The $S$ combinator
 \[
 \LaA x {\LaA y {\LaA z {\ApA x z \sspace \pa {\ApA y z}}}}
 \]
-would be written as 
+would be written as
 \[\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ApO {\ApO \ovar 1 \ovar} 2 {\pa{\ApO \ovar 1 \ovar}}}}}
 \]
-Moreover, the term 
+Moreover, the term
 \[
 (\LaA x {\LaA y {\ApA{\ApA a b} y}}) \sspace g \sspace f
 \]
@@ -274,21 +274,21 @@ from Section~\ref{sec:example} would be represented as
 \[
 \ApO{\left(\ApO {\LaO{\emptyVec}{\LaO{\ve 0}{\ApO{\ApO{a}{0}{b}}{0}{\ovar}}}\right)}  0 f } 0 g
 \]
-(note that applications are still left-associative). We can see that the first $\la$ does not bind anything as it is annotated with the empty vector $\emptyVec$, while this is less obvious when it is written as $\la x$. 
+(note that applications are still left-associative). We can see that the first $\la$ does not bind anything as it is annotated with the empty vector $\emptyVec$, while this is less obvious when it is written as $\la x$.
 
 At this point, we hope to have clarified the intended meaning of our syntax. A formal definition will be given in Section~\ref{sec:parsing}.
 
 
-\section{Values and Evaluation} 
+\section{Values and Evaluation}
 \label{sec:values}
 
 Before specifying values and evaluation formally, we want to give an example to demonstrate how the information carried by a lambda should be used and why we always have exactly the needed information. Suppose we have the term
 \[
-\left(\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}}\right) \sspace g \sspace f \sspace n 
-%\left(\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}}\right) \oapp 0 g \oapp 0 f \oapp 0 n, \\ 
+\left(\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}}\right) \sspace g \sspace f \sspace n
+%\left(\LaO {\ve 0} {\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}}\right) \oapp 0 g \oapp 0 f \oapp 0 n, \\
 \]
 that is, the $S$ combinator applied to three free variables
-% i.e. the $S$ combinator which is first applied to a free variable $g$, then to $f$ and finally to $n$ 
+% i.e. the $S$ combinator which is first applied to a free variable $g$, then to $f$ and finally to $n$
 (we suppress the application indices $0$ for better readability). We want to get rid of the beta redexes, so we start by eliminating the first one. The outermost $\la$ is decorated with the vector $\ve 0$ of length one. Now, the single variable bound by this $\la$ should be replaced by $g$, so we start a substitution list and insert a single $g$:
 \[
 \left(\LaO {\ve 1} {\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}}\right) \left[ g \right] \lspace f \sspace n
@@ -317,11 +317,11 @@ g \sspace n  \sspace (f \sspace n)
 Here, evaluation naturally leads to a term in beta normal form. This is not always the case: as an example, if we had tried to evaluate the above term without the $n$ (i.e. $S \oapp 0 f \oapp 0 g$), we would have got stuck at $\left(\LaO {\ve{1,1}} {\ovar \oapp 1 \ovar \oapp 2 {\pa{\ovar \oapp 1 \ovar}}}\right)  \left[ g, f \right]$. However, this would have been satisfactory as it would have shown that the term's normal form is an abstraction. In other words, our evaluation results in weak head normal forms.
 
 Consequently, we define \define{values} in the following way:
-\[ 
+\[
 \begin{array}{lllrll@{\qquad}}
-\mathsf{values}       & \ni & v,w & ::= & x \sspace \vec v & \mbox{large application} \\ 
+\mathsf{values}       & \ni & v,w & ::= & x \sspace \vec v & \mbox{large application} \\
 % \noalign{\medskip}
-			                   &&& \mid & \Val {\vec k} t {\vec v} & \mbox{closure} \\ 
+                                           &&& \mid & \Val {\vec k} t {\vec v} & \mbox{closure} \\
 \end{array}
 \]
 % \[
@@ -332,33 +332,33 @@ The argument vector $\vec v$ of a large application is sometimes
 called a \emph{spine} \cite{cervesatoPfenning:spineCalculus}.  Large
 applications $x\,\vec v$ also appear in the formulation of B\"ohm
 trees \cite{barendregt:lambdacalculus}.}
- consists of a variable $x$ which is applied to a vector $\ve{v_1, v_2, \ldots, v_m}$ of values. It is to be read as a left-associative application, i.e. as $\pa{\pa{x \, v_1} v_2 \ldots } v_m$. 
+ consists of a variable $x$ which is applied to a vector $\ve{v_1, v_2, \ldots, v_m}$ of values. It is to be read as a left-associative application, i.e. as $\pa{\pa{x \, v_1} v_2 \ldots } v_m$.
 Note that it is not necessarily ``large''. Quite the contrary, it
 often only consists of the head (and the vector of values is empty).
 
 A \emph{closure} $\Val {\vec k} t {\vec v}$ is the result of the evaluation process if the corresponding beta normal form of the term does not start with a free variable. The main part, $\LaO {\vec k} t$, is nothing other than a lambda abstraction in the syntax of ordered terms.
-In addition, we need the substitution list $\vec v$ (which is simply a list of values) that satisfies $\length {\vec v} = \freevars{\LaO {\vec k} t}$. % as there might be unbound $\ovar$ in $\LaO {\vec k} t$. 
+In addition, we need the substitution list $\vec v$ (which is simply a list of values) that satisfies $\length {\vec v} = \freevars{\LaO {\vec k} t}$. % as there might be unbound $\ovar$ in $\LaO {\vec k} t$.
 The idea is that the $i^{th}$ unbound $\ovar$ is to be replaced by $v_i$.  These substitution lists have already been used in the example above.
 
 
-At this point, we want to introduce a notation for inserting a single item multiple times into a list. More precisely, if $\vec v = [v_1, v_2, \ldots, v_m]$ is a list, 
+At this point, we want to introduce a notation for inserting a single item multiple times into a list. More precisely, if $\vec v = [v_1, v_2, \ldots, v_m]$ is a list,
 %(e.g. of values), % TODO neil suggests to delete this - I am not yet sure about it
 $\vec k = [k_1, k_2, \ldots, k_n]$ is a vector (i.e. also a list) of  non-negative integers satisfying $\sum_{i=1}^n k_i \leq m$ and $w$ is a single item, we write $\multiinsert {\vec v} {\vec k} {w}$  for the list that is constructed by inserting $w$ at each of the positions $k_1, k_1 + k_2, \ldots, \sum_{i=1}^n k_i$ into $\vec v$, i.e. for the list $[v_1, v_2, \ldots, v_{k_1}, w, v_{k_1 + 1}, \ldots, v_{k_1 + k_2}, w, v_{k_1 + k_2 + 1}, \ldots, v_m]$ (of course, it is possible that $\multiinsert {\vec v} {\vec k} {w}$ starts or ends with $w$).
 
 
 We are now able to define the evaluation function $\ev {\cdot} {\cdot}$ which takes an ordered term $t$ as well as an ordered substitution list $\vec v$ and returns a value. The tuple must always satisfy the condition $\freevars t = \length {\vec v}$. In other words, the list carries neither too little nor redundant information.
-At the start of the evaluation, the ordered substitution list is empty. 
+At the start of the evaluation, the ordered substitution list is empty.
 Additionally, we specify the application $\cdot \ap \cdot$ of two values, which also returns a value and does not need anything else.
 Our evaluation procedure uses a call-by-value strategy:
 
 % this is not how it should be done using latex...
-\[ 
+\[
 \begin{array}{lcl@{\qquad} r}
  \ev x {\emptyVec} & = & x & \lab 1 \\ \noalign{\medskip}
  \ev \ovar {\ve{v_1}} & = & v_1 & \lab 2\\  \noalign{\medskip}
  \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} & = & {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}}  & \lab 3 \\  \noalign{\medskip}
- \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} & \lab 4 \\  
-\\ 
+ \ev {\LaO {\vec k} t}  {\vec v} & = & \Val {\vec k} t {\vec v} & \lab 4 \\
+\\
  \pa{x \sspace \vec v} \ap w & = & x \sspace \ve{\vec v, w}  & \lab 5
 \\ \noalign{\medskip}
  \Val{\vec k} t {\vec v}   \ap w & = & \ev t {\multiinsert{\vec v}{\vec k}{w}} & \lab 6
@@ -368,31 +368,31 @@ Our evaluation procedure uses a call-by-value strategy:
 % \ev x {\emptyVec} &=  x \\ %\noalign{\medskip}
 % \ev \ovar {\ve{v_1}} &=  v_1 \\  %\noalign{\medskip}
 % \ev {t \oapp k u} {\ve{v_1, \ldots, v_n}} &= {\ev t {\ve{v_1, \ldots, v_k}}} \ap {\ev u {\ve{v_{k+1}, \ldots, v_n}}} \\  %\noalign{\medskip}
-% \ev {\LaO {\vec k} t}  {\vec v} &=  \Val {\vec k} t {\vec v} \\  
-%\nonumber \\ 
+% \ev {\LaO {\vec k} t}  {\vec v} &=  \Val {\vec k} t {\vec v} \\
+%\nonumber \\
 % \pa{x \sspace \vec v} \ap w &=  x \sspace \ve{\vec v, w} \\
 %%\\ \noalign{\medskip}
 % \Val{\vec k} t {\vec v}   \ap w &=  \ev t {\multiinsert{\vec v}{\vec k}{w}}
 %\end{align}
-First, if we want to evaluate a free variable \lab 1, the substitution list must be empty because of the invariant mentioned above. 
-Second, in the case of a $\ovar$ \lab 2, the ordered list must have exactly one entry. This entry is the result of the evaluation. 
-If we evaluate an application \lab 3, we evaluate the left and the right term. The application's index enables us to split the substitution list at the right position. Then, we have to apply the first result to the second. 
-Evaluating an abstraction \lab 4 is easy. We just need to keep the substitutions to build a closure. 
+First, if we want to evaluate a free variable \lab 1, the substitution list must be empty because of the invariant mentioned above.
+Second, in the case of a $\ovar$ \lab 2, the ordered list must have exactly one entry. This entry is the result of the evaluation.
+If we evaluate an application \lab 3, we evaluate the left and the right term. The application's index enables us to split the substitution list at the right position. Then, we have to apply the first result to the second.
+Evaluating an abstraction \lab 4 is easy. We just need to keep the substitutions to build a closure.
 
-If we want to apply a large application to a value $w$ \lab 5 , we just append $w$ to the vector of values (we write $\ve{\vec v, w}$ for $\ve{v_1, \ldots, v_n, w}$). 
+If we want to apply a large application to a value $w$ \lab 5 , we just append $w$ to the vector of values (we write $\ve{\vec v, w}$ for $\ve{v_1, \ldots, v_n, w}$).
 The case of a closure $\Val {\vec k} t {\vec v}$ \lab 6 is less simple, but it is still quite clear what to do: $\vec k$ determines at which positions $w$ should be inserted in the ordered substitution list, so we just construct the list $\multiinsert {\vec v} {\vec k} w$. Then, $t$ is evaluated.
 
 
 Concerning substitution lists, we talk about ``lists of values'' for
 simplicity. More specifically, we want them to be lists of pointers to
 avoid the duplication of ``real'' values during constructing lists
-like $\multiinsert {\vec v} {\vec k} {w}$. 
+like $\multiinsert {\vec v} {\vec k} {w}$.
 Instead of simple linked lists,
 we have also implemented these lists as dynamic functional arrays
 represented as binary trees.  This reduces the asymptotic costs of
 list splitting---$[v_1,\dots,v_n]$ to
 $([v_1,\dots,v_k],[v_{k+1},\dots,v_n])$---
-and multi-insertion $\multiinsert {\vec v} {\vec k} w$ 
+and multi-insertion $\multiinsert {\vec v} {\vec k} w$
 from linear to logarithmic time (in terms of the length of the list
 $\vec v$).  For an
 experimental comparison of the two implementations
@@ -402,52 +402,52 @@ see Section~\ref{sec:experiments}.
 \section{Parsing and Printing}
 \label{sec:parsing}
 
-In this section, we define how terms in normal syntax are translated into our ordered syntax (Parsing) and vice versa (Printing). 
-To specify this, we need some notation. 
+In this section, we define how terms in normal syntax are translated into our ordered syntax (Parsing) and vice versa (Printing).
+To specify this, we need some notation.
 First of all, we write $\x$ for the set of variable names we want to use and $\te$ for the set of lambda terms in basic standard syntax (i.e. $\x \subset \te$, furthermore, $x \in \x$ together with $t, u \in \te$ implies $\ApA t u \in \te$ and $\LaA x t \in \te$). Additionally, $\ot$ is the set of terms in our ordered syntax defined above, $\otc$ the subset of closed ordered terms ($\freevars t = 0$) and $\va$ the set of values (defined in the previous section).
-Moreover, we write $\xl$ for the set of lists of variable names and $\vl$ for the set of lists of values. 
+Moreover, we write $\xl$ for the set of lists of variable names and $\vl$ for the set of lists of values.
 For each set $\Gamma$ of variable names ($\Gamma \subseteq \x$), we denote the set of lists of elements of $\Gamma$ by $\gl$ and the ordered terms that do not contain any variable of $\Gamma$ (as a free variable) by $\otw$.
-% We will often allow $\Gamma$ to be a finite multiset, i.e. a finite set that can contain each element more than once. The according notion of union $\uplus$ satisfies $\Gamma \uplus \{z\} \not= \Gamma$. 
+% We will often allow $\Gamma$ to be a finite multiset, i.e. a finite set that can contain each element more than once. The according notion of union $\uplus$ satisfies $\Gamma \uplus \{z\} \not= \Gamma$.
 
 By writing $\ot \otimes \xl$ (resp. $\ot \otimes \vl$, $\otw \otimes \gl$, $\ldots$), we mean the subset $\{(t, \vec x) \ | \ \freevars t = \length {\vec x} \}$ of $\ot \times \xl$ (and analogous for the other cases).
 
 % \begin{defin}
-For a finite %multiset 
+For a finite %multiset
 set $\Gamma$ of variable names, we define the \define{correspondence relation}
 % $\parse \cdot \Gamma \cdot \ \subset \  \te \times (\ot \times \xl)$.
 ${\parseb \cdot \Gamma \cdot \cdot ~ \subset ~ \te \times \ot \times
   \xl}$
 (pronounce: ``corresponds in context $\Gamma$ to'').
-The intuition is that ${\parseb M \Gamma u {\vec x}}$ means: 
+The intuition is that ${\parseb M \Gamma u {\vec x}}$ means:
 % The intuition is that $\parse M \Gamma (u, \vec x)$ (or simply $\parse
-% M \Gamma {u \, \vec x}$) means: 
+% M \Gamma {u \, \vec x}$) means:
 $M$ is a term that corresponds to the ordered term $u$, where unbound
 $\ovar$ are replaced by the (\emph{not} necessarily pairwise distinct)
-variables in the list $\vec x$. 
+variables in the list $\vec x$.
 % This list $\vec x$ of variable names may contain duplicates!
 The set $\Gamma$ can be seen as a filter that tells us which free variables do not occur in $u$ but in $\vec x$ instead.
 \[
 \begin{array}{c@{\qquad\qquad} c}
 \infnamed{\quad (A)}{x \in \Gamma}{\parseb x \Gamma \ovar x}
 &
-\infnamed{\quad (B)}{ {\parseb M \Gamma t {\vec x}} \qquad 
-        {\parseb N \Gamma u {\vec y}} \qquad {\length{\vec x} = m} } 
-      {\parseb {M\,N} {\Gamma} {(\ApO t m u)}  {\vec x, \vec y} } 
+\infnamed{\quad (B)}{ {\parseb M \Gamma t {\vec x}} \qquad
+        {\parseb N \Gamma u {\vec y}} \qquad {\length{\vec x} = m} }
+      {\parseb {M\,N} {\Gamma} {(\ApO t m u)}  {\vec x, \vec y} }
 \\ \\
 \infnamed{\quad (C)}{x \not\in \Gamma}{\parseb x \Gamma x {}}
 &
-\infnamed{\quad (D)}{ 
-         {\parseb M { (\Gamma \cup \{z\}) }  t {\multiinsert{\vec x}{\vec k}{z}   }} 
-          \qquad 
+\infnamed{\quad (D)}{
+         {\parseb M { (\Gamma \cup \{z\}) }  t {\multiinsert{\vec x}{\vec k}{z}   }}
+          \qquad
           z \not\in \vec x  }
           {\parseb {\LaA z M} {\Gamma} {(\LaO {\vec{k}} t)} {\vec x}}
 \end{array}
 \]
 %\end{defin}
-It is important to note that $\parseb M \Gamma u {\vec x}$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$ and each free variable occurring in $u$ is not contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$). 
+It is important to note that $\parseb M \Gamma u {\vec x}$ implies that each variable occurring in $\vec x$ is contained in $\Gamma$ and each free variable occurring in $u$ is not contained in $\Gamma$. This can be shown by induction on $M$ (simultaneously for all sets $\Gamma$).
 
-By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parseb M \Gamma u  {\vec x}$, so we can consider $\parseFun \Gamma$ a function $\te \rightarrow \otw \times \gl$. Furthermore, we note that $\parseb M \Gamma u {\vec x}$ always implies $\freevars u = \length {\vec x}$. 
- 
+By the same argument, one can see that (for each $M$ and $\Gamma$) there exists a unique tuple $(u, \vec x)$ satisfying $\parseb M \Gamma u  {\vec x}$, so we can consider $\parseFun \Gamma$ a function $\te \rightarrow \otw \times \gl$. Furthermore, we note that $\parseb M \Gamma u {\vec x}$ always implies $\freevars u = \length {\vec x}$.
+
 This also works the other way round. For each $\Gamma$ and each tuple
 $(u, \vec x) \in \otw \otimes \gl$, there is (by induction on $u$) a
 term $M \in \te$ satisfying $\parseb M \Gamma u {\vec x}$. Moreover,
@@ -456,8 +456,8 @@ this term $M$ is unique up to $\alpha$ equivalence. So, $\parseFun
 $\alpha$ equivalence classes of terms) and $\otw \otimes \gl$. The
 inference rules above show how to apply this bijection or its inverse
 to a term or a tuple (in the last rule, any variable satisfying the
-condition can be chosen for $z$), so we have 
-% (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$. 
+condition can be chosen for $z$), so we have
+% (computable) functions $\parseFun \Gamma : \te / \alpha \rightarrow \otw \otimes \gl$ and $\parseFun \Gamma ^{-1}$.
 a computable bijection $\te / \alpha \leftrightarrow \otw \otimes \gl$
 determined by the rules for $\parseFun \Gamma$.
 
@@ -472,11 +472,11 @@ bijectively on $\otc$.
 
 The above construction also gives us a function $\otc \rightarrow
 \te$, but this is not enough. We want to transform closures
-(elements of $\ot \otimes \vl$) and values (elements of $\va$) 
+(elements of $\ot \otimes \vl$) and values (elements of $\va$)
 into basic terms $\te$.
 Therefore, we
 % \begin{defin}
-% We 
+% We
 define the two \define{print} functions $\prE : \ot \otimes \vl \rightarrow \te / \alpha$ and $\prValE : \va \rightarrow \te / \alpha$ simultaneously by recursion on the structure:
 \[
 \begin{array}{lclc}
@@ -515,11 +515,11 @@ For all $t \in \otc, M \in \te$, we have $\pr t \emptyVec = M$ if and only if $\
 We still have not shown that our evaluation algorithm given in Section~\ref{sec:values} does not change the meaning of terms. The combination of parsing, evaluating and printing should never result in a term that is not beta equivalent to the original term. We also want to show a limited termination property.
 To keep our argument simple, we just sketch the proofs and hope that the ideas become clear.
 
-First, we attend to the correctness question. 
-We need to convince ourselves that \emph{rewriting} according to the rules of the functions $\ev \cdot \cdot$ and $\ap$ does not cause an error. 
+First, we attend to the correctness question.
+We need to convince ourselves that \emph{rewriting} according to the rules of the functions $\ev \cdot \cdot$ and $\ap$ does not cause an error.
 By \emph{rewriting}, we mean one step of the \emph{normal} or \emph{leftmost outermost} evaluation. We have demonstrated this in the example at the beginning of Section~\ref{sec:values}.
-%If we have, e.g., the tupel $(t, \vec v)$, printing it should result in a term that is $\beta$ equivalent to the term we get if we rewrite it once before printing. 
-Printing should result in a term that is $\beta$ equivalent to the term we get if we rewrite before printing. 
+%If we have, e.g., the tupel $(t, \vec v)$, printing it should result in a term that is $\beta$ equivalent to the term we get if we rewrite it once before printing.
+Printing should result in a term that is $\beta$ equivalent to the term we get if we rewrite before printing.
 This basically means that, for each evaluation rule on the left hand
 side of the following table, we have to check that the equality on the
 right hand side holds:
@@ -534,7 +534,7 @@ $\ev \ovar {\ve{v}} $&$=$&$ v   $ & $ \pr{\ovar}{v} $&$\, =_\beta \,$&$ \prVal v
 &&&&&& \\
 $\ev {t \oapp k u} {[\vec v , \vec w]} $&$=$&$ {\ev t {\vec v}} \ap {\ev u {\vec w}}   $ & $ \pr {t \oapp k u} {[\vec v , \vec w]} $&$\, =_\beta \,$&$  \ApA {\pr{t}{\vec v}} {\pr{u}{\vec w}} $  & \qquad \lab 3 \\
 &&&&&& \\
-$\ev {\LaO {\vec k} t}  {\vec v} $&$=$&$ \Val {\vec k} t {\vec v} $ & $  \pr{\LaO {\vec k} t}{\vec v}$&$ \, =_\beta \,$&$  \prVal {\Val {\vec k} t {\vec v}} $  & \qquad \lab 4 \\  
+$\ev {\LaO {\vec k} t}  {\vec v} $&$=$&$ \Val {\vec k} t {\vec v} $ & $  \pr{\LaO {\vec k} t}{\vec v}$&$ \, =_\beta \,$&$  \prVal {\Val {\vec k} t {\vec v}} $  & \qquad \lab 4 \\
 &&&&&& \\
 $\pa{x \sspace \vec v} \ap w $&$=$&$ x \sspace \ve{\vec v, w}   $ & $\ApA {\prVal {x \sspace \vec v} } {\prVal w}   $&$\, =_\beta \, $&$ \prVal{x \sspace \ve{\vec v, w}}$  & \qquad \lab 5\\
 &&&&&& \\
@@ -544,19 +544,19 @@ $\Val{\vec k} t {\vec v}   \ap w $&$=$&$ \ev t {\multiinsert{\vec v}{\vec k}{w}}
 \end{tabular}
 \end{center}
 
-Note that ``rewriting using the evaluation rules'' results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple (to read as simple application) of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element. 
+Note that ``rewriting using the evaluation rules'' results in expressions which are, more or less, a mixture of elements of $\ot \otimes \vl$ and $\va$. To be precise, such an expression is either in $\ot \otimes \vl$ or in $\va$ or a tuple (to read as simple application) of two expressions. The $1^{st}$, $2^{nd}$ and $4^{th}$ rule turn an element of $\ot \otimes \va$ into a value, the $3^{rd}$ turns it in a tuple of two such elements, and the last two rules turn a tuple of two values into one value or element.
 Although we do not define it formally, it should be clear how those expressions can be printed by using the printing functions for ordered terms and values (if an expression is a tuple, just print the function part and the argument part separately). In fact, while the function $\ev \cdot \cdot$ is formulated as a big step evaluation, the rewriting process can be understood as the corresponding small step (or one step) evaluation.
 
-In the first five rows of the table, we only have to look at the definitions of the printing functions to see that the printed terms are not only $\beta$ equivalent but also equal. The very last rule $\lab 6$ requires closer examination: 
-By rule $\lab {IV}$, the term $\prVal{\Val{\vec k} t {\vec v}}$ is equal to $\LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }} $ for a (sufficiently) fresh variable $z$. Now, the definitions of the printing functions are ``context free'' in a way that guarantees  that $z$ occurs exactly $\length{\vec k}$ times (free) in $\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }$. Furthermore, replacing those occurrences by $\prVal{w}$ results in the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$. This means that, starting with 
+In the first five rows of the table, we only have to look at the definitions of the printing functions to see that the printed terms are not only $\beta$ equivalent but also equal. The very last rule $\lab 6$ requires closer examination:
+By rule $\lab {IV}$, the term $\prVal{\Val{\vec k} t {\vec v}}$ is equal to $\LaA z {\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }} $ for a (sufficiently) fresh variable $z$. Now, the definitions of the printing functions are ``context free'' in a way that guarantees  that $z$ occurs exactly $\length{\vec k}$ times (free) in $\pr {t} {  \multiinsert{\vec v}{\vec k}{z}   }$. Furthermore, replacing those occurrences by $\prVal{w}$ results in the term $\pr{t}{\multiinsert{\vec v}{\vec k}{w}}$. This means that, starting with
 $ \ApA{\prVal{\Val{\vec k} t {\vec v}}}{\prVal w}  $,
 we have to use exactly one $\beta$ reduction step to get the term $  \pr{t}{\multiinsert{\vec v}{\vec k}{w}}  $.
 
 As we have already seen that the composition of parsing a term and printing it afterwards does not change anything (up to $\alpha$ equivalence), we can now conclude that parsing, evaluating (a finite number of rewriting steps) and printing is equivalent to a number of $\beta$ reduction steps.
 
-Now we discuss termination. Obviously, our evaluation function $\ev \cdot \cdot$ does not always terminate as some terms do not have a weak head normal form. However, $\ev \cdot \cdot$ terminates whenever it is applied to ($\parseFunE t$) if the usual $\beta$ reduction is strongly normalizing on $t$. 
+Now we discuss termination. Obviously, our evaluation function $\ev \cdot \cdot$ does not always terminate as some terms do not have a weak head normal form. However, $\ev \cdot \cdot$ terminates whenever it is applied to ($\parseFunE t$) if the usual $\beta$ reduction is strongly normalizing on $t$.
 The main consequence of this is that evaluation terminates for all well-typed terms. % TODO "all" !
-To prove this statement, assume that there is such a term $s_0 \in \te$ so that the evaluation of $t_0 := \parseFunE s_0$ does not terminate. 
+To prove this statement, assume that there is such a term $s_0 \in \te$ so that the evaluation of $t_0 := \parseFunE s_0$ does not terminate.
 %
 Then, we get an infinite sequence $t_0, t_1, t_2, \ldots$ where $t_{i+1}$ is the result of rewriting (a subexpression of) $t_i$ using one of the evaluation rules. If we print $t_0, t_1, t_2, \ldots$, we get a sequence $s_0, s_1, s_2, \ldots$ of terms in $\te$, where $s_{i+1}$ is either ($\alpha$) equal to $s_i$ or arises from $s_i$ in exactly one $\beta$ reduction step. If $\beta$ reduction is strongly normalizing on $s_0$, the sequence has to become constant at some point, i.e. $s_N = s_{N+1} = s_{N+2} = \ldots$ for some $N$. This implies that, after the first $N$ rewriting steps, rule \lab 6 is not used anymore. Define the \emph{weight} $w(t)$ of an expression $t$ to be $1$, if the expression is just an element of $\ot \otimes \va$, to be $2$, if it is a value of the \emph{closure} type, to be %TODO
 $1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$, if it is a value of the form $x \, v_1 v_2 \ldots v_n$ (i.e. a \emph{large application}) and, if it is a tuple of two expressions, as the sum of both weights. Then, each of the rewritings that are induced by the first five lines in the table increase the weight of the expression, so we get $w(t_N) < w(t_{N+1}) < w(t_{N+2}) < \ldots$;  however, as the total number of values (and tuples in $\ot \otimes \va$) is bound by the length of the term we get after printing $t_N$ (or any $t_{N+i}$), the sequence is bounded, resulting in the required contradiction.
@@ -567,13 +567,13 @@ $1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$, if it is a value of the form $x \
 %
 % THIS IS AN OUTDATED VERSION OF THE SECTION. IT IS MORE "FORMALLY CORRECT" BUT CONTAINS TOO MUCH OVERHEAD AND IS THEREFORE DIFFICULT TO READ.
 %
-%We still have to prove two important facts about the evaluation algorithm given in section \ref{sec:values} - first, its termination properties and second, its correctness, i.e. it corresponds to beta reduction. 
+%We still have to prove two important facts about the evaluation algorithm given in section \ref{sec:values} - first, its termination properties and second, its correctness, i.e. it corresponds to beta reduction.
 %
 %Concerning correctness, we would obviously want to show that taking a term $t$, translating it to an ordered term, evaluation and printing it gives us a term which is beta equal to $t$, which is represented by the diagram
 %\[
 %\begin{xy}
 %\xymatrix{
-% t \in \te \ar@{-}[rrr]^{=_\beta} \ar@/_/[dd]_{\parseFunE} & & & t' \in \te \\ 
+% t \in \te \ar@{-}[rrr]^{=_\beta} \ar@/_/[dd]_{\parseFunE} & & & t' \in \te \\
 % \\
 %% u \in \otc \ar@/_/[uu]_{\pr{\cdot}{\emptyVec}} \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
 % u \in \otc \ar@/_/[uu]_{\prE                  } \ar[rrr]^{\ev{\cdot}{\emptyVec}} & & & \ev{u}{\emptyVec} \in \va \ar[uu]_{\prValE}
@@ -581,12 +581,12 @@ $1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$, if it is a value of the form $x \
 %\end{xy}
 %\]
 %However, the diagram does not make much sense as we do not know yet that $\ev \cdot \emptyVec$ is a well-defined function.
-%What we need to do is to define a one-step-evaluation, thereby making it possible to check if each single evaluation step preserves beta equality. Unfortunately, this becomes even more complicated as we get binary trees during evaluation: 
+%What we need to do is to define a one-step-evaluation, thereby making it possible to check if each single evaluation step preserves beta equality. Unfortunately, this becomes even more complicated as we get binary trees during evaluation:
 %\[
 %\begin{array}{lllrll@{\qquad}}
 %\evTr       & \ni & \mathsf{tree}_1, \mathsf{tree}_2 & ::= & (t, \vec v) & \mbox{a tupel in $\ot \otimes \vl$} \\
-%			                   &&& \mid & v & \mbox{just a value} \\
-%			                   &&& \mid & \tree {\mathsf{tree}_1} {\mathsf{tree}_2}  & \mbox{node with two subtrees} 
+%                                          &&& \mid & v & \mbox{just a value} \\
+%                                          &&& \mid & \tree {\mathsf{tree}_1} {\mathsf{tree}_2}  & \mbox{node with two subtrees}
 %\end{array}
 %\]
 %Our one-step reduction $\osr$ is a relation on $\evTr \times \evTr$:
@@ -625,10 +625,10 @@ $1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$, if it is a value of the form $x \
 % For $a, b \in \evTr$ satisfying $a \osr b$, we have $\prTree a =_\beta \prTree b$. More precisely, if one of the rules ${\ev \cdot \cdot \mbox{-1} }, {\ev \cdot \cdot \mbox{-2} }, {\ev \cdot \cdot \mbox{-3} }, {\ev \cdot \cdot \mbox{-4} }$ or ${@\mbox{-1}}$ was used, even $\prTree a = \prTree b$ (up to $\alpha$-equivalence) holds, if ${@\mbox{-1}}$ was used,  $\prTree a$ can be reduced to $\prTree b$ in exactly one $\beta$-reduction step.
 %\end{prop}
 %\begin{proof}
-% For all of the $\ev \cdot \cdot$-rules and $@\mbox{-1}$, the equality $\prTree a = \prTree b$ is easy to check. 
-%% In the case of the structure rules, we may assume that the statement holds for the premises, so it is also clear for the conclusions. The first of the $@$-rules is also simple. 
+% For all of the $\ev \cdot \cdot$-rules and $@\mbox{-1}$, the equality $\prTree a = \prTree b$ is easy to check.
+%% In the case of the structure rules, we may assume that the statement holds for the premises, so it is also clear for the conclusions. The first of the $@$-rules is also simple.
 % We have to have a closer look at the second $@$-rule:\\
-% By definition, we have 
+% By definition, we have
 % \[
 %\begin{array}{lclr}
 % \prTree {\tree {\Val {\vec k} t {\vec v}}{w}} & = & \ApA {  \prVal {\Val {\vec k} t {\vec v}}   } \ {\prVal w}  & \\
@@ -660,7 +660,7 @@ $1 + 2^n + w(v_1) + w(v_2) + \ldots + w(v_n)$, if it is a value of the form $x \
 %For all well-typed terms, the evaluation function $\ev \cdot \cdot$ is well-defined (i.e. terminates) and correct (i.e. parsing a term, evaluating and printing it results in a $\beta$-equivalent term).
 %\end{cor}
 %\begin{proof}
-%It is easy to check that the evaluation $\ev \cdot \cdot$ can be simulated by using a sequence of $\rightarrow$-steps. First, this shows that it terminates as we would get an infinite sequence of steps otherwise. Second, as each small step conserves $\beta$-equality, the whole sequence does the same. As we know that for $t \in \te$ the equality $\prTree {\parseFunE t , \emptyVec} = t$ holds, this implies $\prTree {\ev{\parseFunE t} {\emptyVec}} = t$. 
+%It is easy to check that the evaluation $\ev \cdot \cdot$ can be simulated by using a sequence of $\rightarrow$-steps. First, this shows that it terminates as we would get an infinite sequence of steps otherwise. Second, as each small step conserves $\beta$-equality, the whole sequence does the same. As we know that for $t \in \te$ the equality $\prTree {\parseFunE t , \emptyVec} = t$ holds, this implies $\prTree {\ev{\parseFunE t} {\emptyVec}} = t$.
 %\end{proof}
 %
 % -----------------------------------
@@ -686,12 +686,12 @@ provided by Andrew W. Appel (Princeton University). To make this
 possible, an extended syntax has been used that includes $\Pi$-types% and technical elements like
 , constants and definitions. It is straightforward to expand our
 evaluation algorithm to the extended syntax---for details consult the
-Bachelor's thesis of the second author \cite{kraus:bachelor}. 
+Bachelor's thesis of the second author \cite{kraus:bachelor}.
 The substitution lists
 have been implemented as simple Haskell lists, and also as balanced
 binary trees (following Adams \cite{adams:jfp93})
 for better asymptotic complexity.  Both variants were
-evaluated for performance 
+evaluated for performance
 [referred to as \emph{Ordered (trees)} and \emph{Ordered (lists)}].
 
 For comparison, the completely analogous algorithm for terms in
@@ -708,11 +708,11 @@ precisely, the first $6000$, $10,000$ and $12,000$ lines without the
 rest (named \textsf{6000.elf} and so on). Later terms tend to be
 larger, so the tests with fewer lines needed much less time.
 
-All tests were executed on the same server 
+All tests were executed on the same server
 \mbox{\texttt{baerentatze.cip.ifi.lmu.de}}
 % ("baerentatze",
 % Ludwig-Maximilians-Universit\"at M\"unchen, Department of Computer
-% Science) 
+% Science)
 working with a CPU of type \emph{AMD Phenom II X4 B95} (only
 one core used, 3 GHz) and 8 GB system memory. The measurements
 of space and time consumption are given in the following tables (rounded
@@ -772,9 +772,9 @@ Beta Normal Values & 137.7 & 8513 \\
 \end{tabular}
 \end{center}
 
-Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during type checking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage. 
+Unsurprisingly, beta normal values perform significantly worse than each of the other possibilities. However, the difference is smaller than it could have been expected. This might be due to the fact that during type checking, total evaluation of a term is often necessary anyway, thereby reducing the hereditary substitution's disadvantage.
 
-Although none of the other strategies exhibited any shortcomings in the comparisons above, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures: 
+Although none of the other strategies exhibited any shortcomings in the comparisons above, the following results for the complete file are remarkable. Here, implementing ordered substitutions as normal Haskell lists seems to be much more efficient than using tree structures:
 
 \begin{center}
  \begin{tabular}{| l || c | c |}
@@ -794,16 +794,16 @@ Beta Normal Values & 169.8 & 9044  \\
 \end{tabular}
 \end{center}
 
-Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind. 
+Our Simple Closures are still on the same level as Ordered Representation with lists, but the trees are far behind.
 In comparison, the type checker of the Twelf project, \emph{Twelf
   r1697} (written in \emph{Standard ML} and compiled with
-\emph{MLton}'s whole program optimizations \cite{fluetWeeks:icfp01}) 
+\emph{MLton}'s whole program optimizations \cite{fluetWeeks:icfp01})
 does the job nearly five
 times faster while using only 2720 megabytes of
 memory. % TODO only due to an optimized compiler?
 
-%Unfortunately, the idea of ordered substitution lists does not really pay off within the context of type checking in our tests. 
-%On the other hand, it can compete with the simple standard implementation. This offers hope that there might be some applications that benefit more from our suggested strategy. 
+%Unfortunately, the idea of ordered substitution lists does not really pay off within the context of type checking in our tests.
+%On the other hand, it can compete with the simple standard implementation. This offers hope that there might be some applications that benefit more from our suggested strategy.
 
 
 
@@ -827,7 +827,7 @@ Another means to maintain information about free variables are
 nodes come with a map that tell for each variable whether it appears
 in the left or the right subterm or in both.  Our term representation
 can be seen as an optimized version of director strings, however, we
-have no experimental comparison. 
+have no experimental comparison.
 Sinot \etal~\cite{fernandezMackieSinot:aaecc05} present some
 performance results of director strings; however, it is restricted
 to evaluation of some specific big lambda-terms.  There is no study on
@@ -838,9 +838,9 @@ An alternative to explicit substitutions is Nadathur's suspension
 calculus \cite{nadathur:jflp99}, which, in a refinement, also
 maintains information about closedness of subterms.  In this
 refinement, the suspension calculus maintains at least partial
-information about the free variables of a subterm.  
+information about the free variables of a subterm.
 As the basis of an implementation of
-$\lambda$-Prolog \cite{nadathur:flops01}, 
+$\lambda$-Prolog \cite{nadathur:flops01},
 Nadathur has proven the efficiency of his term
 representation not only for normalization and equality checking, but
 also for higher-order unification.
@@ -852,7 +852,7 @@ Liang, Nadathur, and Qi \cite{liangNadathurQi:jar05} have evaluated
 different term representations in the context of $\lambda$Prolog, a
 study that compares to our study of term representations for the
 Edinburgh Logical Framework.  They have tested different combinations
-of features, confirming our result that lazy substitution is 
+of features, confirming our result that lazy substitution is
 preferable to eager substitution {[Beta Normal Forms]},
 even more so when several substitutions are gathered into one
 traversal {[Closures, Ordered]}.  They also test a variant where
@@ -871,7 +871,7 @@ lambda-calculus inspired by ordered linear logic, and experimentally
 compared it with well-known representations (closures, normal forms)
 in a prototypical implementation of a type checker for the Edinburgh
 Logical Framework.  The experiments were carried out on large realistic
-proof terms, constructed manually and mechanically.  
+proof terms, constructed manually and mechanically.
 
 The results were not significantly in favor of our new representation.
 This might be due to the application domain, LF signature checking.
@@ -905,7 +905,7 @@ environment to the variables actually occurring free in the code.  I
 also benefited from discussions with Brigitte Pientka and Stefan Monnier.
 
 Thanks to Gabriel Scherer for comments on a draft version of this
-paper and pointers to related work. 
+paper and pointers to related work.
 The final version of this paper was stylistically improved with the highly appreciated help of Neil Sculthorpe.
 
 

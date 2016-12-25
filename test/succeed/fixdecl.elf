@@ -2,7 +2,7 @@
 % Testing fixity declarations.
 
 nat : type.
-==  : nat -> nat -> type. 
+==  : nat -> nat -> type.
 
 zero : nat.
 succ : nat -> nat.

@@ -2,7 +2,7 @@
 
 module Main where
 
-import Control.Monad.Error	( MonadError(..) )
+import Control.Monad.Error ( MonadError(..) )
 -- import Control.Bifunctor
 
 import qualified Data.List as List
@@ -32,9 +32,10 @@ import qualified TGChecker
 import System.Exit
 import System.Environment (getArgs)
 import System.IO (stdout, hSetBuffering, BufferMode(..))
-import System.Console.GetOpt (getOpt, usageInfo, ArgOrder(Permute,ReturnInOrder)
-			     , OptDescr(..), ArgDescr(..)
-			     )
+import System.Console.GetOpt
+  ( getOpt, usageInfo, ArgOrder(Permute,ReturnInOrder)
+  , OptDescr(..), ArgDescr(..)
+  )
 
 data Engine = Closures | Ordered | HerBruijn | Monolith | TGChecker
   deriving (Eq,Show,Enum,Bounded,Read)
@@ -66,8 +67,8 @@ type Flag opts = opts -> opts -- Either String opts
 inputFlag :: FilePath -> Flag Options
 inputFlag f o =
     case optInputFile o of
-	Nothing  -> return $ o { optInputFile = Just f }
-	Just _	 -> throwError "only one input file allowed"
+        Nothing  -> return $ o { optInputFile = Just f }
+        Just _   -> throwError "only one input file allowed"
 -}
 
 data Flag = Engine Engine
@@ -105,8 +106,8 @@ parseOptions' ::
   [String] -> [OptDescr (Flag opts)] -> (String -> Flag opts) -> Flag opts
 parseOptions' argv opts = \defaults ->
     case getOpt (Permute) opts argv of
-	(o,_,[])    -> foldl (>>=) (return defaults) o
-	(_,_,errs)  -> throwError $ concat errs
+        (o,_,[])    -> foldl (>>=) (return defaults) o
+        (_,_,errs)  -> throwError $ concat errs
 
 
 -- | Parse the standard options.

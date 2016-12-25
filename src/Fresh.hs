@@ -7,7 +7,7 @@ module Fresh where
 import Control.Monad.State
 
 import qualified Abstract as A
-import ListEnv as Env 
+import ListEnv as Env
 
 type Renaming = Env A.UID A.Name -- Map A.Name A.Name
 

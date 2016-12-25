@@ -26,7 +26,7 @@ allout=$(patsubst %.elf,%.err,$(allelf))
 default : all
 all : $(allstems)
 
-debug : 
+debug :
 	@echo $(allelf)
 
 # No error recorded
@@ -88,7 +88,7 @@ $(allstems) : % : %.err
 # RETARDED!!!!!!!
 
 #		echo rm -f $*.tmp; echo rm -f $*.tmp.2; \
-#		false; 
+#		false;
 
 # Clean
 

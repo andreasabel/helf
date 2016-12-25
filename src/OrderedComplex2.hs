@@ -293,4 +293,3 @@ apply' f v =
       HDef d w t []   -> apply' w v
       HDef d w t ws   -> appsR' w (v:ws)
       _               -> apply f v
-

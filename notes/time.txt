@@ -2,58 +2,58 @@
 
 paloalto:
 
-	Command being timed: "helf 5200.elf"
-	User time (seconds): 15.88
-	System time (seconds): 10.90
-	Percent of CPU this job got: 88%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:30.37
-	Maximum resident set size (kbytes): 1935556608
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 118214
-	Voluntary context switches: 242
-	Involuntary context switches: 16108
+        Command being timed: "helf 5200.elf"
+        User time (seconds): 15.88
+        System time (seconds): 10.90
+        Percent of CPU this job got: 88%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 0:30.37
+        Maximum resident set size (kbytes): 1935556608
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 118214
+        Voluntary context switches: 242
+        Involuntary context switches: 16108
 
 siena:
 
 abel@siena:~/helf/examples/ltal$ /usr/bin/time -v helf 4000.elf > /dev/null
-	Command being timed: "helf 4000.elf"
-	User time (seconds): 6.61
-	System time (seconds): 0.34
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:06.95
-	Maximum resident set size (kbytes): 611968
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 38380
-	Voluntary context switches: 2
-	Involuntary context switches: 192
+        Command being timed: "helf 4000.elf"
+        User time (seconds): 6.61
+        System time (seconds): 0.34
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 0:06.95
+        Maximum resident set size (kbytes): 611968
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 38380
+        Voluntary context switches: 2
+        Involuntary context switches: 192
 
 abel@siena:~/helf/examples/ltal$ /usr/bin/time -v helf 5000.elf > /dev/null
-	Command being timed: "helf 5000.elf"
-	User time (seconds): 24.51
-	System time (seconds): 1.14
-	Percent of CPU this job got: 100%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:25.64
-	Maximum resident set size (kbytes): 3697456
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 231223
-	Voluntary context switches: 3
-	Involuntary context switches: 688
+        Command being timed: "helf 5000.elf"
+        User time (seconds): 24.51
+        System time (seconds): 1.14
+        Percent of CPU this job got: 100%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 0:25.64
+        Maximum resident set size (kbytes): 3697456
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 231223
+        Voluntary context switches: 3
+        Involuntary context switches: 688
 
 abel@siena:~/helf/examples/ltal$ /usr/bin/time -v helf 5500.elf > /dev/null
-	Command being timed: "helf 5500.elf"
-	User time (seconds): 110.03
-	System time (seconds): 4.37
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:54.43
-	Maximum resident set size (kbytes): 14829536
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 926978
-	Voluntary context switches: 17
-	Involuntary context switches: 3142
+        Command being timed: "helf 5500.elf"
+        User time (seconds): 110.03
+        System time (seconds): 4.37
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 1:54.43
+        Maximum resident set size (kbytes): 14829536
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 926978
+        Voluntary context switches: 17
+        Involuntary context switches: 3142
 
 2010-12-27 siena
 
@@ -77,105 +77,105 @@ Eager definitions (interrupted):
 
 Lazy unfolding of definitions:
 
-	Command being timed: "../../bin/helf 5828.elf"
-	User time (seconds): 85.42
-	System time (seconds): 8.87
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:34.29
-	Maximum resident set size (kbytes): 15169536
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 948219
-	Voluntary context switches: 3
-	Involuntary context switches: 5197
-	Swaps: 0
-	File system inputs: 2944
-	Page size (bytes): 4096
-	Exit status: 0
+        Command being timed: "../../bin/helf 5828.elf"
+        User time (seconds): 85.42
+        System time (seconds): 8.87
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 1:34.29
+        Maximum resident set size (kbytes): 15169536
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 948219
+        Voluntary context switches: 3
+        Involuntary context switches: 5197
+        Swaps: 0
+        File system inputs: 2944
+        Page size (bytes): 4096
+        Exit status: 0
 
 2010-12-29 siena
 
-	Command being timed: "helf 8000.elf"
-	User time (seconds): 177.89
-	System time (seconds): 20.46
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:18.36
-	Maximum resident set size (kbytes): 32561664
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 2035236
-	Voluntary context switches: 14
-	Involuntary context switches: 10856
-	Swaps: 0
-	Page size (bytes): 4096
-	Exit status: 0
+        Command being timed: "helf 8000.elf"
+        User time (seconds): 177.89
+        System time (seconds): 20.46
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 3:18.36
+        Maximum resident set size (kbytes): 32561664
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 2035236
+        Voluntary context switches: 14
+        Involuntary context switches: 10856
+        Swaps: 0
+        Page size (bytes): 4096
+        Exit status: 0
 
-	Command being timed: "helf 10000.elf"
-	User time (seconds): 285.27
-	System time (seconds): 31.47
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:18.99
-	Maximum resident set size (kbytes): 44829568
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 2801980
-	Voluntary context switches: 20
-	Involuntary context switches: 18044
-	Swaps: 0
-	Page size (bytes): 4096
-	Exit status: 0
+        Command being timed: "helf 10000.elf"
+        User time (seconds): 285.27
+        System time (seconds): 31.47
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 5:18.99
+        Maximum resident set size (kbytes): 44829568
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 2801980
+        Voluntary context switches: 20
+        Involuntary context switches: 18044
+        Swaps: 0
+        Page size (bytes): 4096
+        Exit status: 0
 
-	Command being timed: "helf 12000.elf"
-	User time (seconds): 382.96
-	System time (seconds): 44.46
-	Percent of CPU this job got: 100%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:07.41
-	Maximum resident set size (kbytes): 61517216
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 3844958
-	Voluntary context switches: 11
-	Involuntary context switches: 23037
-	Swaps: 0
-	Page size (bytes): 4096
-	Exit status: 0
+        Command being timed: "helf 12000.elf"
+        User time (seconds): 382.96
+        System time (seconds): 44.46
+        Percent of CPU this job got: 100%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 7:07.41
+        Maximum resident set size (kbytes): 61517216
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 3844958
+        Voluntary context switches: 11
+        Involuntary context switches: 23037
+        Swaps: 0
+        Page size (bytes): 4096
+        Exit status: 0
 
-	Command being timed: "helf w32_sig_semant.elf"
-	User time (seconds): 445.16
-	System time (seconds): 46.57
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:11.73
-	Maximum resident set size (kbytes): 57961792
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 3622744
-	Voluntary context switches: 16
-	Involuntary context switches: 26626
-	Swaps: 0
-	Page size (bytes): 4096
-	Exit status: 0
+        Command being timed: "helf w32_sig_semant.elf"
+        User time (seconds): 445.16
+        System time (seconds): 46.57
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 8:11.73
+        Maximum resident set size (kbytes): 57961792
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 3622744
+        Voluntary context switches: 16
+        Involuntary context switches: 26626
+        Swaps: 0
+        Page size (bytes): 4096
+        Exit status: 0
 
 macbook:
 
-	Command being timed: "twelf-batch ltal_sig2.elf dumpsemant.elf"
-	User time (seconds): 1204.46
-	System time (seconds): 541.32
-	Percent of CPU this job got: 95%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 30:21.33
-	Maximum resident set size (kbytes): 3043065856
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 2
-	Minor (reclaiming a frame) page faults: 115703446
-	Voluntary context switches: 42214
-	Involuntary context switches: 749557
-	Swaps: 0
-	File system inputs: 0
-	File system outputs: 11
-	Socket messages sent: 0
-	Socket messages received: 0
-	Signals delivered: 9
-	Page size (bytes): 4096
-	Exit status: 0
+        Command being timed: "twelf-batch ltal_sig2.elf dumpsemant.elf"
+        User time (seconds): 1204.46
+        System time (seconds): 541.32
+        Percent of CPU this job got: 95%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 30:21.33
+        Maximum resident set size (kbytes): 3043065856
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 2
+        Minor (reclaiming a frame) page faults: 115703446
+        Voluntary context switches: 42214
+        Involuntary context switches: 749557
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 11
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 9
+        Page size (bytes): 4096
+        Exit status: 0
 
 hobel: -O
 
@@ -406,12 +406,12 @@ PROFILING:
 
   Productivity  77.3% of total user, 71.2% of total elapsed
 
-	Thu Jan 20 16:27 2011 Time and Allocation Profiling Report  (Final)
+        Thu Jan 20 16:27 2011 Time and Allocation Profiling Report  (Final)
 
-	   helf-prof +RTS -p -s -RTS w32_sig_semant.elf
+           helf-prof +RTS -p -s -RTS w32_sig_semant.elf
 
-	total time  =      451.42 secs   (22571 ticks @ 20 ms)
-	total alloc = 147,338,022,008 bytes  (excludes profiling overheads)
+        total time  =      451.42 secs   (22571 ticks @ 20 ms)
+        total alloc = 147,338,022,008 bytes  (excludes profiling overheads)
 
 COST CENTRE                    MODULE               %time %alloc
 
@@ -477,7 +477,7 @@ monolith:  siena -O
 
   Productivity  73.3% of total user, 64.1% of total elapsed
 
-A monolithic monad wastes 10% time and requires 20% more short-time allocation 
+A monolithic monad wastes 10% time and requires 20% more short-time allocation
 in the heap.
 
 PROFILING:
@@ -505,12 +505,12 @@ PROFILING:
 
   Productivity  77.3% of total user, 71.0% of total elapsed
 
-	Sun Jan 23 19:20 2011 Time and Allocation Profiling Report  (Final)
+        Sun Jan 23 19:20 2011 Time and Allocation Profiling Report  (Final)
 
-	   helf-prof +RTS -s -p -RTS 6000.elf
+           helf-prof +RTS -s -p -RTS 6000.elf
 
-	total time  =       88.24 secs   (4412 ticks @ 20 ms)
-	total alloc = 31,080,335,792 bytes  (excludes profiling overheads)
+        total time  =       88.24 secs   (4412 ticks @ 20 ms)
+        total alloc = 31,080,335,792 bytes  (excludes profiling overheads)
 
 COST CENTRE                    MODULE               %time %alloc
 
@@ -556,12 +556,12 @@ alexMove                       Lexer                  0.3    1.3
 
   Productivity  77.2% of total user, 70.9% of total elapsed
 
-	Sun Jan 23 19:40 2011 Time and Allocation Profiling Report  (Final)
+        Sun Jan 23 19:40 2011 Time and Allocation Profiling Report  (Final)
 
-	   helf-prof +RTS -s -p -RTS w32_sig_semant.elf
+           helf-prof +RTS -s -p -RTS w32_sig_semant.elf
 
-	total time  =      466.42 secs   (23321 ticks @ 20 ms)
-	total alloc = 164,743,138,552 bytes  (excludes profiling overheads)
+        total time  =      466.42 secs   (23321 ticks @ 20 ms)
+        total alloc = 164,743,138,552 bytes  (excludes profiling overheads)
 
 COST CENTRE                    MODULE               %time %alloc
 
@@ -610,12 +610,12 @@ To compare: Closures (ListEnv)
 
   Productivity  75.2% of total user, 67.4% of total elapsed
 
-	Sun Jan 23 19:59 2011 Time and Allocation Profiling Report  (Final)
+        Sun Jan 23 19:59 2011 Time and Allocation Profiling Report  (Final)
 
-	   helf-prof +RTS -s -p -RTS w32_sig_semant.elf
+           helf-prof +RTS -s -p -RTS w32_sig_semant.elf
 
-	total time  =      402.50 secs   (20125 ticks @ 20 ms)
-	total alloc = 139,729,493,216 bytes  (excludes profiling overheads)
+        total time  =      402.50 secs   (20125 ticks @ 20 ms)
+        total alloc = 139,729,493,216 bytes  (excludes profiling overheads)
 
 COST CENTRE                    MODULE               %time %alloc
 
@@ -644,33 +644,33 @@ Twelf 1.5R3   is much slower that Twelf (r1697)
 -----------
 
 abel@siena:~/bib/authors/AppelAndrew/lfterms/ltal-package$ %% OK %%
-	Command being timed: "twelf-batch -q ltal_sig2.elf dumpsemant.elf"
-	User time (seconds): 1162.46
-	System time (seconds): 282.70
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 24:06.66
-	Average shared text size (kbytes): 0
-	Average unshared data size (kbytes): 0
-	Average stack size (kbytes): 0
-	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 2959616
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 99599430
-	Voluntary context switches: 57
-	Involuntary context switches: 37518
-	Swaps: 0
-	File system inputs: 42688
-	File system outputs: 0
-	Socket messages sent: 0
-	Socket messages received: 0
-	Signals delivered: 0
-	Page size (bytes): 4096
-	Exit status: 0
+        Command being timed: "twelf-batch -q ltal_sig2.elf dumpsemant.elf"
+        User time (seconds): 1162.46
+        System time (seconds): 282.70
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 24:06.66
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 2959616
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 99599430
+        Voluntary context switches: 57
+        Involuntary context switches: 37518
+        Swaps: 0
+        File system inputs: 42688
+        File system outputs: 0
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
 
 2011-02-22 MLTON version
 
-paloalto:ltal-package abel$ twelf-batch -q ltal_sig2.elf dumpsemant.elf 
+paloalto:ltal-package abel$ twelf-batch -q ltal_sig2.elf dumpsemant.elf
 Twelf version Auto (Subversion r1697)
 %% OK %%
 %% OK %%
@@ -701,7 +701,7 @@ Remember that the success continuation counts into Solving!
 
 SML/NJ version
 
-abel@siena:~/bib/authors/AppelAndrew/lfterms/ltal-package$ twelf-batch -q ltal_sig2.elf  dumpsemant.elf 
+abel@siena:~/bib/authors/AppelAndrew/lfterms/ltal-package$ twelf-batch -q ltal_sig2.elf  dumpsemant.elf
 Twelf 1.5R3, Aug 30, 2005 (%trustme)
 %% OK %%
 %% OK %%
@@ -734,7 +734,7 @@ Remember that the success continuation counts into Solving!
 -------------------------------------
 
 abel@siena:~/helf/examples/ltal$ helf w32_sig_semant.elf +RTS -s
-helf w32_sig_semant.elf +RTS -s 
+helf w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -767,7 +767,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 ---------------------------------------
 
 abel@siena:~/helf/examples/ltal$ helf w32_sig_semant.elf +RTS -s
-helf w32_sig_semant.elf +RTS -s 
+helf w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -800,7 +800,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 -------------------------------------------------
 
 abel@siena:~/helf/examples/ltal$ helf w32_sig_semant.elf +RTS -s
-helf w32_sig_semant.elf +RTS -s 
+helf w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -833,7 +833,7 @@ paloalto has not enough memory
 ------------------------------
 
 paloalto:ltal abel$ helf w32_sig_semant.elf +RTS -s
-helf w32_sig_semant.elf +RTS -s 
+helf w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -846,7 +846,7 @@ CIP (ordered with lists)
 ------------------------
 
 milchbraetling:~/helf/examples/ltal> helf w32_sig_semant.elf +RTS -s
-helf w32_sig_semant.elf +RTS -s 
+helf w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -880,7 +880,7 @@ CIP (baerentatze)
 
 make all
 for engine in Closures Ordered HerBruijn; do ../../bin/helf +RTS -sstderr -RTS -e $engine w32_sig_semant.elf; done
-../../bin/helf -e Closures w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e Closures w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -912,7 +912,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 
 Ordered with lists
 
-../../bin/helf -e Ordered w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e Ordered w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -948,7 +948,7 @@ CIP (birkenpilz)
 -----------------
 krausni@birkenpilz:helf/examples/ltal (0) [1:33:47] % make
 for engine in Closures Ordered HerBruijn; do ../../bin/helf +RTS -sstderr -RTS -e $engine w32_sig_semant.elf; done
-../../bin/helf -e Closures w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e Closures w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -977,7 +977,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 
   Productivity  55.7% of total user, 54.6% of total elapsed
 
-../../bin/helf -e Ordered w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e Ordered w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -1006,7 +1006,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 
   Productivity  50.8% of total user, 28.0% of total elapsed
 
-../../bin/helf -e HerBruijn w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e HerBruijn w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -1020,7 +1020,7 @@ make: *** [all] Fehler 137
 CIP (baerentatze): Ordered (lists), svn revision 95
 ---------------------------------------------------
 semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1054,7 +1054,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (birkenpilz): Ordered (lists), svn revision 95
 --------------------------------------------------
 krausni@birkenpilz:helf/examples/ltal (137) [14:58:40] % helf w32_sig_semant.elf +RTS -s
-helf w32_sig_semant.elf +RTS -s 
+helf w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -1087,7 +1087,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (baerentatze): Ordered (lists), svn revision 95
 ---------------------------------------------------
 krausni@baerentatze:Desktop/svn/helf (0) [1:33:35] % helf examples/ltal/w32_sig_semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1120,7 +1120,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (baerentatze): Ordered (trees), svn revision 95
 ---------------------------------------------------
 krausni@baerentatze:Desktop/svn/helf (137) [2:10:20] % helf examples/ltal/w32_sig_semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1153,7 +1153,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (baerentatze): Ordered (lists), svn revision 95
 ---------------------------------------------------
 krausni@baerentatze:Desktop/svn/helf (0) [2:17:28] % helf examples/ltal/w32_sig_semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1186,7 +1186,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (baerentatze): Ordered (trees), svn revision 95
 ---------------------------------------------------
 krausni@baerentatze:Desktop/svn/helf (0) [2:27:04] % helf examples/ltal/w32_sig_semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1219,7 +1219,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (baerentatze): Ordered (lists), svn revision 95
 ---------------------------------------------------
 krausni@baerentatze:Desktop/svn/helf (0) [2:34:31] % helf examples/ltal/w32_sig_semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1252,7 +1252,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (baerentatze): Closures (lists), svn revision 95
 ----------------------------------------------------
 krausni@baerentatze:Desktop/svn/helf (0) [2:42:08] % helf examples/ltal/w32_sig_semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1284,7 +1284,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 CIP (baerentatze): Closures (lists), svn revision 95
 ----------------------------------------------------
 krausni@baerentatze:Desktop/svn/helf (0) [2:43:48] % helf examples/ltal/w32_sig_semant.elf +RTS -s
-helf examples/ltal/w32_sig_semant.elf +RTS -s 
+helf examples/ltal/w32_sig_semant.elf +RTS -s
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "examples/ltal/w32_sig_semant.elf" %%%
@@ -1318,7 +1318,7 @@ revision 100
 ------------
 krausni@champignon:helf/examples/ltal (0) [11:14:09] % make
 for engine in Closures Ordered HerBruijn; do ../../bin/helf +RTS -sstderr -RTS -e $engine w32_sig_semant.elf; done
-../../bin/helf -e Closures w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e Closures w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -1347,7 +1347,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 
   Productivity  56.5% of total user, 54.9% of total elapsed
 
-../../bin/helf -e Ordered w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e Ordered w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -1376,7 +1376,7 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 
   Productivity  51.3% of total user, 24.0% of total elapsed
 
-../../bin/helf -e HerBruijn w32_sig_semant.elf +RTS -sstderr 
+../../bin/helf -e HerBruijn w32_sig_semant.elf +RTS -sstderr
 HELF - Haskell implementation of the Edinburgh Logical Framework
 (C) Andreas Abel and Nicolai Kraus
 %%% opening "w32_sig_semant.elf" %%%
@@ -1384,4 +1384,3 @@ HELF - Haskell implementation of the Edinburgh Logical Framework
 %%% scope checking %%%
 %%% type checking with engine HerBruijn %%%
 Killed
-

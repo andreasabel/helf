@@ -17,7 +17,7 @@ $white+             ;
 "%%"             .* ;
 "%" [ $white # \n ] .* ;
 "%" \n ;
-"%{" ([$u # \}] | \} [$u # \%])* (\})* "}%" ; 
+"%{" ([$u # \}] | \} [$u # \%])* (\})* "}%" ;
 
 "%abbrev"           { tok (\p s -> Abbrev p) }
 "%infix"            { tok (\p s -> Infix p) }
@@ -41,54 +41,55 @@ $white+             ;
 "%establish"     .* ;
 "%assert"        .* ;
 "%use"           .* ;
-\{		    { tok (\p s -> BrOpen p) }
-\}		    { tok (\p s -> BrClose p) }
-\[		    { tok (\p s -> BracketOpen p) }
-\]		    { tok (\p s -> BracketClose p) }
-\(		    { tok (\p s -> PrOpen p) }
-\)		    { tok (\p s -> PrClose p) }
-\:		    { tok (\p s -> Col p) }
-\.		    { tok (\p s -> Dot p) }
+\{                  { tok (\p s -> BrOpen p) }
+\}                  { tok (\p s -> BrClose p) }
+\[                  { tok (\p s -> BracketOpen p) }
+\]                  { tok (\p s -> BracketClose p) }
+\(                  { tok (\p s -> PrOpen p) }
+\)                  { tok (\p s -> PrClose p) }
+\:                  { tok (\p s -> Col p) }
+\.                  { tok (\p s -> Dot p) }
 
-"->"		    { tok (\p s -> Arrow p)  }
-"<-"		    { tok (\p s -> RevArrow p)  }
-=		    { tok (\p s -> Eq p) }
-type		    { tok (\p s -> Type p) }
+"->"                { tok (\p s -> Arrow p)  }
+"<-"                { tok (\p s -> RevArrow p)  }
+=                   { tok (\p s -> Eq p) }
+type                { tok (\p s -> Type p) }
 
 $idchar +           { tok (\p s -> (Id s p )) }
-	
+
 
 {
 -- \_                              { tok (\p s -> Hole p) }
 
-data Token = Id String AlexPosn
-           | Abbrev AlexPosn
-           | Clause AlexPosn
-           | Infix AlexPosn
-           | Prefix AlexPosn
-           | Postfix AlexPosn
-           | BrOpen AlexPosn
-           | BrClose AlexPosn
-           | BracketOpen AlexPosn
-           | BracketClose AlexPosn
-           | PrOpen AlexPosn
-           | PrClose AlexPosn
-           | Col AlexPosn
-	   | Dot AlexPosn
-           | Arrow AlexPosn
-           | RevArrow AlexPosn
-           | Hole AlexPosn
-           | Eq AlexPosn
-           | Type AlexPosn 
-           | NotUsed AlexPosn -- so happy doesn't generate overlap case pattern warning
-             deriving (Eq)
+data Token
+  = Id String    AlexPosn
+  | Abbrev       AlexPosn
+  | Clause       AlexPosn
+  | Infix        AlexPosn
+  | Prefix       AlexPosn
+  | Postfix      AlexPosn
+  | BrOpen       AlexPosn
+  | BrClose      AlexPosn
+  | BracketOpen  AlexPosn
+  | BracketClose AlexPosn
+  | PrOpen       AlexPosn
+  | PrClose      AlexPosn
+  | Col          AlexPosn
+  | Dot          AlexPosn
+  | Arrow        AlexPosn
+  | RevArrow     AlexPosn
+  | Hole         AlexPosn
+  | Eq           AlexPosn
+  | Type         AlexPosn
+  | NotUsed      AlexPosn -- so happy doesn't generate overlap case pattern warning
+    deriving (Eq)
 
 prettyTok :: Token -> String
-prettyTok c = "\"" ++ tk ++ "\" at " ++ (prettyAlexPosn pos) where   
+prettyTok c = "\"" ++ tk ++ "\" at " ++ (prettyAlexPosn pos) where
   (tk,pos) = showTok c
 
 showTok c =
-  case c of 
+  case c of
     (Id s p) -> (show s,p)
     Abbrev p -> ("%abbrev",p)
     Clause p -> ("%clause",p)
@@ -108,7 +109,7 @@ showTok c =
     RevArrow p -> ("<-",p)
     Hole p -> ("_",p)
     Eq p -> ("=",p)
-    _ -> error "not used"    
+    _ -> error "not used"
 
 instance Show Token where
   show = fst . showTok

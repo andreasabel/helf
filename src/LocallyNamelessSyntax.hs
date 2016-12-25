@@ -109,6 +109,3 @@ toLocallyNameless = trans lbl_empty where
         b' = BConstLam $ trans lbl b
       in
         BPi a' b'
-
-
-

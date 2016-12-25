@@ -12,12 +12,12 @@ noName = ""
 newtype Declarations = Declarations { declarations :: [Declaration] }
 
 data Declaration
-  = TypeSig Name Type             -- ^ @c : A.@                
+  = TypeSig Name Type             -- ^ @c : A.@
   | Defn Name (Maybe Type) Expr   -- ^ @d : A = e.@ or @d = e.@
 --  | GLet Name Expr                -- ^ @[x = e].@  (global shared expr)
   | Fixity Name Fixity            -- ^ @%infix/%prefix/%postfix ...@
 
-type Fixity = OPP.Fixity Int   -- precedences: 0 <= ... < 10000  
+type Fixity = OPP.Fixity Int   -- precedences: 0 <= ... < 10000
 
 type Type = Expr
 data Expr
@@ -34,13 +34,13 @@ instance Pretty Declarations where
 
 instance Pretty Declaration where
   pretty d = hsep (pr d) <> dot where
-    pr (TypeSig x a)       = [ text x , colon , pretty a ] 
-    pr (Defn x (Just a) e) = [ text x , colon , pretty a , equals , pretty e ] 
-    pr (Defn x Nothing e)  = [ text x , equals , pretty e ] 
---    pr (GLet x e)          = [ text "[", text x , equals , pretty e, text "]" ] 
-    pr (Fixity x (OPP.Prefix p))  = [ text "%prefix" , int p , text x ] 
-    pr (Fixity x (OPP.Postfix p)) = [ text "%postfix", int p , text x ] 
-    pr (Fixity x (OPP.Infix p a)) = [ text "%infix",  pretty a, int p , text x ] 
+    pr (TypeSig x a)       = [ text x , colon , pretty a ]
+    pr (Defn x (Just a) e) = [ text x , colon , pretty a , equals , pretty e ]
+    pr (Defn x Nothing e)  = [ text x , equals , pretty e ]
+--    pr (GLet x e)          = [ text "[", text x , equals , pretty e, text "]" ]
+    pr (Fixity x (OPP.Prefix p))  = [ text "%prefix" , int p , text x ]
+    pr (Fixity x (OPP.Postfix p)) = [ text "%postfix", int p , text x ]
+    pr (Fixity x (OPP.Infix p a)) = [ text "%infix",  pretty a, int p , text x ]
 
 instance Pretty Associativity where
   pretty = text . show
@@ -54,19 +54,19 @@ instance Pretty Expr where
 --   prettyPrec k (Atom a)           = prettyPrec k a
   prettyPrec k (Fun a b)          = parensIf (k > 0) $ hsep
     [ prettyPrec 1 a , text "->" , prettyPrec 0 b ]
-  prettyPrec k (Pi x a b)         = parensIf (k > 0) $ 
+  prettyPrec k (Pi x a b)         = parensIf (k > 0) $
     braces (hsep [ text x , colon , pretty a ]) <+> pretty b
-  prettyPrec k (Lam x (Just a) e) = parensIf (k > 0) $ 
+  prettyPrec k (Lam x (Just a) e) = parensIf (k > 0) $
     brackets (hsep [ text x , colon , pretty a ]) <+> pretty e
-  prettyPrec k (Lam x Nothing e)  = parensIf (k > 0) $ 
+  prettyPrec k (Lam x Nothing e)  = parensIf (k > 0) $
     brackets (text x) <+> pretty e
-  prettyPrec k (Apps es)          = parensIf (k > 1) $ hsep $ 
+  prettyPrec k (Apps es)          = parensIf (k > 1) $ hsep $
     map (prettyPrec 2) es
 {-
     mapReverse (prettyPrec 2) es
       where mapReverse f = foldl (\ ys x -> f x : ys) []
 -}
-  prettyPrec k (LLet x e e') = parensIf (k > 0) $ 
+  prettyPrec k (LLet x e e') = parensIf (k > 0) $
     brackets (hsep [ text x , equals , pretty e' ]) <+> pretty e'
 
 {-
@@ -92,11 +92,11 @@ instance Show Associativity where
     AssocNone  -> "none"
 
 instance Read Associativity where
-  readsPrec _ s = [(a,"")] where 
+  readsPrec _ s = [(a,"")] where
     a = case s of
-      "left"  -> AssocLeft 
+      "left"  -> AssocLeft
       "right" -> AssocRight
-      "none"  -> AssocNone 
+      "none"  -> AssocNone
 
 instance Show Expr where
   show = render . pretty

@@ -343,7 +343,7 @@ proof/ : {X:word32} {Y:word32} {Z:word32} {P:+ X Y Z} prove/ X Y Z P.
 65536 : word32.
 2147483648 : word32.
 4294967295 : word32.
-%{ 
+%{
 Goals involving + and * are immediately solved if at least two of
 the arguments are ground objects (i.e. numbers), and delayed as
 constraints otherwise. In particular
@@ -379,7 +379,7 @@ will not admit a solution.
 tp     : type.
 tm     : tp -> type.
 form   : tp.
-tform  : type = tm form. 
+tform  : type = tm form.
 arrow  : tp -> tp -> tp.  %infix right 14 arrow.
 pf     : tform -> type.
 
@@ -452,8 +452,8 @@ _@2 = [T1 : tp][T2 : tp][T3 : tp][f : tm (T1 arrow T2 arrow T3)]
  [x1 : tm T1] _@ T2 T3 (_@ T1 (T2 arrow T3) f x1).
 
 _@3 : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}
-  tm (T1 arrow T2 arrow T3 arrow T4) -> 
-  tm T1 -> tm T2 -> tm T3 -> tm T4 
+  tm (T1 arrow T2 arrow T3 arrow T4) ->
+  tm T1 -> tm T2 -> tm T3 -> tm T4
     = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
  [f : tm (T1 arrow T2 arrow T3 arrow T4)][x1 : tm T1]
   _@2 T2 T3 T4 (_@ T1 (T2 arrow T3 arrow T4) f x1).
@@ -497,14 +497,14 @@ app2 = [T1 : tp][T2 : tp][T3 : tp][f : tm T1 -> tm T2 -> tm T3]
   _@2 T1 T2 T3 (_lam2 T1 T2 T3 f).
 
 app3  : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}
-  (tm T1 -> tm T2 -> tm T3 -> tm T4) -> 
+  (tm T1 -> tm T2 -> tm T3 -> tm T4) ->
   tm T1 -> tm T2 -> tm T3 -> tm T4
   = [T1 : tp][T2 : tp][T3 : tp][T4 : tp]
   [f : tm T1 -> tm T2 -> tm T3 -> tm T4]
   _@3 T1 T2 T3 T4 (_lam3 T1 T2 T3 T4 f).
 
 app4 : {T1 : tp}{T2 : tp}{T3 : tp}{T4 : tp}{T5 : tp}
-  (tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5) -> 
+  (tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5) ->
   tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5
   = [T1 : tp][T2 : tp][T3 : tp][T4 : tp][T5 : tp]
   [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5]
@@ -533,7 +533,7 @@ xor : tform -> tform -> tform =
 %infix right 11 xor.
 
 _kleene_star : {T : tp} (tm T -> tm T -> tform) -> tm T -> tm T -> tform =
-  [T : tp][R : tm T -> tm T -> tform][V : tm T][W : tm T] 
+  [T : tp][R : tm T -> tm T -> tform][V : tm T][W : tm T]
    _forall  (T arrow T arrow form) [S : tm (T arrow T arrow form)]
    (_forall T [Z : tm T] _@2 T T form S Z Z) imp
    (_forall3 T T T [X : tm T][Y : tm T][Z : tm T]
@@ -724,7 +724,7 @@ gt : tnum -> tnum -> tform = [x : tnum][y : tnum] lt y x.
 
 leq : tnum -> tnum -> tform = [x : tnum][y : tnum] geq y x.
 
-if1: tnum -> tnum -> tnum -> tnum = 
+if1: tnum -> tnum -> tnum -> tnum =
  [A : tnum][B : tnum][C : tnum] plus (times A B) (times (minus one A) C).
 
 ifgtz : tnum -> tnum -> tnum -> tnum = [x : tnum] if1 (sign (neg x)).
@@ -765,7 +765,7 @@ high5 : type = {t1:tp}{t2:tp}{t3:tp}{t4:tp}{t5:tp}
 %abbrev mkhigh2 : high0 -> high2 =
  [op:high0][t1:tp][t2:tp][h1:pred2 t1 t2][h2:pred2 t1 t2][x1:tm t1][x2:tm t2]
  op (app2 t1 t2 form h1 x1 x2) (app2 t1 t2 form h2 x1 x2).
- 
+
 %abbrev mkhigh4 : high0 -> high4 =
  [op:high0][t1:tp][t2:tp][t3:tp][t4:tp]
  [h1:pred4 t1 t2 t3 t4][h2:pred4 t1 t2 t3 t4]
@@ -774,11 +774,11 @@ high5 : type = {t1:tp}{t2:tp}{t3:tp}{t4:tp}{t5:tp}
     (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4).
 
 %{
-mkhigh4 : high0 -> high4 = 
-  [op : high0] [t1 : tp] [t2 : tp] [t3 : tp] [t4 : tp] 
-  [h1 : pred4 t1 t2 t3 t4] [h2 : pred4 t1 t2 t3 t4] 
-  [x1 : tm t1] [x2 : tm t2] [x3 : tm t3] [x4 : tm t4] 
-  op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4) 
+mkhigh4 : high0 -> high4 =
+  [op : high0] [t1 : tp] [t2 : tp] [t3 : tp] [t4 : tp]
+  [h1 : pred4 t1 t2 t3 t4] [h2 : pred4 t1 t2 t3 t4]
+  [x1 : tm t1] [x2 : tm t2] [x3 : tm t3] [x4 : tm t4]
+  op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4)
      (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4).
 
   inferring type of op (app4 t1 t2 t3 t4 form h1 x1 x2 x3 x4) (app4 t1 t2 t3 t4 form h2 x1 x2 x3 x4)
@@ -788,18 +788,18 @@ mkhigh4 : high0 -> high4 =
   inferring type of app4 t1 t2 t3 t4 form h1 x1 x2 x3
   checking x3 against tm t2
   checking wether tm t3 equals tm t2
- 
+
 helf: head mismatch t2 != t3
 
 app4 = [T1 : tp] [T2 : tp] [T3 : tp] [T4 : tp] [T5 : tp] [f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5] _@4 T1 T2 T3 T4 T5 (_lam4 T1 T2 T3 T4 T5 f).
 app4 : {T1 : tp} {T2 : tp} {T3 : tp} {T4 : tp} {T5 : tp} {f : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T5} {x1 : tm T1} {x1 : tm T2} {x1 : tm T2} tm T2 -> tm T3
  = [T1] [T2] [T3] [T4] [T5] [f] [x1] [x1'] [x1''] _@ T4 T5 (_@ T3 (arrow T4 T5) (_@ T2 (arrow T3 (arrow T4 T5)) (_@ T1 (arrow T2 (arrow T3 (arrow T4 T5))) (_lam T1 (arrow T2 (arrow T3 (arrow T4 T5))) ([x] _lam T2 (arrow T3 (arrow T4 T5)) ([x'] _lam T3 (arrow T4 T5) ([x''] _lam T4 T5 (f x x' x''))))) x1) x1') x1'')
 
-Defn mkhigh4:823 
-  (Just (Pi Nothing (Ident Def high0:792) (Ident Def high4:798))) 
-  (Lam op:824 (Just (Ident Def high0:792)) 
-  (Lam t1:825 (Just (Ident Con tp:345)) 
-  (Lam t2:826 (Just (Ident Con tp:345)) 
+Defn mkhigh4:823
+  (Just (Pi Nothing (Ident Def high0:792) (Ident Def high4:798)))
+  (Lam op:824 (Just (Ident Def high0:792))
+  (Lam t1:825 (Just (Ident Con tp:345))
+  (Lam t2:826 (Just (Ident Con tp:345))
   (Lam t3:827 (Just (Ident Con tp:345))
   (Lam t4:828 (Just (Ident Con tp:345))
   (Lam h1:829 (Just (App (App (App (App (Ident Def pred4:781) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)))
@@ -807,9 +807,9 @@ Defn mkhigh4:823
   (Lam x1:831 (Just (App (Ident Con tm:346) (Ident Var t1:825)))
   (Lam x2:832 (Just (App (Ident Con tm:346) (Ident Var t2:826)))
   (Lam x3:833 (Just (App (Ident Con tm:346) (Ident Var t3:827)))
-  (Lam x4:834 (Just (App (Ident Con tm:346) (Ident Var t4:828))) 
-  (App (App (Ident Var op:824) 
-  (App (App (App (App (App (App (App (App (App (App (Ident Def app4:537) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)) (Ident Con form:347)) (Ident Var h1:829)) (Ident Var x1:831)) (Ident Var x2:832)) (Ident Var x3:833)) (Ident Var x4:834))) 
+  (Lam x4:834 (Just (App (Ident Con tm:346) (Ident Var t4:828)))
+  (App (App (Ident Var op:824)
+  (App (App (App (App (App (App (App (App (App (App (Ident Def app4:537) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)) (Ident Con form:347)) (Ident Var h1:829)) (Ident Var x1:831)) (Ident Var x2:832)) (Ident Var x3:833)) (Ident Var x4:834)))
   (App (App (App (App (App (App (App (App (App (App (Ident Def app4:537) (Ident Var t1:825)) (Ident Var t2:826)) (Ident Var t3:827)) (Ident Var t4:828)) (Ident Con form:347)) (Ident Var h2:830)) (Ident Var x1:831)) (Ident Var x2:832)) (Ident Var x3:833)) (Ident Var x4:834))))))))))))))
 }%
 
@@ -850,7 +850,7 @@ _ncomp : {T : tp} tm (T arrow T) -> tm num -> tm T -> tm T -> tform =
     [NC : tm ((T arrow T) arrow num arrow T arrow T arrow form)]
       (_forall T [Z : tm T]
         _@4 (T arrow T) num T T form NC F zero Z Z) imp
-      (_forall3 num T T [N' : tm num][Z1 : tm T][Z2 : tm T] 
+      (_forall3 num T T [N' : tm num][Z1 : tm T][Z2 : tm T]
              (isNat N') imp (gt N' zero) imp
              (_@4 (T arrow T) num T T form NC F (pred N') Z1 Z2) imp
              (_@4 (T arrow T) num T T form NC F N' Z1 (_@ T T F Z2))) imp
@@ -963,7 +963,7 @@ instr : tp = registers arrow memory arrow registers arrow memory arrow form.
 app_instr = _@4 registers memory registers memory form.
 
 % no api steps for now
-api_step : tm instr = 
+api_step : tm instr =
   _lam4 registers memory registers memory form
    [r: tregs][m: tmem][r': tregs][m': tmem] false.
 
@@ -1028,13 +1028,13 @@ _eq_regs : tregs -> tregs -> tform =
  [r : tregs][r' : tregs]_frl_n [i : tnum] eqn (get_reg r i) (get_reg r' i).
 
 _eq_hidden_regs: tregs -> tregs -> tform =
- [r : tregs][r' : tregs] _frl_n [i : tnum] 
+ [r : tregs][r' : tregs] _frl_n [i : tnum]
     geq i (const 1000) imp eqn (get_reg r i) (get_reg r' i).
 
 _is_word : tnum -> tform = [x : tnum] isNat x and lt x pow2_32.
 
 _regmempred_extensional : (tregs -> tmem -> tnum -> tform) -> tform =
- [f : tregs -> tmem -> tnum -> tform] 
+ [f : tregs -> tmem -> tnum -> tform]
   _forall5 registers registers memory memory num
     [r : tregs][r' : tregs][m : tmem][m' : tmem][n : tnum] _eq_hidden_regs r r'
       imp (_frl_n [x : tm num]
@@ -1326,13 +1326,13 @@ fld2 = [T : tp][T1 : tp][T2 : tp]
 fld3 = [T : tp][T1 : tp][T2 : tp][T3 : tp]
   [f0 : f_typ T1][f1 : f_typ T2][f2 : f_typ T3][p_pi : pi_typ]
   [icons : tm T1 -> tm T2 -> tm T3 -> tm T][ins : tm T][word : tnum]
-    _exists T1  [g : tm T1] 
+    _exists T1  [g : tm T1]
      (f0 g &&n fld2 T T2 T3 f1 f2 p_pi (icons g) ins) word.
 
 fld4 = [T : tp][T1 : tp][T2 : tp][T3 : tp][T4 : tp]
   [f0 : f_typ T1][f1 : f_typ T2][f2 : f_typ T3][f3 : f_typ T4][p_pi : pi_typ]
   [icons : tm T1 -> tm T2 -> tm T3 -> tm T4 -> tm T][ins : tm T][word : tnum]
-    _exists T1  [g : tm T1] 
+    _exists T1  [g : tm T1]
      (f0 g &&n fld3 T T2 T3 T4 f1 f2 f3 p_pi (icons g) ins) word.
 
 fld0i = fld0 instr.
@@ -1486,7 +1486,7 @@ reg_or_imm : tp = registers arrow num arrow form.
 
 app_constr : tm reg_or_imm -> tregs -> tnum -> tform = _@2 registers num form.
 
-inj_imode : tnum -> tm reg_or_imm = 
+inj_imode : tnum -> tm reg_or_imm =
  [n : tnum] _lam2 registers num form
              [r : tregs][x : tnum] sign_ext (const 12) n x.
 
@@ -1659,7 +1659,7 @@ load_address_align_aux =
  [r : tregs][m : tmem][addr : tm address_]
  [address : tnum][offset : tnum][size : tnum]
   load_address_align r addr address offset size and
-  _@3 registers memory num form 
+  _@3 registers memory num form
     (_lam3 registers memory num form read/write-able) r m address.
 
 % This definition computes the address we are trying to load from,
@@ -2330,7 +2330,7 @@ f_compare =
   instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
     (_exists3 T T num [v1 : tm T][v2 : tm T][fccv : tnum] _exs_r [r'' : tregs]
      (_eq T v1 (app_get_t T getf r fs1)) and
-     (_eq T v2 (app_get_t T getf r fs2)) and 
+     (_eq T v2 (app_get_t T getf r fs2)) and
      (if (ceq v1 v2) (eqn fccv zero)
         (if (clt v1 v2) (eqn fccv one)
            (if (cgt v1 v2) (eqn fccv two)
@@ -2401,7 +2401,7 @@ i_TPOS = trap tpos.  % Trap on Positive
 i_TVC  = trap tvc.   % Trap on Overflow Clear
                              % The unimplemented instruction
                              % used when returning a structure in a C program
-i_UNIMP : tnum -> tm instr =   
+i_UNIMP : tnum -> tm instr =
  [imm : tnum] instr_lam [r : tregs][m : tmem][r' : tregs][m' : tmem]
   app1_pred ([_ : tnum] false) imm.
 
@@ -2414,10 +2414,10 @@ i_NOP = i_SETHI zero zero.
 % Copyright (c) 2004 Princeton University
 %	$Id: fields.elf,v 1.8 2004/04/22 10:49:20 appel Exp $
 
-% 
+%
 % The encoding of the instruction fields.
 % This is a machine generated file.  Do not edit!
-% 
+%
 f_inst    : field_typ = _rbits 0 31.
 f_op      : field_typ = _rbits 30 31.
 f_disp30  : field_typ = _rbits 0 29.
@@ -2443,10 +2443,10 @@ f_rdi     : field_typ = _rbits 25 29.
 % Copyright (c) 2004 Princeton University
 %	$Id: patterns.elf,v 1.9 2004/04/22 10:49:21 appel Exp $
 
-% 
+%
 % The encoding of the instruction patterns.
 % This is a machine generated file.  Do not edit!
-% 
+%
 
 !!n : pat_typ -> pat_typ = _!! num.
 
@@ -2661,10 +2661,10 @@ p_TVC       : pat_typ = p_Ticc &&n f_cond (const 15).
 % Copyright (c) 2004 Princeton University
 %	$Id: oper_selectors.elf,v 1.7 2004/04/22 10:49:20 appel Exp $
 
-% 
+%
 % The encoding of the instruction operator selectors.
 % This is a machine generated file.  Do not edit!
-% 
+%
 ||2_r :
  (tm reg_or_imm -> tm num -> tform) -> (tm reg_or_imm -> tm num -> tform)
   -> tm reg_or_imm -> tm num -> tform = _||2 reg_or_imm num.
@@ -2717,10 +2717,10 @@ oper_regaddr : tm regaddr -> tnum -> tform =
 % Copyright (c) 2004 Princeton University
 %	$Id: instructions.elf,v 1.15 2004/04/22 10:49:20 appel Exp $
 
-% 
+%
 % The encoding of the instructions.
 % This is a machine generated file.  Do not edit!
-% 
+%
 aux_loadg = fld2 instr address_ num oper_address_ f_rd.
 
 ins_loadg =
@@ -3042,13 +3042,13 @@ _decode : tmem -> tnum -> tm instr -> tnum -> tform =
 % See, for example, src/runtime/mach-dep/SPARC.prim.asm  in
 % the  SML/NJ 110.34 source distribution.
 
-% 
+%
 % R#  REG   Convention
-% 
+%
 %  0  %g0   always 0
-%  1  %g1   
+%  1  %g1
 % ...
-%  7  %g7   
+%  7  %g7
 %  8  %o0   standard link
 %  9  %o1   alloc pointer  (boundary between allocated and available heap)
 % 10  %o2   limit pointer  (end of available heap, minus 4096)
@@ -3060,9 +3060,9 @@ _decode : tmem -> tnum -> tm instr -> tnum -> tform =
 % 16  %l0
 %  ...
 % 23  %l7
-% 24  %i0   
+% 24  %i0
 % ...
-% 29  %i5   
+% 29  %i5
 % 30  %fp   frame pointer (don't touch)
 % 31  %i7   saved pc (don't touch)
 % 32  %pc   program counter
@@ -3073,17 +3073,17 @@ _decode : tmem -> tnum -> tm instr -> tnum -> tform =
 % 37   icnt   number of instructions executed, including current instr
 % 128 %f0  floating-point register 0
 % 191 %f63 floating-point register 63
-% 
+%
 % In our logical specifications, the register bank is a single array
 % of integers.  The actual SPARC has several different register banks.
 % The numbers in the R# column indicate where in our specification's
 % register bank we put the corresponding SPARC register.  This is
 % documented in logic/pccTCB/machines/sparc/instr_sem.elf.
-% 
+%
 % The stack pointer points to a block of memory like this:
 %  *	%fp = %sp+4096
 %  *                    +-------------------+
-%  *                    |                   |	
+%  *                    |                   |
 %  *                    .                   .
 %  *			|                   |
 %  *	%sp+116:	|  spill area       |
@@ -3092,10 +3092,10 @@ _decode : tmem -> tnum -> tm instr -> tnum -> tform =
 %  *			|   various uses    |
 %  *	%sp:		|                   |
 %  *			+-------------------+
-% 
+%
 % Thus, the memory-resident temps are m[%sp+116],m[%sp+120],...,m[%sp+4092]
-% 
-% 
+%
+%
 
 reg_stdarg    = const 8.
 reg_stdlink   = const 9.
@@ -3105,12 +3105,12 @@ reg_storeptr  = const 5.
 reg_sp        = const 14.
 reg_stdcont   = const 15.
 reg_fp        = const 30.
-reg_savedpc   = const 31. 
+reg_savedpc   = const 31.
 ml_framesize  = const 4096.
 ml_spillarea  = const 116.
 
 % A heap-limit check consists of a comparison (limitptr minus allocptr)
-% and a conditional branch.  When a standard SML/NJ function is called, 
+% and a conditional branch.  When a standard SML/NJ function is called,
 % the comparison is done before the call, so as to make good use
 % of the delay slot, and the conditional branch is done afterwards, inside
 % the called function.  Thus, the carry flag is zero if and only if
@@ -3205,22 +3205,22 @@ _prog_loaded_at : tm program -> tnum -> tregs -> tmem -> tform =
 % Copyright (c) 2004 Princeton University
 %	$Id: initial.elf,v 1.27 2004/05/26 12:06:54 appel Exp $
 
-% Things that are supposed to be true, 
-% not by hardware but by convention, about the 
+% Things that are supposed to be true,
+% not by hardware but by convention, about the
 % registers and memory at the beginning of execution.
 
 % When the SML/NJ compiler generates code for a function, it uses
 % one of several kinds of calling conventions:
-% 
+%
 % ESCAPING FUNCTION:  A function that can be called from another module.
 %   Any two escaping functions with the same (ML) type must have the
 %   same calling convention.  The convention is,
-% 
+%
 % reg_stdlink         the address of the function
 % reg_limitptr         end of heap, minus 4096
 % reg_storeptr         (used by generational g.c.)
 % reg_allocptr         beginning of unallocated (available) heap
-% reg_exncont      
+% reg_exncont
 % reg_sp              (access memory-resident temps through this)
 % reg_stdarg          (number of arguments is determined by function's type)
 % reg_stdcont         "return address"
@@ -3236,7 +3236,7 @@ _prog_loaded_at : tm program -> tnum -> tregs -> tmem -> tform =
 % reg_limitptr         end of heap, minus 4096
 % reg_storeptr         (used by generational g.c.)
 % reg_allocptr         beginning of unallocated (available) heap
-% reg_exncont     
+% reg_exncont
 % reg_sp              (access memory-resident temps through this)
 % reg_stdarg          (number of arguments is determined by function's type)
 % reg_stdcont         address of the function
@@ -3246,13 +3246,13 @@ _prog_loaded_at : tm program -> tnum -> tregs -> tmem -> tform =
 % limit_test          (machine-dependent predicate)
 % other registers are used to pass arguments as determined by
 % the function's (ML) type.
-% 
-% KNOWN FUNCTION:  
+%
+% KNOWN FUNCTION:
 %  The convention here is up to the compiler, but usually includes:
 % reg_limitptr         end of heap, minus 4096
 % reg_storeptr         (used by generational g.c.)
 % reg_allocptr         beginning of unallocated (available) heap
-% reg_exncont      
+% reg_exncont
 % reg_sp               (access memory-resident temps through this)
 % base pointer	       (address of beginning of compilation unit + 4096)
 % reg_fp               (leave this alone)
@@ -3262,20 +3262,20 @@ _prog_loaded_at : tm program -> tnum -> tregs -> tmem -> tform =
 % For our proof-carrying code prototype, let us assume that
 % the initial entry point, address 0 of the compilation unit,
 % is a function that takes one integer argument and returns one integer
-% result.  Then we have, 
+% result.  Then we have,
 
 
 _block : (tnum -> tform) -> tnum -> tnum -> tform =
- [f : tnum -> tform][start : tnum][end : tnum] 
+ [f : tnum -> tform][start : tnum][end : tnum]
    _frl_n [x : tnum] leq start x imp lt x end imp f x.
 
 _spill_area_rw : tregs -> tmem -> tform =
- [r : tregs][m : tmem] _block (_readable r m &&n _writable r m) 
+ [r : tregs][m : tmem] _block (_readable r m &&n _writable r m)
                               (plus (get_reg r reg_sp) ml_spillarea)
                               (plus (get_reg r reg_sp) ml_framesize).
 
 _heap_area_rw : tregs -> tmem -> tform =
- [r : tregs][m : tmem] _block (_readable r m &&n _writable r m) 
+ [r : tregs][m : tmem] _block (_readable r m &&n _writable r m)
          (get_reg r reg_allocptr) (plus (get_reg r reg_limitptr) (const 4096)).
 
 _spill_area : tregs -> tnum -> tform =
@@ -3302,7 +3302,7 @@ _return_type : tnum -> tregs -> tform =
    _modulo x four zero and _is_word x and
    _forall2 registers memory [r : tregs][m : tmem]
      _eq_reserved_regs r r0 imp
-     _control_at x r imp 
+     _control_at x r imp
      _safe r m.
 
 _initial_state : tm program -> tnum -> tregs -> tmem -> tform =
@@ -3329,7 +3329,7 @@ _exists_initial_state:
 
 safe_program: tm program -> tform =
  [prog : tm program]
-  _forall3 num registers memory [start : tnum][r : tregs][m : tmem] 
+  _forall3 num registers memory [start : tnum][r : tregs][m : tmem]
    _initial_state prog start r m imp
    _safe r m.
 
@@ -3345,7 +3345,7 @@ safe_program: tm program -> tform =
 % 129872 next_word
 % 938275 next_word
 % no_more_words)).
-% 
+%
 
 __safe__ : __program__ -> type = [prog: __program__] pf (safe_program prog).
 % Copyright (c) 2004 Princeton University
@@ -3353,7 +3353,7 @@ __safe__ : __program__ -> type = [prog: __program__] pf (safe_program prog).
 hole: {A: tm form} pf A.
 _termhole: {T: tp} tm T.
 tphole: rep_type -> tp.
-_predhole: {T1: tp}{T2: tp}{T: tp} (tm T1 -> tm T2 -> tm form) -> tm T =  
+_predhole: {T1: tp}{T2: tp}{T: tp} (tm T1 -> tm T2 -> tm form) -> tm T =
    [T1: tp][T2: tp][T: tp]
    [f: tm T1 -> tm T2 -> tm form]
    _@ (T1 arrow T2 arrow form) T

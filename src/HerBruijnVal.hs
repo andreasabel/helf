@@ -13,7 +13,7 @@ import Control.Monad.State hiding (mapM)
 
 import qualified Data.List as List
 import Data.Traversable
-import Data.Map (Map) 
+import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
@@ -54,7 +54,7 @@ data HVal
   | HCon A.Name HVal  [HVal]       -- }-> Head
   | HDef A.Name HVal HVal [HVal]   -- }
   | HLam A.Name HVal
-  | HK HVal                        -- constant Lambda, not binding anything and therefore not counted by de Bruijn indices 
+  | HK HVal                        -- constant Lambda, not binding anything and therefore not counted by de Bruijn indices
   | HSort Value.Sort
   | HFun HVal HVal
   | HDontCare
@@ -76,8 +76,8 @@ instance Value Head HVal where
       HSort s             -> VSort s
       HFun a b            -> VPi a b
       -- HDontCare        -> error "Cannot view DontCare Value"
--}      
-      
+-}
+
 -- * smart constructors
 
 var :: A.Name -> HVal -> HVal
@@ -108,7 +108,7 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
   typ                = return $ HSort Type
   kind               = return $ HSort Kind
   freeVar (HdFree x) = return . var x
-  valView v          = return $ 
+  valView v          = return $
     case v of
       HBound k name vs    -> VNe (HdBound k name) HDontCare (reverse vs)
       HVar x t vs         -> VNe (HdFree x) t (reverse vs)
@@ -130,14 +130,14 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
       HLam x v                    -> subst v w --here?!
       HK v                        -> return v
 
-{- ONLY FOR DEBUGGING 
+{- ONLY FOR DEBUGGING
   -- apply :: HVal-> HVal -> m HVal
-  apply f w = 
+  apply f w =
     let result = appl' f w
-    in 
+    in
       (\correctVal -> if checkForPseudofree correctVal then return correctVal else fail $ "APPLY produced a value without unique names") =<< result
     where appl' :: HVal -> HVal -> m HVal
-          appl' f w = 
+          appl' f w =
             if (checkForPseudofree f) && (checkForPseudofree w) then
               case f of
                 HBound k name vs            -> return $ HBound k name (w:vs)
@@ -150,8 +150,8 @@ instance (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Mona
 -}
 
   evaluate = evaluate2 -- we have evaluate1 and evaluate2, the latter uses a transformation bevor the evaluation is actually started.
-            
-{-  
+
+{-
 evaluate expr env =
     eval expr [] where
       eval expr bvars = case expr of
@@ -168,19 +168,19 @@ evaluate expr env =
         App e1 e2 -> Util.appM2 apply (eval e1 bvars) (eval e2 bvars)
         Lam x _ e -> HLam x <$> eval e (x : bvars)
         Typ       -> return $ HSort Type
-        Pi Nothing a b -> 
+        Pi Nothing a b ->
           HFun <$> eval a bvars <*> (HK <$> eval b bvars)
-        Pi (Just x) a b -> 
+        Pi (Just x) a b ->
           HFun <$> eval a bvars <*> (HLam x <$> eval b (x : bvars))
 -}
-      
+
 
 {- THIS IS ONLY FOR DEBUGGING -}
 {-  -- evaluate :: Expr -> Env' -> m HVal
   evaluate expr env =
     let expr' = toLocallyNameless expr
         result' = evaluate' expr' env
-    in 
+    in
     (\correctVal -> if checkForPseudofree correctVal then return correctVal else fail $ "EVALUATE did not bind all variables correctly") =<< result'
     where
       -- evaluate' :: BTm -> Env' -> m HVal
@@ -200,48 +200,48 @@ evaluate expr env =
         BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
         BSort sort  -> return $ HSort sort
         BPi a b     -> Util.appM2 (\a' b' -> return $ HFun a' b') (evaluate' a env) (evaluate' b env)
--}        
+-}
 
   -- evaluate' :: Expr -> m HVal
   evaluate' = flip evaluate M.empty
 
   abstractPi a (_, HVar x _ []) b = return $ HFun a $ HLam x $ bindx 0 b where
-    -- INVARIANT in bindx k v: k is bigger than any index in k 
+    -- INVARIANT in bindx k v: k is bigger than any index in k
     --   (if k is increased whenever stepping under a lambda)
     bindx :: Int -> HVal -> HVal
     -- debugging
     -- bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
-    bindx k (HBound i n vs) = HBound i n $ map (bindx k) vs 
-    bindx k (HVar y t vs)   = (if  x==y 
-                                then HBound k x 
-                                else HVar y $ bindx k t) 
+    bindx k (HBound i n vs) = HBound i n $ map (bindx k) vs
+    bindx k (HVar y t vs)   = (if  x==y
+                                then HBound k x
+                                else HVar y $ bindx k t)
                                 $ map (bindx k) vs
     bindx k (HCon c t vs)   = HCon c t $ map (bindx k) vs
     bindx k (HDef y t d vs) = HDef y t d $ map (bindx k) vs
-    bindx k (HLam y t)      = HLam y $ bindx (k+1) t 
+    bindx k (HLam y t)      = HLam y $ bindx (k+1) t
     bindx k (HK t)          = HK $ bindx k t
     bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
-    bindx k v@(HSort{})     = v 
-    bindx k v@HDontCare     = v 
+    bindx k v@(HSort{})     = v
+    bindx k v@HDontCare     = v
   abstractPi _ _ _          = fail $ "can only abstract a free variable"
 
-  unfold v = 
+  unfold v =
     case v of
       HDef d f t vs   -> appsR f vs
       _               -> return v
 
-  unfolds v = 
+  unfolds v =
     case v of
-      HDef d f t vs   -> unfolds =<< appsR' f vs 
+      HDef d f t vs   -> unfolds =<< appsR' f vs
       _               -> return v
 
   -- reify v = fail $ "not implemented yet"
-  reify v = quote v A.initSysNameCounter 
+  reify v = quote v A.initSysNameCounter
 
 
 -- we have two implementations of evaluate:
 -- evaluate :: Expr -> Env' -> m HVal
-evaluate1 expr env = -- (\ w -> assertClosed w (return w)) =<< 
+evaluate1 expr env = -- (\ w -> assertClosed w (return w)) =<<
   eval expr where
     eval expr = case expr of
       Ident (Var x)   -> return $ maybe (var_ x) id $ M.lookup (A.uid x) env
@@ -255,7 +255,7 @@ evaluate1 expr env = -- (\ w -> assertClosed w (return w)) =<<
       Pi Nothing a b  -> HFun <$> eval a <*> (HK <$> eval b)
       Pi (Just x) a b -> HFun <$> eval a <*> (HLam x . bind x <$> eval b)
 
--- old, uses toLocallyNameless: 
+-- old, uses toLocallyNameless:
 evaluate2 expr env =
   let expr' = toLocallyNameless expr
   in evaluate' expr' env
@@ -269,7 +269,7 @@ evaluate2 expr env =
                     SigDef t v <- sigLookup' (uid x) <$> ask
                     return $ def x v t
       BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
-      BLam (Annotation x) t    -> (\z -> return $ HLam x z) =<< (evaluate' t env) 
+      BLam (Annotation x) t    -> (\z -> return $ HLam x z) =<< (evaluate' t env)
                      -- HLam x <$> evaluate' t env
       BConstLam t -> (\z -> return $ HK z) =<< (evaluate' t env)
       BSort sort  -> return $ HSort sort
@@ -279,23 +279,23 @@ evaluate2 expr env =
 
 bind :: Name -> HVal -> HVal
 bind x v = bindx 0 v where
-    -- INVARIANT in bindx k v: k is bigger than any index in k 
+    -- INVARIANT in bindx k v: k is bigger than any index in k
     --   (if k is increased whenever stepping under a lambda)
     bindx :: Int -> HVal -> HVal
     -- debugging
     -- bindx k (HBound i n vs) = if i<k then HBound i n $ map (bindx k) vs else error "unbound HBound detected"
     bindx k (HBound i n vs) = HBound i n $ map (bindx k) vs
-    bindx k (HVar y t vs)   = (if  x==y 
-                                then HBound k x 
-                                else HVar y $ bindx k t) 
+    bindx k (HVar y t vs)   = (if  x==y
+                                then HBound k x
+                                else HVar y $ bindx k t)
                                 $ map (bindx k) vs
     bindx k (HCon c t vs)   = HCon c t $ map (bindx k) vs
     bindx k (HDef y t d vs) = HDef y t d $ map (bindx k) vs
     bindx k (HLam y t)      = HLam y $ bindx (k+1) t -- wrong: if x==y then HLam y t else HLam y $ bindx (k+1) t
     bindx k (HK t)          = HK $ bindx k t
     bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
-    bindx k v@(HSort{})     = v 
-    bindx k v@HDontCare     = v 
+    bindx k v@(HSort{})     = v
+    bindx k v@HDontCare     = v
 
 
 
@@ -314,7 +314,7 @@ checkForPseudofree = check Data.Set.empty where
     HK t          -> check set t
     HFun a b      -> (check set a) && (check set b)
     _             -> True
-    
+
 
 checkClosed :: Int -> HVal -> Bool
 checkClosed k v = -- check whether all indices in v are < k
@@ -340,7 +340,7 @@ subst t w = assertClosed w $
  sub 0 t where
   sub :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Int -> HVal -> m HVal
   sub k t = case t of
-    HBound i n vs   -> if k==i 
+    HBound i n vs   -> if k==i
                         then appsR w =<< mapM (sub k) vs
                         else HBound i n <$> mapM (sub k) vs
     HVar x a vs     -> HVar x a <$> mapM (sub k) vs
@@ -357,13 +357,13 @@ subst :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => HVal
 subst t w = --assertClosed w $
  sub 0 w t where
   sub :: (Applicative m, Monad m, Signature HVal sig, MonadReader sig m) => Int -> HVal -> HVal -> m HVal
-  sub k w t = --if True then fail "subst aufgerufen" else  
+  sub k w t = --if True then fail "subst aufgerufen" else
     case t of   -- t[w/k]
     HBound i n vs   -> if k==i -- i.e., i is to be replaced
-                        then appsR w =<< mapM (sub k w) vs 
+                        then appsR w =<< mapM (sub k w) vs
                         else if k < i -- i.e, i is bound to a \ which stands to the left of the eliminated \
-                          then HBound (i-1) n <$> mapM (sub k w) vs 
-                          else HBound i n <$> mapM (sub k w) vs 
+                          then HBound (i-1) n <$> mapM (sub k w) vs
+                          else HBound i n <$> mapM (sub k w) vs
     HVar x a vs     -> HVar x a <$> mapM (sub k w) vs
     HCon c a vs     -> HCon c a <$> mapM (sub k w) vs
     HDef x a v vs   -> HDef x a v <$> mapM (sub k w) vs
@@ -373,14 +373,14 @@ subst t w = --assertClosed w $
     v@HSort{}       -> return v
     v@HDontCare     -> return v
 
-    
+
 -- raise the index of bound, but locally unbound variables by one
 lifting :: HVal -> HVal
 lifting w = lift' 0 w where
-  lift' :: Int -> HVal -> HVal 
+  lift' :: Int -> HVal -> HVal
   lift' k w = case w of -- k is the counter for lambdas in w
     HBound i n vs -> (if i < k  -- i.e. if i is bound
-                      then HBound i n 
+                      then HBound i n
                       else HBound (i+1) n) $ map (lift' k) vs
     HVar x a vs   -> HVar x a $ map (lift' k) vs
     HCon c a vs   -> HCon c a $ map (lift' k) vs
@@ -404,10 +404,10 @@ lifting w = lift' 0 w where
 = K*
 
 -}
-    
+
 -- * supporting unfolds
 
-appsR' :: (Applicative m, Monad m, MonadEval Head HVal Env' m) => HVal -> [HVal] -> m HVal 
+appsR' :: (Applicative m, Monad m, MonadEval Head HVal Env' m) => HVal -> [HVal] -> m HVal
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
 apply' :: (Applicative m, Monad m, MonadEval Head HVal Env' m) => HVal -> HVal -> m HVal
@@ -416,7 +416,7 @@ apply' f v =
       HDef d w t []   -> apply' w v
       HDef d w t ws   -> appsR' w (v:ws)
       _               -> apply f v
-      
+
 
 -- * Reification
 
@@ -442,7 +442,7 @@ quote v i =
     f                   -> do
                             (x,e) <- quoteFun f i
                             return $ A.Lam x Nothing e
-  
+
 
 -- quoteFun :: HVal -> A.SysNameCounter -> EvalM (A.Name, A.Expr)
 quoteFun :: (Applicative m, Monad m, MonadEval Head HVal Env' m) =>

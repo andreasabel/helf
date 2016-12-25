@@ -9,7 +9,7 @@ Andreas Abel <abel@informatik.uni-muenchen.de>
 
 Dear Andreas,
 
-We are pleased to inform you that the paper entitled 
+We are pleased to inform you that the paper entitled
 
 A Lambda Term Representation Based on Linear Ordered Logic
 
@@ -56,7 +56,7 @@ reduction. While these have not been probed significantly in this
 paper, they can be and hence a workshop presentation can stimulate
 useful discussion.
 
-Some specific points for the authors to ponder about related to their work: 
+Some specific points for the authors to ponder about related to their work:
 
 (1) Lambda terms need to maintain binding information not only for
 guiding substitutions during reduction but also for permitting a
@@ -166,7 +166,7 @@ implementations.
 
 This is a simple, elegant little paper, eminently suitable for the
 workshop, and all the more impressive for being the work of a
-Bachelor's thesis (by the second author). Accept! 
+Bachelor's thesis (by the second author). Accept!
 
 The clever trick of the paper is to ensure
 that at any given leaf occurrence of a bound variable, the environment
@@ -182,9 +182,9 @@ conventional, fully normalising evaluator appears to have yielded a
 30--50% speed-up and correspondingly smaller memory footprint. The use
 of such experimental comparison is to be encouraged, while the
 nature/methodology of the comparison might be examined in slightly
-closer detail. 
+closer detail.
 
-Related work is reasonably treated; 
+Related work is reasonably treated;
 
 
 ### TODO ###
@@ -194,26 +194,26 @@ suspensions might have yielded some deeper points of comparison. The
 authors themselves note that their real (eventual?) target is in
 optimising type inference/reconstruction via unification/matching, the
 situation precisely considered by Nadathur and co-workers in the
-context of lambda-Prolog. 
+context of lambda-Prolog.
 
 
 Stylistically, the paper could be improved with more comprehensive
 debugging from native English speakers (colleagues in Nottingham could
-help there!), 
+help there!),
 % DONE. added thanks to Neil.
 
 
 and curbing of the tendency to make judgments of cost
 and value as on-the-fly asides, without proper quantification or
 justification (esp. in the introduction). But I don't think such
-nitpicks detract from the overall message. 
+nitpicks detract from the overall message.
 
 Worth taking more seriously is the cost of the seemingly quite
 expensive operation \(\vec{v}^{w/\vec{k}}\) defined mid-page 5, and
 used in the mutual definition of evaluation and application at the
 bottom of the same page. On which point, it would be really nice (even
 if only for the purposes of review!) to be able to refer to these
-definitions by a number, or even to a table/figure. 
+definitions by a number, or even to a table/figure.
 
 %% DONE
 
@@ -227,7 +227,7 @@ associated allocation cost for the run-time?). In particular, the
 interaction between clauses 3 and 6 of the aforementioned definition
 of evaluation (see?) appears to be a good opportunity for some partial
 evaluation/worker-wrapper optimisation. Again, Nottingham is a good
-place to learn how to do this! 
+place to learn how to do this!
 
 %% NO CLUE
 
@@ -270,7 +270,7 @@ surely?
 
 %% DONE
 
-p.1, para 2 
+p.1, para 2
 
 "These languages are involving... are prototypical and frequently
 modified and extended". Do you mean "evolving" (not yet fixed) or
@@ -278,7 +278,7 @@ modified and extended". Do you mean "evolving" (not yet fixed) or
 
 %% DONE
 
-"are prototypes" is probably better, too. 
+"are prototypes" is probably better, too.
 
 %% DONE
 
@@ -291,10 +291,10 @@ generality, but only for patterns; is this the common "minor" case
 
 %% DONE
 
-"competitive to compilation" --> "competitive with compilation" 
+"competitive to compilation" --> "competitive with compilation"
 % DONE
 
-p.2, line 1: "bears" --> "carries" 
+p.2, line 1: "bears" --> "carries"
 % DONE
 
 
@@ -311,7 +311,7 @@ motivations. Does this help, or hinder, the reader's understanding of
 later technical definitions?
 
 p.2, last para. "consecutively on the free variables" -->
-"consecutively to the free variables" 
+"consecutively to the free variables"
 % DONE
 
 
@@ -335,7 +335,7 @@ reader might then get the idea faster than thinking about linearity?)
 % I think about it (but I won't change it)
 
 
-p.4 bottom "following entry" is ambiguous; "subsequent entry" is not. 
+p.4 bottom "following entry" is ambiguous; "subsequent entry" is not.
 % DONE
 
 
@@ -360,7 +360,7 @@ together with an application algebra on weak-head normal forms, in the
 
 
 ### TODO? ###
-p.6 top. The trick to your representation seems to lie in the observation about 
+p.6 top. The trick to your representation seems to lie in the observation about
 free variable: empty environment
 bound occurrence: singleton environment
 This seems an invariant which your implementation ought to be able to
@@ -388,7 +388,7 @@ hygiene/adequacy/faithfulness, but you could push it to an appendix?
 % I don't know. Some parts (/notations) of sec 5 are used in sec 6. Might still be a good idea (?)
 %% NO
 
-p.7 bottom "the following tabular" --> "the following table". Similarly page 8, middle. 
+p.7 bottom "the following tabular" --> "the following table". Similarly page 8, middle.
 % DONE
 
 
@@ -408,8 +408,8 @@ of existing allocation overhead caused by ghc.
 % hmm
 %% FUTURE WORK
 
-Also, IIRC, the language is "haskell", not "Haskell". 
-% I cannot find any evidence for this statement. 
+Also, IIRC, the language is "haskell", not "Haskell".
+% I cannot find any evidence for this statement.
 %% BS
 
 
@@ -430,18 +430,18 @@ and conviction.
 
 
 p.10 bottom "could be seen as an optimised version of director
-strings". How? (this is my ignorance showing here). Please spell this 
+strings". How? (this is my ignorance showing here). Please spell this
 out (you have the space to do so).
 %% NO
 
-p.11 para. 3 Claim: "not significantly in favour". 
-On what statistical, or other, measure of significance? 
+p.11 para. 3 Claim: "not significantly in favour".
+On what statistical, or other, measure of significance?
 %% WHATEVER
 
 p.11 para. 3 Claim: "More space leaks are to be expected in
 applications like..."  Substantiate the claim, especially as you seem
 to want to focus on such applications in future work (and this reader
-wants you to do so, as well!). 
+wants you to do so, as well!).
 %% CAN'T SUBSTANTIATE
 
 p.11 para. 4 "a performing term representation". Do you mean a term
@@ -459,5 +459,3 @@ OVERALL RATING: 2 (accept)
 REVIEWER'S CONFIDENCE: 3 (high)
 
 The paper is inconclusive but describes an interesting experiment. We should accept it for presentation at the workshop.
-
-

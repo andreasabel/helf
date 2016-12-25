@@ -11,7 +11,7 @@ helf = helf +RTS -K16M -RTS
 excluded=./shared_forall2_i.elf
 allelf=$(patsubst %.elf,%,$(filter-out $(excluded),$(shell find . -name "*.elf")))
 
-all : $(allelf) 
+all : $(allelf)
 
 $(allelf) : % : %.elf
 	@echo "----------------------------------------------------------------------"

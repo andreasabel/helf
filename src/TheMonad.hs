@@ -1,9 +1,9 @@
 module TheMonad where
 
 import Control.Monad.Identity
-import Control.Monad.Error  
-import Control.Monad.Reader 
-import Control.Monad.State  
+import Control.Monad.Error
+import Control.Monad.Reader
+import Control.Monad.State
 
 import Data.Traversable
 import Data.Map (Map)
@@ -15,7 +15,7 @@ import ScopeMonad
 type TheState   = ScopeState
 initState = initScopeState
 
-type TheContext = ScopeContext 
+type TheContext = ScopeContext
 initContext = initScopeContext
 
 type TheError   = ParseError

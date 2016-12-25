@@ -1,7 +1,7 @@
 {- | Values implemented as closures.
 --
 -- We have two kinds of explicit substitutions:
--- * values for expression (bound) variables 
+-- * values for expression (bound) variables
 -- * values for value (free) variables
 -}
 
@@ -33,11 +33,11 @@ import Value
 type Var = A.UID
 
 -- | Heads are identifiers excluding @A.Def@.
-type Head = A.Ident 
+type Head = A.Ident
 
-data Val 
-  = Ne   Head       Val [Val]        -- ^ @x^a vs^-1 | c^a vs^-1@ 
-  | Df   A.Name Val Val [Val]        -- ^ @d=v^a vs^-1@  
+data Val
+  = Ne   Head       Val [Val]        -- ^ @x^a vs^-1 | c^a vs^-1@
+  | Df   A.Name Val Val [Val]        -- ^ @d=v^a vs^-1@
                                      --   last argument first in list!
   | Sort Sort                        -- ^ @s@
   | CLam A.Name A.Expr Env           -- ^ @(\xe) rho@
@@ -73,7 +73,7 @@ type Env = Env.Env Var Val
 
 {-
 update :: Env -> Var -> Val -> Env
-update rho x e = Map.insert x e rho 
+update rho x e = Map.insert x e rho
 -}
 
 -- * Substitutions (Values for value (=free) variables)
@@ -86,14 +86,14 @@ updateSubst = Env.update
 lookupSubst = Env.lookup
 
 -- * Evaluation
-  
+
 instance (Applicative m, Monad m, Signature Val sig, MonadState sig m) => MonadEval Head Val Env m where
 
-  typ  = return $ Sort Type 
+  typ  = return $ Sort Type
   kind = return $ Sort Kind
   freeVar h t = return $ Ne h t []
 
-  valView v = return $ 
+  valView v = return $
     case v of
       Fun a b -> VPi a b
       Sort s  -> VSort s
@@ -108,50 +108,50 @@ instance (Applicative m, Monad m, Signature Val sig, MonadState sig m) => MonadE
       Df h w t vs       -> return $ Df h w t (v:vs)
       CLam x e rho      -> evaluate e (Env.update rho (A.uid x) v)
       Abs x w sigma     -> substs (updateSubst sigma (A.uid x) v) w
-  
+
   evaluate e rho =
     case e of
       A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> get
-      A.Ident (A.Def x) -> do 
+      A.Ident (A.Def x) -> do
         SigDef t v <- sigLookup' (A.uid x) <$> get
-        return $ def x v t 
+        return $ def x v t
       A.Ident (A.Var x) -> return $ Env.lookupSafe (A.uid x) rho
       A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)
       A.Lam x mt e -> return $ CLam x e rho
       A.Pi mx e e' -> Fun <$> (evaluate e rho) <*> case mx of
                         Just x  -> return $ CLam x e' rho
-                        Nothing -> K <$> evaluate e' rho 
+                        Nothing -> K <$> evaluate e' rho
       A.Typ        -> typ
 
   evaluate' e = evaluate e Env.empty
 
-  unfold v = 
+  unfold v =
     case v of
       Df x f t vs  -> appsR f vs
       _            -> return v
 
-  unfolds v = 
+  unfolds v =
     case v of
       Df x f t vs  -> unfolds =<< appsR' f vs -- unfolding application
       _            -> return v
 
   abstractPi a (n, Ne (A.Var x) _ []) b = return $ Fun a $ Abs x b emptySubst
 
-  reify v = quote v A.initSysNameCounter 
+  reify v = quote v A.initSysNameCounter
 
 -- * Substitution for free variables
 
 -- | @substFree v x w = [v/x]w@
 -- substFree :: Val -> Var -> Val -> EvalM Val
 substFree :: (Applicative m, Monad m, MonadEval Head Val Env m) =>
-             Val -> Var -> Val -> m Val 
+             Val -> Var -> Val -> m Val
 substFree w x = substs (sgSubst w x)
 
 -- substs :: Subst -> Val -> EvalM Val
-substs :: (Applicative m, Monad m, MonadEval Head Val Env m) => 
-          Subst -> Val -> m Val 
+substs :: (Applicative m, Monad m, MonadEval Head Val Env m) =>
+          Subst -> Val -> m Val
 substs sigma = subst where
-  subst :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> m Val 
+  subst :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> m Val
   subst (Ne h@(A.Var y) a vs) = case lookupSubst (A.uid y) sigma of
     Just w  -> appsR w =<< mapM subst vs
     Nothing -> Ne h <$> subst a <*> mapM subst vs
@@ -178,10 +178,10 @@ apps f vs = foldl (\ mf v -> mf >>= \ f -> apply f v) (return f) vs
 
 -- | Unfold head definitions during applying.
 -- appsR' :: Val -> [Val] -> EvalM Val
-appsR' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> [Val] -> m Val 
+appsR' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> [Val] -> m Val
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
--- apply' :: Val -> Val -> EvalM Val 
+-- apply' :: Val -> Val -> EvalM Val
 apply' :: (Applicative m, Monad m, MonadEval Head Val Env m) => Val -> Val -> m Val
 apply' f v =
     case f of

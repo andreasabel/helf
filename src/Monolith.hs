@@ -1,7 +1,7 @@
 {- | Monolithic monad for everything. -}
 
--- A type checker instance with 
--- * values as explicit closures and 
+-- A type checker instance with
+-- * values as explicit closures and
 -- * environments as finite maps
 
 {-# LANGUAGE OverlappingInstances, IncoherentInstances, UndecidableInstances,
@@ -41,7 +41,7 @@ import Data.Char -- testing
 type TCM = ReaderT Context (StateT (MapSig Val) (ErrorT String IO))
 
 instance Signature Val Context where
-  
+
 
 -- * Evaluation monad
 type EvalM = TCM
@@ -72,20 +72,20 @@ instance MonadCxt Val Env CheckExprM where
   addLocal n@(A.Name x _) t cont = do
     Context l gamma rho <- ask
     let xv  = Ne (A.Var $ n { A.uid = l }) t []
-    let cxt = Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho) 
+    let cxt = Context (l + 1) (Env.insert x t gamma) (Env.insert x xv rho)
     local (\ sc -> cxt) $ cont xv
 
-  lookupLocal n@(A.Name x _) = do 
+  lookupLocal n@(A.Name x _) = do
     gamma <- asks $ tyEnv
     return $ Env.lookupSafe x gamma
 
   getEnv = asks $ valEnv
 
-instance MonadCheckExpr Head Val Env EvalM CheckExprM where  
+instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
   doEval comp    = comp -- runReader comp <$> asks globals
 
-  typeError err  = failDoc $ prettyM err 
+  typeError err  = failDoc $ prettyM err
   newError err k = k `catchError` (const $ typeError err)
   -- handleError k k' = catchError k (const k')
 
@@ -98,7 +98,7 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
 
 {-
 instance PrettyM CheckExprM Val where
-  prettyM = doEval . prettyM 
+  prettyM = doEval . prettyM
 -}
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
@@ -120,7 +120,7 @@ type CheckDeclM = TCM -- StateT (MapSig Val) (ErrorT String IO)
 instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
 {-
   doCheckExpr cont = do
-    sig <- get 
+    sig <- get
     case runReaderT cont $ SigCxt sig emptyContext of
       Left err -> fail err
       Right a  -> return a
@@ -134,7 +134,7 @@ instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
 
 {-
 instance PrettyM CheckDeclM Val where
-  prettyM = doCheckExpr . prettyM 
+  prettyM = doCheckExpr . prettyM
 -}
 
 checkDeclaration :: A.Declaration -> CheckDeclM ()
@@ -161,7 +161,7 @@ runCheckDecls st ds = runErrorT $ runReaderT (evalStateT (checkDeclarations ds) 
 hashString = fromIntegral . foldr f 0
       where f c m = ord c + (m * 128) `rem` 1500007
 
-hash :: String -> A.Name 
+hash :: String -> A.Name
 hash s = A.Name (hashString s) s
 
 var' x   = A.Ident $ A.Var $ hash x
@@ -175,15 +175,15 @@ tid = pi "A" ty $ pi "x" (var' "A") $ var' "A"
 
 arrow a b = A.Pi Nothing a b
 
-tnat = pi "A" ty $ 
-         pi "zero" (var' "A") $ 
+tnat = pi "A" ty $
+         pi "zero" (var' "A") $
          pi "suc"  (var' "A" `arrow` var' "A") $
-           var' "A" 
+           var' "A"
 
 ezero  = abs "A" $ abs "zero" $ abs "suc" $ var' "zero"
 -- problem: esuc is not a nf
-esuc n = abs "A" $ abs "zero" $ abs "suc" $ var' "suc" `app` 
-          (n `app` var' "A" `app` var' "zero" `app` var' "suc")  
+esuc n = abs "A" $ abs "zero" $ abs "suc" $ var' "suc" `app`
+          (n `app` var' "A" `app` var' "zero" `app` var' "suc")
 
 enat e =  abs "A" $ abs "zero" $ abs "suc" $ e
 enats = map enat $ iterate (app (var' "suc")) (var' "zero")

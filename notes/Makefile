@@ -12,8 +12,8 @@ bibtool=bibtool -- 'preserve.key.case = ON' \
 	  -- 'delete.field = { abstract }' \
 	  -- 'delete.field = { dvi }' \
 	  -- 'delete.field = { postscript }' \
-	  -- 'delete.field = { pdf }' 
-#	  -- 'delete.field = { url }' 
+	  -- 'delete.field = { pdf }'
+#	  -- 'delete.field = { url }'
 catcfg=sed -e "s/%.*//g" <
 latex=latex
 pdflatex=pdflatex
@@ -45,7 +45,7 @@ lfmtp11_aux : lfmtp11.tex macros.tex
 	touch $@;
 
 # then, run bibtex
-lfmtp11.bbl : lfmtp11_aux auto-lfmtp11.bib 
+lfmtp11.bbl : lfmtp11_aux auto-lfmtp11.bib
 	-bibtex lfmtp11;
 
 # finally, finish by running latex twice again
@@ -95,7 +95,7 @@ talk%.pdf : talk%.tex
 	cp -p $? $(destdir)/;
 	touch $@;
 
-%.dvi : %.tex 
+%.dvi : %.tex
 	$(latex) $<;
 	-bibtex $*;
 	$(latex) $<;

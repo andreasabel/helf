@@ -1,4 +1,4 @@
-{- 
+{-
 Values are always in beta normal form.
 We use hereditary substitution.
 -}
@@ -17,7 +17,7 @@ import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State hiding (mapM)
 
 import Data.Traversable
-import Data.Map (Map, fold, notMember) 
+import Data.Map (Map, fold, notMember)
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
@@ -39,7 +39,7 @@ data NVal
   | NCon A.Name NVal [NVal]        -- }-> Head
   | NDef A.Name NVal NVal [NVal]   -- }
   | NLam A.Name NVal
-  | NK NVal                        -- constant Lambda 
+  | NK NVal                        -- constant Lambda
   | NSort Value.Sort
   | NFun NVal NVal
   | NDontCare
@@ -58,8 +58,8 @@ instance Value A.Name NVal where
       NSort s             -> VSort s
       NFun a b            -> VPi a b
       -- NDontCare        -> error "Cannot view DontCare Value"
- 
- 
+
+
 -- * smart constructors
 
 var :: A.Name -> NVal -> NVal
@@ -98,9 +98,9 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
       NVar x t vs                 -> return $ NVar x t (w:vs)
       NCon x t vs                 -> return $ NCon x t (w:vs)
       NDef x v t vs               -> return $ NDef x v t (w:vs)
-      NLam x v                    -> subst v (singleton (uid x) w) 
+      NLam x v                    -> subst v (singleton (uid x) w)
       NK v                        -> return v
-  
+
   -- evaluate :: Expr -> Env -> m NVal
   evaluate expr env =
     case expr of
@@ -121,30 +121,30 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
                                           b' <- (\z -> return $ NK z) =<< (evaluate b env)
                                           return $ NFun a' b'
       Lam x _ e       -> (\z -> return $ NLam x z) =<< (evaluate e $ deleteFromEnv env $ uid x)
-      App e1 e2       -> Util.appM2 apply (evaluate e1 env) (evaluate e2 env) 
-  
+      App e1 e2       -> Util.appM2 apply (evaluate e1 env) (evaluate e2 env)
+
   -- evaluate' :: Expr -> m NVal
   evaluate' = flip evaluate empty
 
   abstractPi a (_, NVar x _ []) b = return $ NFun a $ NLam x b
   abstractPi _ _ _                = fail $ "can only abstract a free variable"
 
-  unfold v = 
+  unfold v =
     case v of
       NDef d f t vs   -> appsR f vs
       _               -> return v
 
-  unfolds v = 
+  unfolds v =
     case v of
-      NDef d f t vs   -> unfolds =<< appsR' f vs 
+      NDef d f t vs   -> unfolds =<< appsR' f vs
       _               -> return v
 
   -- reify v = fail $ "not implemented yet"
-  reify v = quote v A.initSysNameCounter 
+  reify v = quote v A.initSysNameCounter
 
-  
-  
-  
+
+
+
 -- * substitution
 
 subst :: (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => NVal -> Env' -> m NVal
@@ -164,7 +164,7 @@ subst nval env = case nval of
   NK v          -> (\z -> return $ NK z) =<< (subst v env)
   NFun a b      -> Util.appM2 (\s t -> return $ NFun s t) (subst a env) (subst b env)
 
-  
+
 -- hopefully, this is not necessary thanks to unique names...
 -- take an Env' and an UID and test whether the UID is mentioned anywhere.
 testUniqueness :: Env' -> UID -> Bool
@@ -180,13 +180,13 @@ testUniqueness env u = Data.Map.fold (\y x -> x && (testUn y)) True env where
   testUn (NDontCare)      = True
 
 
-  
-  
 
-  
+
+
+
 -- * supporting unfolds
 
-appsR' :: (Applicative m, Monad m, MonadEval NVal Env' m) => NVal -> [NVal] -> m NVal 
+appsR' :: (Applicative m, Monad m, MonadEval NVal Env' m) => NVal -> [NVal] -> m NVal
 appsR' f vs = foldr (\ v mf -> mf >>= \ f -> apply' f v) (return f) vs
 
 apply' :: (Applicative m, Monad m, MonadEval NVal Env' m) => NVal -> NVal -> m NVal
@@ -195,7 +195,7 @@ apply' f v =
       NDef d w t []   -> apply' w v
       NDef d w t ws   -> appsR' w (v:ws)
       _               -> apply f v
-      
+
 
 -- * Reification
 
@@ -219,7 +219,7 @@ quote v i =
     f                   -> do
                             (x,e) <- quoteFun f i
                             return $ A.Lam x Nothing e
-  
+
 
 -- | @quoteFun n v@ expects @v@ to be a function and returns and its
 --   body as an expression.

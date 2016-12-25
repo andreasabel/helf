@@ -13,7 +13,7 @@ The following table lists the reserved characters in Twelf.
 `(' `)'     parentheses, for grouping terms
 `[' `]'     brackets, for lambda abstraction
 `{' `}'     braces, for quantification (dependent function types)
-whitespace  separates identifiers; one of 
+whitespace  separates identifiers; one of
               space, newline, tab, carriage return, vertical tab or formfeed
 `%'         introduces comments or special keyword declarations
 `%whitespace' `%%'     comment terminated by the end of the line, may contain any characters
