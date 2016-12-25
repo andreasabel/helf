@@ -59,24 +59,6 @@ data HVal
   | HDontCare
     deriving (Show)
 
-{-
-instance Value Head HVal where
-  typ = HSort Type
-  kind = HSort Kind
-  freeVar (HdFree x) = var x
-  valView v =
-    case v of
-      HBound k name vs    -> VNe (HdBound k name) HDontCare (reverse vs)
-      HVar x t vs         -> VNe (HdFree x) t (reverse vs)
-      HCon x t vs         -> VNe (HdCon x) t (reverse vs)
-      HDef x v t vs       -> VDef (HdDef x) t (reverse vs)
-      HLam _ _            -> VAbs
-      HK _                -> VAbs
-      HSort s             -> VSort s
-      HFun a b            -> VPi a b
-      -- HDontCare        -> error "Cannot view DontCare Value"
--}
-
 -- * smart constructors
 
 var :: A.Name -> HVal -> HVal

@@ -42,22 +42,6 @@ data Val
   | Fun  Val  Val                    -- ^ @Pi a ((\xe)rho)@
   | DontCare
 
-{-
-instance Value Head Val where
-  typ  = Sort Type
-  kind = Sort Kind
-  freeVar h t = Ne h t []
-
-  valView v =
-    case v of
-      Fun a b -> VPi a b
-      Sort s  -> VSort s
-      Ne h       t vs -> VNe  h t (reverse vs)
---      Ne h@Def{} t vs -> VDef h t (reverse vs)
-      Df x v t vs     -> VDef (A.Def x) t (reverse vs)
-      _               -> VAbs
--}
-
 -- * smart constructors
 
 var :: A.Name -> Val -> Val
@@ -82,11 +66,6 @@ boundName _ = A.noName
 -- * Environments (Values for expression (=bound) variables)
 
 type Env = Env.Env Var Val
-
-{-
-update :: Env -> Var -> Val -> Env
-update rho x e = Map.insert x e rho
--}
 
 -- * Substitutions (Values for value (=free) variables)
 
@@ -180,13 +159,6 @@ substs sigma = subst where
     --   add all bindings from sigma that are not yet present
     --   thus, we can take sigma and overwrite it with [sigma]tau
   subst (Fun a b)      = Fun <$> subst a <*> subst b
-
-{-
-apps :: Val -> [Val] -> EvalM Val
-apps f vs = foldl (\ mf v -> mf >>= \ f -> apply f v) (return f) vs
--}
--- appsR :: Val -> [Val] -> EvalM Val
--- moved to Value.hs
 
 -- * Unfolding definitions
 
