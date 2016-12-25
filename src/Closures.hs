@@ -1,6 +1,6 @@
--- A type checker instance with
--- * values as explicit closures and
--- * environments as finite maps
+-- | A type checker instance with
+-- - values as explicit closures and
+-- - environments as finite maps.
 
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, TypeSynonymInstances, MultiParamTypeClasses,
     OverlappingInstances, IncoherentInstances, UndecidableInstances,

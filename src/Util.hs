@@ -19,9 +19,9 @@ import qualified Data.Map as Map
 
 import Debug.Trace (trace)
 
--- * pretty printing
-
 import Text.PrettyPrint
+
+-- * pretty printing
 
 class Pretty a where
   pretty     :: a -> Doc

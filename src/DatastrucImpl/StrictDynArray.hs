@@ -32,7 +32,6 @@ data DynArr a
          , left    :: !(DynArr a) -- ^ left part
          , right   :: !(DynArr a) -- ^ right part
          }
- -- | Empty                     -- ^ not allowed as part of a nonempty tree !
     deriving (Eq,Ord,Show)
 
 data DynArray a = DynArray -- {-# UNPACK #-}

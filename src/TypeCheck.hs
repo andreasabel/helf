@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections, UndecidableInstances, TypeSynonymInstances, FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, FlexibleContexts, FunctionalDependencies #-}
 
--- A generic bidirectional type-checker for LF
+-- | A generic bidirectional type-checker for LF.
 
 module TypeCheck where
 
