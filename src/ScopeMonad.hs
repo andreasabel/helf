@@ -108,6 +108,7 @@ initScopeContext = ScopeContext
   }
 
 instance ( Applicative m
+         , Monad m
          , MonadReader ScopeContext m
          , MonadState  ScopeState   m
          , MonadError  ParseError   m ) => Scope m where
