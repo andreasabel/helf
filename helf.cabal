@@ -1,14 +1,12 @@
 name:            helf
 version:         0.2016.12.25
 build-type:      Simple
-cabal-version:   >= 1.8 && < 2
-license:         AllRightsReserved
--- You may prefer to use a licence which allows others to use your code:
--- license:         OtherLicense
--- license-file:    ...
-author:          Andreas Abel
+cabal-version:   >= 1.8
+license:         OtherLicense
+license-file:    LICENSE
+author:          Andreas Abel and Nicolai Kraus
 maintainer:      Andreas Abel <andreas.abel@ifi.lmu.de>
-homepage:        http://www2.tcs.ifi.lmu.de/~abel/
+homepage:        http://www2.tcs.ifi.lmu.de/~abel/projects.html
 category:        Dependent types
 synopsis:        Typechecking terms of the Edinburgh Logical Framework (LF).
 description:
@@ -17,16 +15,30 @@ description:
   HELF implements only a subset of the Twelf syntax and functionality.
   It type-checks LF definitions, but does not do type reconstruction.
 
+tested-with:        GHC == 7.8.4
+                    GHC == 7.10.3
+                    GHC == 8.0.1
+
+data-files:         test/succeed/Makefile
+                    test/succeed/*.elf
+                    test/fail/Makefile
+                    test/fail/*.elf
+                    test/fail/*.err
+
+extra-source-files: Makefile
+                    src/Makefile
+
+source-repository head
+  type:     git
+  location: https://github.com/andreasabel/helf
+
 executable helf
   ghc-options:      -rtsopts
   hs-source-dirs:   src
   build-depends:    array >= 0.3 && < 1.0,
                     base >= 4.2 && < 5.0,
                     containers >= 0.3 && < 1.0,
- --                   haskell98 >= 1.0 && < 3,
                     mtl >= 2.2.1 && < 3.0,
-                    -- category-extras == 0.44.*,
-                    -- fclabels >= 0.9.1 && < 0.12,
                     pretty >= 1.0 && < 2.0,
                     QuickCheck >= 2.4 && < 3.0
   build-tools:      happy >= 1.15 && < 2,
@@ -42,19 +54,44 @@ executable helf
                     TupleSections
   main-is:          Main.hs
   other-modules:    Abstract
-                    ClosVal
                     Closures
+                    ClosVal
                     Concrete
                     Context
+                    DataStructure
+                    DatastrucImpl.DynArrayInstance
+                    DatastrucImpl.List
+                    DatastrucImpl.SimpleDynArray
+                    DatastrucImpl.StrictDynArray
+                    DatastrucImpl.TestDynArray
+                    DynArray
+                    ErrorExpected
+                    ExplSubst
+                    Fresh
+                    HerBruijn
+                    HerBruijnVal
+                    HeredNormal
+                    HeredNormVal
                     Lexer
-                    Main
+                    ListEnv
+                    LocallyNamelessSyntax
+                    MapEnv
+                    Monolith
+                    MonoVal
+                    NamedExplSubst
                     OperatorPrecedenceParser
+                    OrderedCom2
+                    OrderedComplex2
+                    OrderedSubst
+                    ORef
                     Parser
                     PrettyM
                     ScopeMonad
                     Scoping
                     Signature
+                    Stream
                     TermGraph
+                    Test
                     TGChecker
                     TheMonad
                     TypeCheck
