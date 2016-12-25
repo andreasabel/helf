@@ -6,7 +6,7 @@ license:         OtherLicense
 license-file:    LICENSE
 author:          Andreas Abel and Nicolai Kraus
 maintainer:      Andreas Abel <andreas.abel@ifi.lmu.de>
-homepage:        http://www2.tcs.ifi.lmu.de/~abel/projects.html
+homepage:        http://www2.tcs.ifi.lmu.de/~abel/projects.html#helf
 category:        Dependent types
 synopsis:        Typechecking terms of the Edinburgh Logical Framework (LF).
 description:
@@ -24,6 +24,7 @@ data-files:         test/succeed/Makefile
                     test/fail/Makefile
                     test/fail/*.elf
                     test/fail/*.err
+                    README.md
 
 extra-source-files: Makefile
                     src/Makefile

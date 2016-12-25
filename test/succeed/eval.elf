@@ -1,0 +1,21 @@
+%% 2016-12-25 call-by-name weak head evaluation for the untyped lambda-calculus.
+
+% Untyped lambda calculus.
+
+tm   : type.
+abs  : (tm -> tm) -> tm.
+app  : tm -> (tm -> tm).
+
+% cbn weak head evaluation.
+
+eval : tm -> tm -> type.
+
+eval/abs : {M : tm -> tm}
+  eval (abs M) (abs M).
+
+eval/app : {M : tm} {M' : tm -> tm} {N : tm} {V : tm}
+  eval M (abs M') ->
+  eval (M' N) V   ->
+  eval (app M N) V.
+
+
