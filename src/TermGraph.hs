@@ -2,6 +2,8 @@
 
 module TermGraph where
 
+import Prelude hiding ((<>))
+
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Except

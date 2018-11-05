@@ -2,7 +2,7 @@
 
 module PrettyM where
 
-import Prelude hiding (sequence, mapM, print)
+import Prelude hiding (sequence, mapM, print, (<>))
 
 import Control.Applicative hiding (empty)
 import Control.Monad ((<=<))
