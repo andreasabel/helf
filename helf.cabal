@@ -2,7 +2,7 @@ name:            helf
 version:         0.2021.8.12
 build-type:      Simple
 cabal-version:   >= 1.10
-license:         OtherLicense
+license:         MIT
 license-file:    LICENSE
 author:          Andreas Abel and Nicolai Kraus
 maintainer:      Andreas Abel <andreas.abel@ifi.lmu.de>
