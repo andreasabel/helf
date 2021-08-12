@@ -108,7 +108,7 @@ instance (Applicative m, Monad m, Signature NVal sig, MonadReader sig m) => Mona
                         Var x  -> return $ lookupVal (var_ x) env
                         Con x  -> con x . symbType . sigLookup' (A.uid x) <$> ask
                         Def x  -> do
-                                    SigDef t v <- sigLookup' (uid x) <$> ask
+                                    ~(SigDef t v) <- sigLookup' (uid x) <$> ask
                                     return $ def x v t
       Typ             -> return $ NSort Value.Type
       Pi mx a b       -> case mx of

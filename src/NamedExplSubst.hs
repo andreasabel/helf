@@ -136,7 +136,7 @@ translate e rho =
     case e of
       A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> ask
       A.Ident (A.Def x) -> do
-        SigDef t v <- sigLookup' (A.uid x) <$> ask
+        ~(SigDef t v) <- sigLookup' (A.uid x) <$> ask
         return $ def x v t
       A.Ident (A.Var x) -> return $ var_ $ Env.lookupSafe (A.uid x) rho
       A.App f e    -> application <$> (evaluate f rho) <*> (evaluate e rho)

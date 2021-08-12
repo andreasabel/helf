@@ -1,5 +1,5 @@
 name:            helf
-version:         0.2016.12.25
+version:         0.2021.8.12
 build-type:      Simple
 cabal-version:   >= 1.8
 license:         OtherLicense
@@ -17,7 +17,13 @@ description:
 
 tested-with:        GHC == 7.8.4
                     GHC == 7.10.3
-                    GHC == 8.0.1
+                    GHC == 8.0.2
+                    GHC == 8.2.2
+                    GHC == 8.4.4
+                    GHC == 8.6.5
+                    GHC == 8.8.4
+                    GHC == 8.10.4
+                    GHC == 9.0.1
 
 data-files:         test/succeed/Makefile
                     test/succeed/*.elf
@@ -87,45 +93,3 @@ executable helf
                     TypeCheck
                     Util
                     Value
-
---   other-modules:    Abstract
---                     Closures
---                     ClosVal
---                     Concrete
---                     Context
---                     DataStructure
---                     DatastrucImpl.DynArrayInstance
---                     DatastrucImpl.List
---                     DatastrucImpl.SimpleDynArray
---                     DatastrucImpl.StrictDynArray
---                     DatastrucImpl.TestDynArray
---                     DynArray
---                     Fresh
---                     HerBruijn
---                     HerBruijnVal
---                     HeredNormal
---                     Lexer
---                     ListEnv
---                     LocallyNamelessSyntax
---                     MapEnv
---                     Monolith
---                     MonoVal
---                     NamedExplSubst
---                     OperatorPrecedenceParser
---                     OrderedCom2
---                     OrderedComplex2
---                     ORef
---                     Parser
---                     PrettyM
---                     ScopeMonad
---                     Scoping
---                     Signature
---                     Stream
---                     TermGraph
---                     Test
---                     TGChecker
---                     TheMonad
---                     TypeCheck
---                     Util
---                     Value
---

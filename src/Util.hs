@@ -124,9 +124,6 @@ internalError :: [String] -> a
 internalError = error . unwords . ("internal error:" :)
   -- where unwords =  foldr1 (\ h t -> h ++ ' ' : t) -- defined in Prelude
 
-fails :: Monad m => [String] -> m a
-fails = fail . unwords
-
 failDoc :: MonadError String m => m Doc -> m a
 failDoc d = throwError . render =<< d
 

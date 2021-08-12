@@ -141,7 +141,7 @@ instance (Signature Term sig, MonadReader sig m, MonadTG m) =>
       Fun u t      -> return $ VPi u t
       K{}          -> return $ VAbs
       Abs{}        -> return $ VAbs
-      _            -> fail $ "not a whnf " ++ show u
+      _            -> error $ "not a whnf " ++ show u
 
   evaluate e rho = trans rho e
   evaluate'      = trans Map.empty
@@ -225,10 +225,10 @@ transB' e = do
          B (DBIndex i n) -> Left <$> transB (BVar n)
          BCon x -> Right <$> (con x . symbType . sigLookup' (A.uid x) <$> ask)
          BDef x -> do
-            SigDef t v <- sigLookup' (A.uid x) <$> ask
+            ~(SigDef t v) <- sigLookup' (A.uid x) <$> ask
             Right <$> (return $ def x t v)
          BVar n -> -- free variable
-           fail ("transB': unbound variable " ++ A.suggestion n)
+           error ("transB': unbound variable " ++ A.suggestion n)
 --           trace ("transB': unbound variable " ++ A.suggestion n)
 --           Right <$> (return $ Var n) -- only for binding in Lam and Pi
          BLam (Annotation n) e    -> do
@@ -308,10 +308,10 @@ transT' (Alpha e) = do
       case f of
          A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> ask
          A.Ident (A.Def x) -> do
-            SigDef t v <- sigLookup' (A.uid x) <$> ask
+            ~(SigDef t v) <- sigLookup' (A.uid x) <$> ask
             return $ def x t v
          A.Ident (A.Var n) ->
-           fail ("transT': unbound variable " ++ A.suggestion n)
+           error ("transT': unbound variable " ++ A.suggestion n)
 --           trace ("transT': unbound variable " ++ A.suggestion n)
 --           return $ Var n -- only for binding in Lam and Pi
          -- A.Typ             -> predefType  -- impossible case
@@ -357,7 +357,7 @@ app r sp@(u:us) = do
     App x ts      -> newORef $ App x (ts ++ sp)
     Atom h ty ts  -> newORef $ Atom h ty (ts ++ sp)
     Def h ty v ts -> newORef $ Def h ty v (ts ++ sp)
-    _             -> fail $ "cannot apply " ++ show t
+    _             -> error $ "cannot apply " ++ show t
 
 {-
 type Whnf' = Term'
@@ -379,7 +379,7 @@ app r sp@(u:us) = do
     App x ts      -> return $ App x (ts ++ sp)
     Atom h ty ts  -> return $ Atom h ty (ts ++ sp)
     Def h ty v ts -> return $ Def h ty v (ts ++ sp)
-    _             -> fail $ "cannot apply " ++ show t
+    _             -> error $ "cannot apply " ++ show t
       --return $ App r sp
 -}
 
@@ -513,7 +513,7 @@ substT' t = do
     Sort{} -> return Nothing
     Var n -> do
       dict <- get
-      fail $ "substT': unbound variable " ++ show n ++ " keys: " ++ show (Map.keys dict)
+      error $ "substT': unbound variable " ++ show n ++ " keys: " ++ show (Map.keys dict)
     -- return Nothing -- bound variables: impossible case?
 
 maybeMap2 :: (a -> b -> c) -> Maybe a -> Maybe b -> a -> b -> Maybe c

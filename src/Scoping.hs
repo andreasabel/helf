@@ -1,6 +1,7 @@
 {- | Translation from Concrete to Abstract and back -}
 
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeSynonymInstances, UndecidableInstances #-}
+{-# LANGUAGE NondecreasingIndentation #-}
 
 module Scoping (Scope(..),Parse(..),ParseError,Print(..)) where
 

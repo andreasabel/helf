@@ -137,7 +137,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadReader sig m) => Monad
 
 
   abstractPi a (_, HVar x _ []) b = return $ Fun a $ Abs x b emptyEnv
-  abstractPi _ _ _                = fail $ "can only abstract a free variable"
+  abstractPi _ _ _                = error $ "can only abstract a free variable"
 
   unfold v =
     case v of
@@ -162,7 +162,7 @@ evalTerm t env osubst =
     OCon x          -> con x . symbType . sigLookup' (A.uid x) <$> ask
 
     ODef x          -> do
-      SigDef t v <- sigLookup' (uid x) <$> ask
+      ~(SigDef t v) <- sigLookup' (uid x) <$> ask
       return $ def x v t
 
     OApp t1 k t2    -> do
@@ -263,7 +263,7 @@ transform e = snd $ trans e `runReaderT` lbl_empty `evalState` [] where
     do
     modify ((:) [0])
     (i, t)    <- local (insert_lbl x) $ trans e
-    (l':ll')  <- Control.Monad.State.get    --
+    ~(l':ll') <- Control.Monad.State.get    --
     put $ ll'                               -- these lines are the same as: modify (tail)
     return (i + 1 - (length l'), OLam (Just x) (reverse $ tail l') t)
   trans (Pi mname ty1 ty2) = case mname of

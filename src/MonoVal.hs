@@ -114,7 +114,7 @@ instance (Applicative m, Monad m, Signature Val sig, MonadState sig m) => MonadE
     case e of
       A.Ident (A.Con x) -> con x . symbType . sigLookup' (A.uid x) <$> get
       A.Ident (A.Def x) -> do
-        SigDef t v <- sigLookup' (A.uid x) <$> get
+        ~(SigDef t v) <- sigLookup' (A.uid x) <$> get
         return $ def x v t
       A.Ident (A.Var x) -> return $ Env.lookupSafe (A.uid x) rho
       A.App f e    -> Util.appM2 apply (evaluate f rho) (evaluate e rho)

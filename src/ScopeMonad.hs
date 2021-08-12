@@ -1,6 +1,7 @@
 {- | An instance of the Scope monad constructed from monad transformers -}
 
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeSynonymInstances, UndecidableInstances #-}
+{-# LANGUAGE NondecreasingIndentation #-}
 
 module ScopeMonad where
 
@@ -169,7 +170,7 @@ instance ( Applicative m
         nam <- gets naming
         case Map.lookup (A.uid x) nam of
           Just n -> return n
-          Nothing -> fail $ "internal error: unbound abstract identifier " ++ show x
+          Nothing -> error $ "internal error: unbound abstract identifier " ++ show x
 
   getFixity n = Map.lookup n <$> gets fixities
 

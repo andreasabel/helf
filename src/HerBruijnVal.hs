@@ -144,7 +144,7 @@ evaluate expr env =
               Nothing -> fail "unbound variable"
         Ident (Con x) -> con x . symbType . sigLookup' (uid x) <$> ask
         Ident (Def x) -> do
-                      SigDef t v <- sigLookup' (uid x) <$> ask
+                      ~(SigDef t v) <- sigLookup' (uid x) <$> ask
                       return $ def x v t
         App e1 e2 -> Util.appM2 apply (eval e1 bvars) (eval e2 bvars)
         Lam x _ e -> HLam x <$> eval e (x : bvars)
@@ -174,7 +174,7 @@ evaluate expr env =
                         result <- con x . symbType . sigLookup' (uid x) <$> ask
                         if checkForPseudofree result then return result else fail $ "EVALUATE: pseudofree variables after BCon"
         BDef x      -> do
-                      SigDef t v <- sigLookup' (uid x) <$> ask
+                      ~(SigDef t v) <- sigLookup' (uid x) <$> ask
                       return $ def x v t
         BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
         BLam x t    -> (\z -> return $ HLam x z) =<< (evaluate' t env)
@@ -204,7 +204,7 @@ evaluate expr env =
     bindx k (HFun a b)      = HFun (bindx k a) (bindx k b)
     bindx k v@(HSort{})     = v
     bindx k v@HDontCare     = v
-  abstractPi _ _ _          = fail $ "can only abstract a free variable"
+  abstractPi _ _ _          = error $ "can only abstract a free variable"
 
   unfold v =
     case v of
@@ -227,7 +227,7 @@ evaluate1 expr env = -- (\ w -> assertClosed w (return w)) =<<
       Ident (Var x)   -> return $ maybe (var_ x) id $ M.lookup (A.uid x) env
       Ident (Con x)   -> con x . symbType . sigLookup' (uid x) <$> ask
       Ident (Def x)   -> do
-                        SigDef t v <- sigLookup' (uid x) <$> ask
+                        ~(SigDef t v) <- sigLookup' (uid x) <$> ask
                         return $ def x v t
       App e1 e2       -> Util.appM2 apply (eval e1) (eval e2)
       Lam x _ e       -> HLam x . bind x <$> eval e -- inefficient?
@@ -246,7 +246,7 @@ evaluate2 expr env =
       BVar x      -> return $ lookupVal (var_ x) env
       BCon x      -> con x . symbType . sigLookup' (uid x) <$> ask
       BDef x      -> do
-                    SigDef t v <- sigLookup' (uid x) <$> ask
+                    ~(SigDef t v) <- sigLookup' (uid x) <$> ask
                     return $ def x v t
       BApp t1 t2  -> Util.appM2 apply (evaluate' t1 env) (evaluate' t2 env)
       BLam (Annotation x) t    -> (\z -> return $ HLam x z) =<< (evaluate' t env)
@@ -310,7 +310,7 @@ checkClosed k v = -- check whether all indices in v are < k
 
 assert :: Monad m => String -> Bool -> m a -> m a
 assert s True  cont = cont
-assert s False cont = fail s
+assert s False cont = error s
 
 assertClosed w = assert (show w ++ " not closed") (checkClosed 0 w)
 

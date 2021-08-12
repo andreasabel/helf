@@ -136,7 +136,7 @@ instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
     sig <- get
     res <- lift $ lift $ runExceptT $ runReaderT cont $ SigCxt sig emptyContext
     case res of
-      Left err -> fail err
+      Left err -> throwError err
       Right a  -> return a
 
 {-
