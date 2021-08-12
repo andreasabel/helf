@@ -15,15 +15,17 @@ description:
   HELF implements only a subset of the Twelf syntax and functionality.
   It type-checks LF definitions, but does not do type reconstruction.
 
-tested-with:        GHC == 7.8.4
-                    GHC == 7.10.3
-                    GHC == 8.0.2
-                    GHC == 8.2.2
-                    GHC == 8.4.4
-                    GHC == 8.6.5
-                    GHC == 8.8.4
-                    GHC == 8.10.4
-                    GHC == 9.0.1
+tested-with:
+  GHC == 7.6.3
+  GHC == 7.8.4
+  GHC == 7.10.3
+  GHC == 8.0.2
+  GHC == 8.2.2
+  GHC == 8.4.4
+  GHC == 8.6.5
+  GHC == 8.8.4
+  GHC == 8.10.4
+  GHC == 9.0.1
 
 data-files:         test/succeed/Makefile
                     test/succeed/*.elf
