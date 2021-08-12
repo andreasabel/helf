@@ -32,10 +32,11 @@ data-files:         test/succeed/Makefile
                     test/fail/Makefile
                     test/fail/*.elf
                     test/fail/*.err
-                    README.md
 
 extra-source-files: Makefile
                     src/Makefile
+                    README.md
+                    CHANGELOG.md
 
 source-repository head
   type:     git
