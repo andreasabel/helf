@@ -64,6 +64,7 @@ executable helf
                     FlexibleContexts
                     GeneralizedNewtypeDeriving
                     TupleSections
+  other-extensions: InstanceSigs
   main-is:          Main.hs
   other-modules:    Abstract
                     ClosVal
