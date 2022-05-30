@@ -1,3 +1,8 @@
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ > 903
+{-# LANGUAGE TypeApplications #-}
+#endif
+
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, TypeSynonymInstances, MultiParamTypeClasses,
     OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections #-}
@@ -104,7 +109,11 @@ instance MonadCheckExpr Head HVal Env' EvalM CheckExprM where
 
 
 instance PrettyM CheckExprM HVal where
+#if __GLASGOW_HASKELL__ > 903
+  prettyM = doEval @Head . prettyM
+#else
   prettyM = doEval . prettyM
+#endif
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do

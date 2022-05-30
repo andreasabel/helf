@@ -1,8 +1,13 @@
--- | A type checker instance with term graphs.
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ > 903
+{-# LANGUAGE TypeApplications #-}
+#endif
 
 {-# LANGUAGE FlexibleContexts, FlexibleInstances,
     OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections, TypeSynonymInstances, MultiParamTypeClasses #-}
+
+-- | A type checker instance with term graphs.
 
 module TGChecker where
 
@@ -112,7 +117,12 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
 instance PrettyM CheckExprM Val where
+#if __GLASGOW_HASKELL__ > 903
+  prettyM = doEval @Head . prettyM
+#else
   prettyM = doEval . prettyM
+#endif
+
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do

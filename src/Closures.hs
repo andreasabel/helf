@@ -1,10 +1,15 @@
--- | A type checker instance with
--- - values as explicit closures and
--- - environments as finite maps.
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ > 903
+{-# LANGUAGE TypeApplications #-}
+#endif
 
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, TypeSynonymInstances, MultiParamTypeClasses,
     OverlappingInstances, IncoherentInstances, UndecidableInstances,
     PatternGuards, TupleSections #-}
+
+-- | A type checker instance with
+-- - values as explicit closures and
+-- - environments as finite maps.
 
 module Closures where
 
@@ -98,7 +103,11 @@ instance MonadCheckExpr Head Val Env EvalM CheckExprM where
   lookupGlobal x = symbType . sigLookup' (A.uid x) <$> asks globals
 
 instance PrettyM CheckExprM Val where
+#if __GLASGOW_HASKELL__ > 903
+  prettyM = doEval @Head . prettyM
+#else
   prettyM = doEval . prettyM
+#endif
 
 checkTySig :: A.Expr -> A.Type -> CheckExprM ()
 checkTySig e t = do
