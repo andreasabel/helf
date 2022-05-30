@@ -13,6 +13,7 @@ module Monolith where
 import Prelude hiding (pi,abs,mapM)
 
 import Control.Applicative
+import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad ((<=<))
 import Control.Monad.Except  hiding (mapM)
 import Control.Monad.Reader hiding (mapM)

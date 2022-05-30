@@ -6,6 +6,7 @@
 module ORef where
 
 import Control.Applicative
+import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State

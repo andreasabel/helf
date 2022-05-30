@@ -67,7 +67,7 @@ instance MonadCxt Val Env ContextM where
 
 data SigCxt = SigCxt { globals :: MapSig Val, locals :: Context }
 
-type Err = Either String
+type Err = Except String
 type CheckExprM = ReaderT SigCxt Err
 
 instance MonadCxt Val Env CheckExprM where
@@ -114,7 +114,7 @@ runCheck e t = runReaderT (checkTySig e t) $ SigCxt Map.empty emptyContext
 type CheckDeclM = StateT (MapSig Val) (ExceptT String IO)
 
 instance MonadCheckDecl Head Val Env EvalM CheckExprM CheckDeclM where
-  doCheckExpr cont = either throwError return . runReaderT cont . sigCxt =<< get
+  doCheckExpr cont = either throwError return . runExcept . runReaderT cont . sigCxt =<< get
     where
     sigCxt sig = SigCxt sig emptyContext
 
@@ -132,5 +132,5 @@ checkDeclaration d = do
 checkDeclarations :: A.Declarations -> CheckDeclM ()
 checkDeclarations = mapM_ checkDeclaration . A.declarations
 
-runCheckDecls :: A.Declarations -> IO (Err ())
+runCheckDecls :: A.Declarations -> IO (Either String ())
 runCheckDecls ds = runExceptT $ evalStateT (checkDeclarations ds) Map.empty

@@ -46,14 +46,17 @@ source-repository head
 executable helf
   ghc-options:      -rtsopts
   hs-source-dirs:   src
-  build-depends:    array >= 0.3 && < 1.0,
-                    base >= 4.6 && < 5.0,
-                    containers >= 0.3 && < 1.0,
-                    mtl >= 2.2.1 && < 3.0,
-                    pretty >= 1.0 && < 2.0,
-                    QuickCheck >= 2.4 && < 3.0
-  build-tools:      happy >= 1.15 && < 2,
-                    alex >= 3.0 && < 4
+  build-depends:
+      base         >= 4.6   && < 5
+    , array        >= 0.3   && < 1
+    , containers   >= 0.3   && < 1
+    , mtl          >= 2.2.1 && < 3
+    , pretty       >= 1.0   && < 2
+    , transformers >= 0.2   && < 1
+    , QuickCheck   >= 2.4   && < 3
+  build-tools:
+      happy        >= 1.15  && < 2
+    , alex         >= 3.0   && < 4
   default-language: Haskell2010
   default-extensions:
                     MultiParamTypeClasses

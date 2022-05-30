@@ -8,6 +8,7 @@ module TGChecker where
 
 import Control.Applicative
 import Control.Monad ((<=<))
+import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Except  hiding (mapM)
 import Control.Monad.Reader hiding (mapM)
 import Control.Monad.State  hiding (mapM)
