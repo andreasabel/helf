@@ -14,6 +14,7 @@ import Control.Monad.Reader
 
 import Data.Set (Set)
 import qualified Data.Set as Set
+import qualified Data.Text as Text
 
 import qualified Data.IntMap as M
 
@@ -42,7 +43,7 @@ instance Ord Name where
   compare x y = compare (uid x) (uid y)
 
 instance Show Name where
-  show x = suggestion x ++ ":" ++ show (uid x)
+  show x = Text.unpack (suggestion x) ++ ":" ++ show (uid x)
 
 -- | Local and global names.
 data Ident

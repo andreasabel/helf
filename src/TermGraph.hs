@@ -14,6 +14,7 @@ import Control.Monad.State
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe
+import qualified Data.Text as Text
 import qualified Data.Traversable as Trav
 
 import Debug.Trace (trace)
@@ -229,7 +230,7 @@ transB' e = do
             ~(SigDef t v) <- sigLookup' (A.uid x) <$> ask
             Right <$> (return $ def x t v)
          BVar n -> -- free variable
-           error ("transB': unbound variable " ++ A.suggestion n)
+           error ("transB': unbound variable " ++ Text.unpack (A.suggestion n))
 --           trace ("transB': unbound variable " ++ A.suggestion n)
 --           Right <$> (return $ Var n) -- only for binding in Lam and Pi
          BLam (Annotation n) e    -> do
@@ -312,7 +313,7 @@ transT' (Alpha e) = do
             ~(SigDef t v) <- sigLookup' (A.uid x) <$> ask
             return $ def x t v
          A.Ident (A.Var n) ->
-           error ("transT': unbound variable " ++ A.suggestion n)
+           error ("transT': unbound variable " ++ Text.unpack (A.suggestion n))
 --           trace ("transT': unbound variable " ++ A.suggestion n)
 --           return $ Var n -- only for binding in Lam and Pi
          -- A.Typ             -> predefType  -- impossible case

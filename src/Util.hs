@@ -16,6 +16,8 @@ import Control.Monad.State
 
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.Text (Text)
+import qualified Data.Text as Text
 
 import Debug.Trace (trace)
 
@@ -29,6 +31,9 @@ class Pretty a where
 
   pretty     = prettyPrec 0
   prettyPrec = const pretty
+
+instance Pretty Text where
+  pretty = text . Text.unpack
 
 dot :: Doc
 dot = text "."

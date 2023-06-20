@@ -2,6 +2,7 @@
 
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeSynonymInstances, UndecidableInstances #-}
 {-# LANGUAGE NondecreasingIndentation #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Scoping (Scope(..),Parse(..),ParseError,Print(..)) where
 
@@ -12,8 +13,10 @@ import Control.Monad.State hiding (mapM)
 
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.Monoid (mappend)
 import Data.Set (Set)
 import qualified Data.Set as Set
+import qualified Data.Text as Text
 
 import Data.Traversable
 
@@ -301,7 +304,7 @@ variant :: C.Name -> Int -> C.Name
 variant n i =
   case i of
     0 -> n
-    1 -> n ++ "'"
-    2 -> n ++ "''"
-    3 -> n ++ "'''"
-    _ -> n ++ "'" ++ show i
+    1 -> n `mappend` "'"
+    2 -> n `mappend` "''"
+    3 -> n `mappend` "'''"
+    _ -> n `mappend` (Text.pack $  "'" ++ show i)

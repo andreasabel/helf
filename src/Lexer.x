@@ -3,9 +3,10 @@
 {-# LANGUAGE BangPatterns #-}
 module Lexer where
 
+import Data.Text (Text)
 }
 
-%wrapper "posn"
+%wrapper "posn-strict-text"
 
 $u = [\0-\255]                  -- universal: any character
 $reserved = [ \: \. \( \) \[ \] \{ \} \% \" ] -- may not appear in identifiers, delimit ids
@@ -62,7 +63,7 @@ $idchar +           { tok (\p s -> (Id s p )) }
 -- \_                              { tok (\p s -> Hole p) }
 
 data Token
-  = Id String    AlexPosn
+  = Id Text      AlexPosn
   | Abbrev       AlexPosn
   | Clause       AlexPosn
   | Infix        AlexPosn

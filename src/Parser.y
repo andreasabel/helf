@@ -1,6 +1,8 @@
 {
 module Parser where
 
+import qualified Data.Text as Text
+
 import qualified Lexer as T
 import qualified OperatorPrecedenceParser as C
 -- import qualified Common as C
@@ -56,10 +58,10 @@ Declaration
   | '%postfix' Prec id            { C.Fixity $3 (C.Postfix $2) }
 
 Assoc :: { C.Associativity }
-Assoc : id                        { read $1 }
+Assoc : id                        { read (Text.unpack $1) }
 
 Prec :: { Int }
-Prec : id                         { read $1 }
+Prec : id                         { read (Text.unpack $1) }
 
 TypeSig :: { C.Declaration }
 TypeSig : id ':' Expr             { C.TypeSig $1 $3 }

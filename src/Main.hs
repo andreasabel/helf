@@ -4,8 +4,11 @@ module Main where
 
 import Control.Monad.Except ( MonadError(..) )
 -- import Control.Bifunctor
+import Data.Functor ((<$>))
 
+import qualified Data.ByteString as BS
 import qualified Data.List as List
+import qualified Data.Text.Encoding as Text
 
 import Lexer (alexScanTokens)
 import qualified Parser as HappyParser
@@ -138,7 +141,7 @@ main = do
 mainFile :: Engine -> String -> IO ()
 mainFile engine fileName = do
   putStrLn $ "%%% opening " ++ show fileName ++ " %%%"
-  file <- readFile fileName
+  file <- Text.decodeUtf8 <$> BS.readFile fileName
 --  putStrLn "%%% lexing %%%"
   let t = alexScanTokens file
 --  putStrLn (show t)

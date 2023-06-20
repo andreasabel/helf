@@ -4,14 +4,18 @@ module Concrete where
 
 import Prelude hiding ((<>))
 
+import Data.Text (Text)
+import qualified Data.Text as Text
 import Text.PrettyPrint
 
 import Util
 import OperatorPrecedenceParser (Associativity(..))
 import qualified OperatorPrecedenceParser as OPP
 
-type Name = String
-noName = ""
+type Name = Text
+
+noName :: Name
+noName = Text.empty
 
 newtype Declarations = Declarations { declarations :: [Declaration] }
 
@@ -38,32 +42,32 @@ instance Pretty Declarations where
 
 instance Pretty Declaration where
   pretty d = hsep (pr d) <> dot where
-    pr (TypeSig x a)       = [ text x , colon , pretty a ]
-    pr (Defn x (Just a) e) = [ text x , colon , pretty a , equals , pretty e ]
-    pr (Defn x Nothing e)  = [ text x , equals , pretty e ]
---    pr (GLet x e)          = [ text "[", text x , equals , pretty e, text "]" ]
-    pr (Fixity x (OPP.Prefix p))  = [ text "%prefix" , int p , text x ]
-    pr (Fixity x (OPP.Postfix p)) = [ text "%postfix", int p , text x ]
-    pr (Fixity x (OPP.Infix p a)) = [ text "%infix",  pretty a, int p , text x ]
+    pr (TypeSig x a)       = [ pretty x , colon , pretty a ]
+    pr (Defn x (Just a) e) = [ pretty x , colon , pretty a , equals , pretty e ]
+    pr (Defn x Nothing e)  = [ pretty x , equals , pretty e ]
+--    pr (GLet x e)          = [ text "[", pretty x , equals , pretty e, text "]" ]
+    pr (Fixity x (OPP.Prefix p))  = [ text "%prefix" , int p , pretty x ]
+    pr (Fixity x (OPP.Postfix p)) = [ text "%postfix", int p , pretty x ]
+    pr (Fixity x (OPP.Infix p a)) = [ text "%infix",  pretty a, int p , pretty x ]
 
 instance Pretty Associativity where
   pretty = text . show
 
-instance Pretty Name where
-  pretty = text
+-- instance Pretty Name where
+--   pretty = text
 
 instance Pretty Expr where
-  prettyPrec _ (Ident x)          = text x
+  prettyPrec _ (Ident x)          = pretty x
   prettyPrec _ Typ                = text "type"
 --   prettyPrec k (Atom a)           = prettyPrec k a
   prettyPrec k (Fun a b)          = parensIf (k > 0) $ hsep
     [ prettyPrec 1 a , text "->" , prettyPrec 0 b ]
   prettyPrec k (Pi x a b)         = parensIf (k > 0) $
-    braces (hsep [ text x , colon , pretty a ]) <+> pretty b
+    braces (hsep [ pretty x , colon , pretty a ]) <+> pretty b
   prettyPrec k (Lam x (Just a) e) = parensIf (k > 0) $
-    brackets (hsep [ text x , colon , pretty a ]) <+> pretty e
+    brackets (hsep [ pretty x , colon , pretty a ]) <+> pretty e
   prettyPrec k (Lam x Nothing e)  = parensIf (k > 0) $
-    brackets (text x) <+> pretty e
+    brackets (pretty x) <+> pretty e
   prettyPrec k (Apps es)          = parensIf (k > 1) $ hsep $
     map (prettyPrec 2) es
 {-
@@ -71,7 +75,7 @@ instance Pretty Expr where
       where mapReverse f = foldl (\ ys x -> f x : ys) []
 -}
   prettyPrec k (LLet x e e') = parensIf (k > 0) $
-    brackets (hsep [ text x , equals , pretty e' ]) <+> pretty e'
+    brackets (hsep [ pretty x , equals , pretty e' ]) <+> pretty e'
 
 {-
 data Atom
@@ -79,7 +83,7 @@ data Atom
   | Typ                           -- ^ type
 
 instance Pretty Atom where
-  prettyPrec _ (Ident x)          = text x
+  prettyPrec _ (Ident x)          = pretty x
   prettyPrec _ Typ                = text "type"
 -}
 

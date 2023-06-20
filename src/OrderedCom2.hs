@@ -19,6 +19,7 @@ import Control.Monad.State  hiding (mapM)
 
 import Data.Map (Map)
 import qualified Data.Map as Map
+import qualified Data.Text as Text
 import Data.Traversable
 
 import qualified Abstract as A
@@ -159,7 +160,7 @@ hashString = fromIntegral . foldr f 0
       where f c m = ord c + (m * 128) `rem` 1500007
 
 hash :: String -> A.Name
-hash s = A.Name (hashString s) s
+hash s = A.Name (hashString s) (Text.pack s)
 
 var' x   = A.Ident $ A.Var $ hash x
 abs x e = A.Lam (hash x) Nothing e
