@@ -1,3 +1,11 @@
+1.0.20240318
+------------
+
+- Fix compilation with GHC 9.10 alpha1
+- Drop support for GHC 7
+- Switch to PVP-style versioning
+- Builds with GHC 8.0 - 9.10
+
 0.2022.5.30
 -----------
 
