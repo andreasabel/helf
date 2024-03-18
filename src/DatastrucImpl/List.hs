@@ -2,8 +2,6 @@
 
 module DatastrucImpl.List where
 
-import Data.List
-
 import DataStructure
 
 instance DataStruc [] a where

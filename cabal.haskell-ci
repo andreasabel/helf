@@ -1,2 +1,3 @@
+branches: master
 -- Specify 'constraint: ... installed' packages
-installed: +all -containers -mtl -transformers
+-- installed: +all -containers -mtl -transformers
