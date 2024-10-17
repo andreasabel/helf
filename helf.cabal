@@ -1,5 +1,6 @@
 name:            helf
 version:         1.0.20240318
+x-revision:      1
 build-type:      Simple
 cabal-version:   >= 1.10
 license:         MIT
@@ -16,9 +17,9 @@ description:
   It type-checks LF definitions, but does not do type reconstruction.
 
 tested-with:
-  GHC == 9.10.0
+  GHC == 9.10.1
   GHC == 9.8.2
-  GHC == 9.6.4
+  GHC == 9.6.6
   GHC == 9.4.8
   GHC == 9.2.8
   GHC == 9.0.2
@@ -92,7 +93,7 @@ executable helf
         -- text-1.0.0.1 fixes a regression in decodeUtf8
     , transformers >= 0.2      && < 1
   build-tool-depends:
-      happy:happy  >= 1.18.10  && < 2
+      happy:happy  >= 1.18.10  && < 3
         -- happy-1.18.10 has fixes for GHC 7.6.3
     , alex:alex    >= 3.4.0.0  && < 4
         -- alex-3.4.0.0 has posn-strict-text wrapper
